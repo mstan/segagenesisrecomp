@@ -21,6 +21,15 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+foreach(_hd_planes 0 1)
+    add_executable(vdp_hd_jobs_${_hd_planes}_test runtime/vdp_hd_jobs_test.c
+        ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c)
+    target_include_directories(vdp_hd_jobs_${_hd_planes}_test PRIVATE ../runner/video)
+    target_compile_features(vdp_hd_jobs_${_hd_planes}_test PRIVATE c_std_11)
+    target_compile_definitions(vdp_hd_jobs_${_hd_planes}_test PRIVATE
+        GENESIS_HD_JOBS=1 GENESIS_BATCHED_PLANES=${_hd_planes})
+    add_test(NAME vdp_hd_jobs_${_hd_planes} COMMAND vdp_hd_jobs_${_hd_planes}_test)
+endforeach()
 include("${CMAKE_CURRENT_LIST_DIR}/runtime/layout_emit.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/runtime/final_pixels.cmake")
 add_executable(game_video_frame_test runtime/game_video_frame_test.c)

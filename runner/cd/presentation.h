@@ -6,6 +6,9 @@
 #include <SDL2/SDL.h>
 
 typedef struct SegaCDPresentation SegaCDPresentation;
+unsigned segacd_presentation_startup_scale(const char *settings_path);
+/* Explicit provenance: pixels still belong to the native VDP renderer. */
+void segacd_presentation_native_jobs(SegaCDPresentation *presentation, int eligible);
 
 /* Owns its streaming texture and UI; window and renderer remain host-owned.
    The settings path is explicit so the host can keep all persistent data off C:. */

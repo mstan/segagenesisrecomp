@@ -1,5 +1,11 @@
 #include "machine.h"
 #include "../video/genesis_dac.h"
+#if GENESIS_HD_JOBS
+#include "../video/genesis_raster_jobs.h"
+#else
+#define gvdp_hd_bind_palette(...) ((void)0)
+#define gvdp_hd_reset() ((void)0)
+#endif
 #include <stdlib.h>
 #include <string.h>
 #ifndef SEGACD_CATALOG_PC_INDEX
@@ -82,10 +88,11 @@ static void resolve_row(SegaCDMachine *m,unsigned row)
     int width=gvdp_compose_captured(&r->raster,indices);
     /* Captures are internal and validated when produced. Keep the old CD
      * contract for reserved host/bar indices: opaque black. */
-    uint32_t palette[192];
+    uint32_t palette[GVDP_OUTPUT_PALETTE_SIZE];
     unsigned levels=r->raster.shadow_mode||r->raster.diagnostic?3u:1u;
-    for(unsigned i=0;i<levels*64u;++i)
-        palette[i]=genesis_dac_cram_to_argb(r->cram[i%64u],(int)(i/64u));
+    for(unsigned i=0;i<GVDP_OUTPUT_PALETTE_SIZE;++i)
+        palette[i]=i<levels*64u?genesis_dac_cram_to_argb(r->cram[i%64u],(int)(i/64u)):0xff000000u;
+    gvdp_hd_bind_palette(row,palette,GVDP_OUTPUT_PALETTE_SIZE);
     for(int x=0;x<width;++x) {
         unsigned i=indices[x];m->pixels[row][x]=i<levels*64u?palette[i]:0xff000000u;
     }
@@ -233,8 +240,11 @@ static void host_advance(void *u,uint64_t clock)
                 if(width>0&&width<=GVDP_MAX_WIDTH) {
                     m->width=(unsigned)width;
                     if(!deferred) {
-                        for(int x=0;x<width;++x){unsigned i=indices[x];m->pixels[row][x]=i<192?
-                            genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;}
+                        uint32_t palette[GVDP_OUTPUT_PALETTE_SIZE];
+                        for(unsigned i=0;i<GVDP_OUTPUT_PALETTE_SIZE;++i)
+                            palette[i]=i<192?genesis_dac_cram_to_argb(m->vdp.cram[i%64],(int)(i/64)):0xff000000u;
+                        gvdp_hd_bind_palette(row,palette,GVDP_OUTPUT_PALETTE_SIZE);
+                        for(int x=0;x<width;++x)m->pixels[row][x]=palette[indices[x]];
                         if(captured_video)++captured_video->stats.eager_rows;
                     }
                     if(video_observer&&row<(unsigned)gvdp_screen_height(&m->vdp)) {
@@ -276,6 +286,7 @@ int segacd_machine_init(SegaCDMachine *m,const void *bios,size_t bytes,
 }
 void segacd_machine_close(SegaCDMachine *m)
 {if(m&&current==m&&!observing_video){(void)segacd_coordinator_catalog_index(&m->coordinator,0);
+    gvdp_hd_reset();
     free(captured_video);captured_video=NULL;
     current=NULL;video_observer=NULL;video_user=NULL;}}
 int segacd_machine_video_observer(SegaCDMachine *m,SegaCDMachineVideoObserver observer,void *user)
