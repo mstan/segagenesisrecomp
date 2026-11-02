@@ -86,6 +86,8 @@ set(GENESIS_RUNNER_CORE_SOURCES
     audio/audio_shadow.c
     audio/fm_shadow.cpp
     video/color_lut.c
+    video/genesis_raster_jobs.c
+    video/genesis_hd_gpu.c
     video/genesis_vdp.c
     video/genesis_bus.c
     video/genesis_machine.c
@@ -112,6 +114,7 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     runtime_evidence.c
     diagnostic_replay.c
     replay_writer.c)
+list(APPEND GENESIS_RUNNER_RECONCILED_SOURCES video/genesis_raster_jobs.c video/genesis_hd_gpu.c)
 
 function(genesisrecomp_runner_sources out_var)
     cmake_parse_arguments(GRS "" "TRACE;REVERSE_DEBUG" "" ${ARGN})
@@ -141,6 +144,7 @@ endfunction()
 function(genesisrecomp_runner_target target)
     genesisrecomp_z80_target(${target})
     target_compile_definitions(${target} PRIVATE
+        GENESIS_HD_JOBS=1
         GENESIS_FM_BLOCK_SAMPLES=$<BOOL:${GENESIS_FM_BLOCK_SAMPLES}>
         GENESIS_FAST_RB_DIGEST=$<BOOL:${GENESIS_FAST_RB_DIGEST}>
         GENESIS_ENGINE_WORKERS=$<BOOL:${GENESIS_ENGINE_WORKERS}>

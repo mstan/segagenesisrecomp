@@ -13,6 +13,7 @@
 #include "../audio.h"
 #include "../engine_worker.h"
 #include "../host_wait.h"
+#include "../video/genesis_hd_gpu.h"
 #include "../persist_writer.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
@@ -261,10 +262,13 @@ int main(int argc,char **argv)
     SDL_Window*window=NULL;SDL_Renderer*renderer=NULL;SDL_GameController*pad=NULL;
     SegaCDPresentation *presentation=NULL;
     if(!headless) {
-        window=SDL_CreateWindow("Sonic CD",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,960,672,SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI);
+        Uint32 window_flags=SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI;
+        const char *hidden=getenv("LNG_TEST_HIDDEN");
+        if(hidden&&!strcmp(hidden,"1"))window_flags|=SDL_WINDOW_HIDDEN;
+        window=SDL_CreateWindow("Sonic CD",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,960,672,window_flags);
         const char *render_driver=SDL_GetHint(SDL_HINT_RENDER_DRIVER);
         Uint32 renderer_flags=render_driver&&!SDL_strcasecmp(render_driver,"software")?SDL_RENDERER_SOFTWARE:SDL_RENDERER_ACCELERATED;
-        if(window)renderer=SDL_CreateRenderer(window,-1,renderer_flags);
+        if(window)renderer=genesis_hd_create_renderer(window,renderer_flags,segacd_presentation_startup_scale(settings_path));
         if(window&&!renderer)renderer=SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
         if(renderer)presentation=segacd_presentation_create(window,renderer,settings_path,mute);
         if(!presentation){fprintf(stderr,"Window/settings: %s\n",SDL_GetError());if(renderer)SDL_DestroyRenderer(renderer);if(window)SDL_DestroyWindow(window);segacd_debug_stop(debug);audio_wav_stop();segacd_native_audio_destroy(audio);segacd_machine_close(&machine);segacd_image_close(image);SDL_Quit();return 2;}
@@ -336,6 +340,7 @@ int main(int argc,char **argv)
             unsigned width=machine.width,height=machine.height,pitch=GVDP_MAX_WIDTH*sizeof(uint32_t);
             const uint32_t *pixels=widescreen ?
                 segacd_widescreen_frame(widescreen,&width,&height,&pitch) : segacd_machine_pixels(&machine);
+            segacd_presentation_native_jobs(presentation,pixels==&machine.pixels[0][0]);
             if(!pixels||!segacd_presentation_present(presentation,pixels,
                 (int)width,(int)height,(int)pitch)) {
                 fprintf(stderr,"Presentation: %s\n",SDL_GetError());exit_code=2;break;

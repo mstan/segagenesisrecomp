@@ -46,6 +46,7 @@ Track any future implementation under the owning game's normal Beads hierarchy, 
 
 - [ ] **T11: Custom art/effects and renderer adapters** — original N16,N18,N19,N21,N22.
   - Scope: Private art/layout caches, game special effects, custom image-reuse eligibility and title GPU/worker packet generation. Preserve the accepted Blue Spheres composition.
+  - E37: Hardware raster jobs support generic widescreen/private art/extended palettes. Adopting title-owned complete-row or world renderers at enhanced resolution requires a title-owned adapter with equivalent source provenance; the common engine retains their exact existing native output until that adapter is qualified.
   - Disposition: Deferred outside engine goal.
 
 - [ ] **T12: Game launcher media pipeline** — original N33.
