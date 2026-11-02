@@ -6,8 +6,8 @@
   "parent": "beads-3z5k",
   "campaign": "beads-2wy8.1",
   "date": "2026-10-28",
-  "status": "completed_unsuccessful_experiment_not_adopted",
-  "remaining_scope_open": true,
+  "status": "resolved_qualified_immutable_bios_contract_accepted_neutral_inconclusive",
+  "remaining_scope_open": false,
   "engine_code_commit": "c9db7a1847597f63d1cc294cea55d91940ec0091",
   "runtime_core_commit": "55208206dceb126d2e0ae84422382b07292d38be",
   "consumer_commit": "94f57796db9de4990e23476b576b29239095fb22",
@@ -551,13 +551,13 @@
     }
   ],
   "unqualified_v3": "Built quick-reference variant was not game-qualified after the external writer hole was discovered; retained separately.",
-  "decision": "Reject this page-version/cache package after six layouts/qualifications. Do not open adoption PRs, merge it, enable it in current builds, or mark all E02 mechanisms exhausted. Resume next family from qualified E01, excluding rejected E02 runtime code.",
+  "decision": "Independent root review accepts qualified immutable BIOS ownership for integration as neutral/inconclusive; physical-page and short-exclusive-interval mechanisms rejected; mutable/opaque owners retain measured-correct ordinary guards. Whole-run CPU +1.60/+2.48 percent explicitly accepted, no speedup claim. No merge/release authorization.",
   "next": "Independent reviewer must verify final rejection record and Beads checkpoint before instructing move to E03.",
   "cleanup": "Retain isolated source worktrees, frozen rejected binaries and bounded raw evidence outside delivery folders. No new release or Games folder changes.",
   "followup_2026_11_01": {
     "date": "2026-11-01",
-    "scope": "Two additional implemented code-ownership architectures, evaluated from accepted E35, independently of rejected physical-page package. Parent independently reviews adoption/family disposition.",
-    "recommendation": "immutable_contract_qualified_performance_neutral_inconclusive_ready_for_independent_review",
+    "scope": "Two additional implemented code-ownership architectures evaluated from accepted E35; independent root review resolves the original bounded E02 contract.",
+    "recommendation": "accepted_immutable_bios_contract_neutral_inconclusive",
     "baseline_engine": "be957a4a542ab3895711102e2633b27bd709fc0c",
     "baseline_core": "f7dd616530e4c296855f2c22f9420bbe88586dc0",
     "qualified_native_archive": {
@@ -1077,7 +1077,7 @@
             "cycles": 0.9022476669859447
           }
         ],
-        "disposition": "correctness_qualified_performance_neutral_inconclusive_no_proven_gain_small_whole_run_increases_retained_for_review_not_a_proven_regression"
+        "disposition": "accepted_qualified_immutable_bios_contract_performance_neutral_inconclusive_small_whole_run_increases_explicitly_retained"
       }
     ],
     "qualification": {
@@ -1154,6 +1154,26 @@
           "sha256": "e9769cee8e3cd99be39efbeff0aab104e5514f6a1e54df40eeefb4aedf4f1a17"
         }
       ]
+    },
+    "independent_review": {
+      "reviewer": "root",
+      "status": "accepted_for_integration",
+      "reviewed_engine_head": "caadb7262617370f2398c2aabdeb93469d20587b",
+      "reviewed_core_head": "6ec41e8e9b517f9507c2a0d7c47ee1f47a99e625",
+      "engine_PR": "https://github.com/mstan/segagenesisrecomp/pull/60",
+      "core_PR": "https://github.com/mstan/m68k-recomp-core/pull/11",
+      "scope": "validated paths; variant selection; first-use/range/serial/revocation; actual BIOS mapping/writers including excluded0x72 vector; existing10+10 gates and four exact game arms adequate",
+      "performance": "neutral/inconclusive; whole-run CPU+1.60/+2.48percent explicitly accepted; no speedup claim",
+      "campaign_resolved": 35,
+      "campaign_open": 2,
+      "campaign_open_ids": [
+        "E36",
+        "E37"
+      ],
+      "owner_combined_play_merge_release_pending": true
     }
-  }
+  },
+  "physical_page_historical_status": "completed_unsuccessful_experiment_not_adopted",
+  "physical_page_historical_decision": "Reject this page-version/cache package after six layouts/qualifications. Do not open adoption PRs, merge it, enable it in current builds, or mark all E02 mechanisms exhausted. Resume next family from qualified E01, excluding rejected E02 runtime code.",
+  "legacy_fields_scope": "Original top-level engine/core/baseline/per_game/variant measurements describe the historical rejected physical-page package. Current accepted immutable package and its exact identities/samples are in followup_2026_11_01."
 }
