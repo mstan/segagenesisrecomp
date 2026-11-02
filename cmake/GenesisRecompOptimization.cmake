@@ -20,6 +20,13 @@ function(genesisrecomp_native_optimization target)
     string(TOUPPER "${GENESIS_NATIVE_IPO}" _genesis_ipo_mode)
     string(TOUPPER "${GENESIS_NATIVE_PGO}" _genesis_pgo_mode)
     get_target_property(_type ${target} TYPE)
+    # A consumer's measured per-target qualification can require ordinary
+    # compilation even when sibling targets use project-wide IPO/PGO.
+    get_target_property(_native_disabled ${target} GENESIS_NATIVE_IPO_DISABLED)
+    if(_native_disabled)
+        set(_genesis_ipo_mode "OFF")
+        set(_genesis_pgo_mode "OFF")
+    endif()
     if(NOT _type STREQUAL "STATIC_LIBRARY" AND GENESIS_NATIVE_PGO_TARGETS AND
        NOT target IN_LIST GENESIS_NATIVE_PGO_TARGETS)
         set(_genesis_pgo_mode "OFF")
