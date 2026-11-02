@@ -5,6 +5,8 @@
 static int viewport_on,requested,selected,order,width_calls,owner_calls;
 static int eager_calls,lazy_calls,overlay_calls,fetch_calls,native_width,seen_width;
 static uint32_t original[512],output[1026];
+static const struct GVDPRasterRow *expected_packet;
+static int presented_calls;
 static int configure(const char *m){(void)m;CHECK(0);return 0;}
 static int enabled(void){return viewport_on;}
 static int width(int dw,int dh,int nw,int nh)
@@ -25,6 +27,13 @@ static void complete(const struct GVDP *v,int line,int nw,uint32_t *out,int w,Ga
     (void)v;(void)get;(void)ctx;CHECK(line==37&&nw==native_width);++lazy_calls;seen_width=w;
     for(int x=0;x<w;++x)out[x]=0x55667788u;
 }
+static void presented(const struct GVDP *v,int line,int nw,uint32_t *out,int w,
+    GameVideoNativeRow get,void *ctx,const struct GVDPRasterRow *packet)
+{
+    CHECK(packet==expected_packet);++presented_calls;
+    if(packet)complete(v,line,nw,out,w,get,ctx);
+    else lazy(v,line,nw,out,w,get,ctx);
+}
 static void overlay(const struct GVDP *v,int line,uint32_t *out,int w)
 {(void)v;CHECK(line==37&&w>0);++overlay_calls;out[w-1]^=0x1234u;}
 static void reset(int view,int own,int requested_width)
@@ -36,9 +45,9 @@ static void reset(int view,int own,int requested_width)
 }
 int main(void)
 {
-    const GameVideo modern={configure,enabled,width,eager,overlay,lazy,owner};
+    const GameVideo modern={configure,enabled,width,eager,overlay,lazy,owner,NULL,NULL};
     /* Deliberately preserve positional legacy initialization/source defaults. */
-    const GameVideo legacy={configure,enabled,width,eager,overlay,NULL,NULL};
+    const GameVideo legacy={configure,enabled,width,eager,overlay,NULL,NULL,NULL,NULL};
     static const int geometries[]={256,320,336,384,464,512};
     unsigned cases=0;
     for(unsigned n=0;n<sizeof geometries/sizeof *geometries;++n)
@@ -84,6 +93,18 @@ int main(void)
     CHECK(plan.owner==&native_only&&!plan.width&&!plan.viewport&&!game_video_has_viewport(&native_only));
     CHECK(game_video_draw_row(&plan,NULL,37,256,output+1,512,fetch,original)==256);
     CHECK(lazy_calls==1&&!eager_calls&&!fetch_calls);
+    /* Appended presentation producer owns native geometry too. A missing
+     * packet still has the same memoized original-image fallback. */
+    reset(0,1,0);native_width=256;GameVideo captured_only={0};
+    captured_only.renderer_enabled=owner;captured_only.scanline_presented=presented;
+    plan=game_video_prepare_frame(&captured_only,0,0,320,224);
+    CHECK(plan.owner==&captured_only&&!plan.width&&!plan.viewport);
+    expected_packet=(const struct GVDPRasterRow *)original;
+    CHECK(game_video_draw_presented_row(&plan,NULL,37,256,output+1,512,fetch,original,expected_packet)==256);
+    CHECK(presented_calls==1&&lazy_calls==1&&!fetch_calls);
+    expected_packet=NULL;
+    CHECK(game_video_draw_row(&plan,NULL,37,256,output+1,512,fetch,original)==256);
+    CHECK(presented_calls==2&&fetch_calls==1&&output[1]==original[0]);
     reset(0,1,0);GameVideo incomplete={0};incomplete.renderer_enabled=owner;incomplete.overlay_scanline=overlay;
     plan=game_video_prepare_frame(&incomplete,0,0,320,224);CHECK(!plan.owner);
     CHECK(game_video_draw_row(&plan,NULL,37,256,output+1,512,fetch,original)==256);
