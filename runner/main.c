@@ -2775,6 +2775,9 @@ int main(int argc, char *argv[])
      * run this early. */
     widescreen_setup();
     if(g_game_spec.video) {
+        /* Aspect CLI overrides do not override the independent FPS choice. */
+        if(g_game_spec.video->presentation_configure)
+            g_game_spec.video->presentation_configure(g_app_config.presentation_rate!=0);
         if(custom_video_cli) {
             int aspect=app_config_aspect_index(custom_video_cli);
             g_app_config.custom_widescreen=strcmp(custom_video_cli,"off")!=0;
@@ -3967,7 +3970,7 @@ session_begin:;
                         (unsigned long long)SDL_GetPerformanceCounter(),(unsigned long long)hash);
                 }
                 if(presentation_snap && presentation_count==presentation_snap_frame)
-                    png_write_argb(presentation_snap,pixels,s_screen_width,s_screen_height,s_frame_stride*4);
+                    png_write_argb(presentation_snap,pixels,s_screen_width,s_screen_height,s_frame_stride);
                 now=SDL_GetPerformanceCounter();
             }
         } else {
