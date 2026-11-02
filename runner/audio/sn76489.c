@@ -26,6 +26,7 @@ static uint32_t   s_leftover_master_cycles = 0;  /* in master-cycle units */
 
 #define PSG_SCRATCH_SAMPLES  8192
 static int16_t s_scratch[PSG_SCRATCH_SAMPLES];
+static int16_t s_raw_scratch[PSG_SCRATCH_SAMPLES];
 static size_t  s_scratch_write = 0;
 static size_t  s_scratch_read  = 0;
 
@@ -100,7 +101,7 @@ static int sn_noise_reload(const SN76489 *p)
     }
 }
 
-static int16_t sn_render_sample(SN76489 *p)
+static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
 {
     int32_t mix = 0;
 
@@ -130,6 +131,7 @@ static int16_t sn_render_sample(SN76489 *p)
         }
     }
     mix += p->noise_out ? SN_VOL[p->vol[3]] : -SN_VOL[p->vol[3]];
+    *unfiltered=(int16_t)mix; /* Four channels sum to at most32764. */
 
     /* First-order low-pass matching the reference (see magics above). */
     int64_t lp = ((int64_t)(mix + p->lpf_prev) * SN_LPF_SAMPLE_MAGIC
@@ -230,10 +232,12 @@ void psg_advance(uint32_t cycles_master)
         if (avail == 0) return;  /* scratch full; drop */
         size_t chunk = samples_to_emit < avail ? samples_to_emit : avail;
 #if GENESIS_PSG_SILENT_SPANS
-        if(!sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk))
+        if(sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk))
+            memset(s_raw_scratch+s_scratch_write,0,chunk*sizeof *s_raw_scratch);
+        else
 #endif
             for (size_t i = 0; i < chunk; i++)
-                s_scratch[s_scratch_write + i] = sn_render_sample(&s_sn);
+                s_scratch[s_scratch_write + i] = sn_render_sample(&s_sn,s_raw_scratch+s_scratch_write+i);
         s_scratch_write  += chunk;
         samples_to_emit  -= chunk;
     }
@@ -247,11 +251,17 @@ void psg_write(uint8_t value)
 
 size_t psg_render(int16_t *out, size_t sample_count)
 {
-    if (!out || sample_count == 0) return 0;
+    return psg_render_pair(out,NULL,sample_count);
+}
+
+size_t psg_render_pair(int16_t *filtered,int16_t *unfiltered,size_t sample_count)
+{
+    if ((!filtered && !unfiltered) || sample_count == 0) return 0;
     size_t available = s_scratch_write - s_scratch_read;
     size_t copy = sample_count < available ? sample_count : available;
     if (copy > 0) {
-        memcpy(out, &s_scratch[s_scratch_read], copy * sizeof(int16_t));
+        if(filtered)memcpy(filtered, &s_scratch[s_scratch_read], copy * sizeof(int16_t));
+        if(unfiltered)memcpy(unfiltered, &s_raw_scratch[s_scratch_read], copy * sizeof(int16_t));
         s_scratch_read += copy;
     }
     if (s_scratch_read >= s_scratch_write) {
@@ -334,7 +344,7 @@ size_t psg_rb_save(void *dst, size_t cap)
     if (!s_inited) psg_init();
     uint32_t pend = (uint32_t)(s_scratch_write - s_scratch_read);
     size_t need = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof pend +
-                  (size_t)pend * sizeof(int16_t);
+                  (size_t)pend * 2u * sizeof(int16_t);
     if (!dst) return need;
     if (cap < need) return 0;
     uint8_t *o = (uint8_t *)dst;
@@ -343,6 +353,8 @@ size_t psg_rb_save(void *dst, size_t cap)
     o += sizeof s_leftover_master_cycles;
     memcpy(o, &pend, sizeof pend); o += sizeof pend;
     memcpy(o, &s_scratch[s_scratch_read], (size_t)pend * sizeof(int16_t));
+    o += (size_t)pend * sizeof(int16_t);
+    memcpy(o, &s_raw_scratch[s_scratch_read], (size_t)pend * sizeof(int16_t));
     return need;
 }
 
@@ -354,11 +366,13 @@ int psg_rb_load(const void *src, size_t len)
     size_t fixed = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof pend;
     if (!src || len < fixed) return 0;
     memcpy(&pend, i + sizeof s_sn + sizeof s_leftover_master_cycles, sizeof pend);
-    if (pend > PSG_SCRATCH_SAMPLES || len != fixed + (size_t)pend * sizeof(int16_t)) return 0;
+    if (pend > PSG_SCRATCH_SAMPLES || len != fixed + (size_t)pend * 2u * sizeof(int16_t)) return 0;
     memcpy(&s_sn, i, sizeof s_sn); i += sizeof s_sn;
     memcpy(&s_leftover_master_cycles, i, sizeof s_leftover_master_cycles);
     i += sizeof s_leftover_master_cycles + sizeof pend;
     memcpy(s_scratch, i, (size_t)pend * sizeof(int16_t));
+    i += (size_t)pend * sizeof(int16_t);
+    memcpy(s_raw_scratch, i, (size_t)pend * sizeof(int16_t));
     s_scratch_read = 0;
     s_scratch_write = pend;
     return 1;

@@ -8,13 +8,16 @@
  * "what a tick is" has one definition (recomp-ai-rules/NETPLAY.md section 2:
  * only published inputs may enter the simulation).
  *
- * A tick is: arm the frame (glue_reset_frame_sync / glue_run_game_frame),
+ * A tick first seals inputs and calls GameSpec.on_frame_pre, then arms the
+ * frame (glue_reset_frame_sync / glue_run_game_frame),
  * apply the sealed pads to the two physical ports, run the host pre-raster
  * hook (widescreen pin, trace stamps), apply the scheduler's frame-boundary
  * rule (glue_sched_frame_begin), run 262 scanlines (machine_run_frame: the
  * game fiber, the Z80 and the VDP interleaved), drain the audio chips for the
  * whole wall frame into the caller's buffers, run the host post-drain hook,
- * then the V-blank bookkeeping (glue_service_vblank, glue_end_of_wall_frame).
+ * then V-blank bookkeeping (glue_service_vblank, glue_end_of_wall_frame),
+ * GameSpec.on_frame_post and the completed-tick/replay checkpoint. These
+ * game callbacks run identically for live and replayed simulation ticks.
  *
  * The audio drain is SIMULATION: it advances the YM2612/PSG models and
  * consumes the cycle-stamped event queue. It must run on every tick,

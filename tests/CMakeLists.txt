@@ -23,12 +23,15 @@ endif()
 enable_testing()
 add_subdirectory(segacd)
 enable_language(CXX)
+add_executable(sim_step_test runtime/sim_step_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/sim_step.c")
+target_include_directories(sim_step_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include" "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu" "${CMAKE_CURRENT_LIST_DIR}/../runner/external/clowncommon")
+add_test(NAME sim_step COMMAND sim_step_test)
 
 set(_psg_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/sn76489.c")
 add_library(psg_scalar_test_model OBJECT "${_psg_wrapper}")
 target_include_directories(psg_scalar_test_model PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
 target_compile_definitions(psg_scalar_test_model PRIVATE GENESIS_PSG_SILENT_SPANS=0)
-foreach(_psg_api init advance write render samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
+foreach(_psg_api init advance write render render_pair samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
     target_compile_definitions(psg_scalar_test_model PRIVATE psg_${_psg_api}=ref_psg_${_psg_api})
 endforeach()
 add_executable(psg_span_test runtime/psg_span_test.c "${_psg_wrapper}" $<TARGET_OBJECTS:psg_scalar_test_model>)
@@ -48,7 +51,7 @@ add_library(fm_scalar_test_model OBJECT "${_fm_wrapper}")
 target_include_directories(fm_scalar_test_model PRIVATE "${_ymfm}"
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_compile_definitions(fm_scalar_test_model PRIVATE GENESIS_FM_BLOCK_SAMPLES=0)
-foreach(_fm_api init advance write render samples_available sample_rate save_state load_state cosim_hash rb_save rb_load)
+foreach(_fm_api init advance write render render_pair samples_available sample_rate save_state load_state cosim_hash rb_save rb_load)
     target_compile_definitions(fm_scalar_test_model PRIVATE ym2612_${_fm_api}=ref_ym2612_${_fm_api})
 endforeach()
 add_executable(fm_block_test runtime/fm_block_test.cpp "${_fm_wrapper}"
@@ -59,6 +62,15 @@ target_include_directories(fm_block_test PRIVATE "${_ymfm}"
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_compile_definitions(fm_block_test PRIVATE GENESIS_FM_BLOCK_SAMPLES=1)
 add_test(NAME fm_block COMMAND fm_block_test)
+
+add_executable(audio_filter_test runtime/audio_filter_test.cpp
+    "${_fm_wrapper}" "${_psg_wrapper}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/mixer.c"
+    "${_ymfm}/ymfm_opn.cpp" "${_ymfm}/ymfm_ssg.cpp"
+    "${_ymfm}/ymfm_adpcm.cpp" "${_ymfm}/ymfm_pcm.cpp")
+target_include_directories(audio_filter_test PRIVATE "${_ymfm}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+add_test(NAME audio_filter COMMAND audio_filter_test)
 
 if(TARGET SDL2::SDL2)
     foreach(_host_wait_variant native portable)
