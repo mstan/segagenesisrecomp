@@ -260,6 +260,10 @@ int machine_save_state(FILE *f)
 
 int machine_load_state(FILE *f)
 {
+#if GENESIS_HD_JOBS
+    /* Even a short fread can partially overwrite the hardware image. */
+    gvdp_hd_reset();
+#endif
     if (fread(&g_machine, sizeof g_machine, 1, f) != 1) return 0;
     { uint64_t clk = 0;
       if (fread(&clk, sizeof clk, 1, f) != 1) return 0;
