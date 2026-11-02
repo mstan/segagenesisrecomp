@@ -8,6 +8,12 @@
 #include <string.h>
 
 InputMap g_input_map;
+static int s_gameplay_blocked;
+
+void input_set_gameplay_blocked(int blocked) { s_gameplay_blocked = !!blocked; }
+int input_gameplay_blocked(void) { return s_gameplay_blocked; }
+void input_gameplay_capture_changed(void *context,int open)
+{ (void)context;input_set_gameplay_blocked(open); }
 
 /* GPAD_* hardware bit per logical button. MUST stay in sync with the GPAD_*
  * enum in video/genesis_bus.h (mirrored here so shared code needn't include the
@@ -38,6 +44,7 @@ static void set_btn(PlayerInput *pi, GenesisButton b, int scancode, int pad_butt
 void input_map_init_defaults(void)
 {
     memset(&g_input_map, 0, sizeof(g_input_map));
+    s_gameplay_blocked = 0;
 
     PlayerInput *p1 = &g_input_map.p[0];
     /* Default = keyboard AND gamepad, additive (same merge rule as the
@@ -110,6 +117,7 @@ uint16_t input_map_key_mask(int player)
 
 uint16_t input_current_mask(int player)
 {
+    if (s_gameplay_blocked) return 0;
     if (player < 0 || player >= INPUT_MAX_PLAYERS) return 0;
     const PlayerInput *pi = &g_input_map.p[player];
     uint16_t m = 0;

@@ -2,12 +2,78 @@
  * priority, without touching the hardware overflow/collision flags. */
 #include "genesis_vdp.h"
 #include "genesis_dac.h"
+#include "genesis_machine.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define CHECK(c) do { if (!(c)) { fprintf(stderr,"line %d: %s\n",__LINE__,#c); exit(1); } } while (0)
 static GVDP v;
 static int calls, high, color = 2, opacity=1, unregister_callback;
+
+int g_snd_trace;
+unsigned long g_snd_frame;
+unsigned g_snd_line;
+/* The real scheduler/VDP run below without a ROM, CPU program or sound bus. */
+void gbus_init(GenesisBus *b,GVDP *p){memset(b,0,sizeof *b);b->vdp=p;}
+uint16_t gbus_read16(GenesisBus *b,uint32_t a){(void)b;(void)a;return 0;}
+uint8_t gbus_z80_read(GenesisBus *b,uint16_t a){(void)b;(void)a;return 0;}
+void gbus_z80_write(GenesisBus *b,uint16_t a,uint8_t x){(void)b;(void)a;(void)x;}
+void glue_run_game_chunk(uint32_t cycles){(void)cycles;}
+int glue_own_vint_service_latched(GVDP *p){(void)p;return 0;}
+static int split_line,last_row,hints,vints,raster_calls,has_output;
+static void raster_color(uint16_t c)
+{
+    g_machine.vdp.cram[0]=c;
+    g_machine.vdp.colour_updated(NULL,0,c);
+}
+void glue_own_interrupt(int level,GVDP *p)
+{
+    if(level==4){
+        CHECK(p->scanline==split_line && (!has_output || last_row==split_line));
+        if(split_line==0)CHECK(p->sprite_collision); /* status already evaluated */
+        ++hints;raster_color(0xE00);
+    }else{
+        CHECK(level==6 && p->scanline==224 && (!has_output || last_row==223));
+        ++vints;
+    }
+}
+static void raster_sprites(void *user,const GVDP *p,const GVDPSpriteLayer *layer)
+{(void)user;(void)p;(void)layer;++raster_calls;}
+static void raster_sink(void *user,int line,const uint32_t *pixels,int width)
+{
+    (void)user;CHECK(line==last_row+1 && width==320);
+    CHECK(pixels[width-1]==genesis_dac_cram_to_argb(line<=split_line?0x00E:0xE00,GENESIS_DAC_NORMAL));
+    last_row=line;
+}
+static int raster_enabled(void *user){(void)user;return 3;}
+static void raster_custom(void *user,const GVDP *p,int line,int width,
+                          GenesisNativeRow native,void *ctx,const GVDPRasterRow *row)
+{
+    (void)p;CHECK(row);const uint32_t *pixels=native(ctx);CHECK(native(ctx)==pixels);
+    raster_sink(user,line,pixels,width); /* deferred native composition is cached */
+}
+static void raster_order(void)
+{
+    const GenesisScanlineProducer producer={raster_enabled,raster_custom};
+    const int splits[]={0,100,223};
+    for(int mode=0;mode<3;++mode)for(unsigned n=0;n<sizeof splits/sizeof *splits;++n){
+        machine_init();GVDP *p=&g_machine.vdp;
+        split_line=splits[n];last_row=-1;hints=vints=raster_calls=0;has_output=mode!=2;
+        p->reg[0]=0x10;p->reg[1]=0x60;p->reg[5]=0x7C;p->reg[10]=255;
+        p->reg[12]=1;p->hint_counter=(uint8_t)split_line;raster_color(0x00E);
+        memset(p->vram+32,0x11,32);
+        for(int s=0;s<2;++s){unsigned a=0xF800+s*8;
+            p->vram[a+1]=128;p->vram[a+3]=(uint8_t)(s?0:1);
+            p->vram[a+5]=1;p->vram[a+7]=128;
+        }
+        gvdp_set_host_sprites(raster_sprites,NULL);
+        machine_run_frame_ex(has_output?raster_sink:NULL,NULL,mode==1?&producer:NULL);
+        CHECK(hints==1 && vints==1 && p->sprite_collision);
+        CHECK(raster_calls==(has_output?224:0));
+        if(has_output)CHECK(last_row==223);
+    }
+    gvdp_set_host_sprites(NULL,NULL);
+}
 static void word(unsigned a,unsigned n) { v.vram[a]=n>>8; v.vram[a+1]=n; }
 static void draw(void *user, const GVDP *vdp, const GVDPSpriteLayer *layer)
 {
@@ -42,6 +108,64 @@ static void noncanonical_host_flags(void)
         CHECK(!memcmp(expected,composed,320));
     }
     opacity=1;high=0;unregister_callback=0;gvdp_set_host_sprites(NULL,NULL);gvdp_set_ext_tiles(NULL);
+}
+static void private_planes(void)
+{
+    uint8_t markers[2048]={0},pixels[GVDP_MAX_WIDTH],composed[GVDP_MAX_WIDTH];
+    uint16_t top[GVDP_EXT_LINES*16]={0},bottom[GVDP_EXT_LINES*16]={0};
+    GVDPRasterRow captured;
+    markers[1]=1;markers[2]=2;markers[4]=GVDP_EXT_SPRITE_FORCE|3;markers[7]=3;
+    top[1]=0xE;bottom[1]=0xE00;top[18]=0xE0;bottom[18]=0xEEE;
+    gvdp_set_ext_tiles(markers);gvdp_set_ext_colors(top,bottom,8);
+    /* Same expected native priority and source-palette contract in scalar
+     * and batched builds, including window replacement and operator sprites. */
+    for(unsigned test=0;test<1024;++test){
+        unsigned ap=test&3,bp=(test>>2)&3,ah=(test>>4)&1,bh=(test>>5)&1;
+        unsigned sh=(test>>6)&1,win=(test/128)%3,spr=(test/29)%7,off=(test/11)%2;
+        int line=(test&1)?8:0;
+        memset(&v,0,sizeof v);v.reg[1]=64;v.reg[2]=0x30;v.reg[3]=0x2C;
+        v.reg[4]=7;v.reg[5]=0x7C;v.reg[12]=(uint8_t)(1|sh*8);v.reg[13]=0x3F;
+        if(win==1)v.reg[17]=1;
+        if(win==2)v.reg[18]=0x80;
+        memset(v.vram+32,0x11,32);memset(v.vram+64,0x22,32);
+        memset(v.vram+128,0x33,32);memset(v.vram+160,0x33,32);
+        memset(v.vram+192,spr==3?0xEE:0xFF,32);memset(v.vram+224,0x44,32);
+        for(unsigned cell=0;cell<64*4;++cell){
+            word(0xC000+cell*2,(ap<<13)|(ah<<15)|(off?3:1));
+            word(0xE000+cell*2,(bp<<13)|(bh<<15)|2);
+            word(0xB000+cell*2,(ap<<13)|(ah<<15)|(win==2?4:off?3:2));
+        }
+        if(spr){
+            word(0xF800,(unsigned)(128+line));word(0xF806,128);
+            word(0xF804,spr>=5?(spr==6?0x8007:7):spr>=3?0x6006:spr==2?0xA005:0x2005);
+        }
+        CHECK(gvdp_render_scanline(&v,line,pixels)==320);
+        for(unsigned x=0;x<320;++x){
+            unsigned tile=(win==2||(win==1&&x<16))?(win==2?4:off?3:2):off?3:1;
+            unsigned ao=tile!=3,ai=tile==4?ap*16+3:ap?ap*16+tile:
+                GVDP_HOST_PALETTE_BASE+(tile==2?16:0)+tile;
+            unsigned bi=bp?bp*16+2:GVDP_HOST_PALETTE_BASE+18;
+            unsigned so=x<8&&(spr==1||spr==2||spr>=5||(!sh&&spr>=3)),hi=spr==2||spr==6;
+            unsigned si=spr>=5?GVDP_HOST_PALETTE_BASE+36:spr==3?62:spr==4?63:19;
+            unsigned expected=so&&hi?si:ao&&ah?ai:bh?bi:so?si:ao?ai:bi;
+            if(sh&&expected<64){
+                unsigned shade=!((ao&&ah)||bh||(so&&hi)),light=0;
+                if(x<8&&spr==4)shade=1;
+                if(x<8&&spr==3){if(shade)shade=0;else light=1;}
+                expected+=light?128:shade?64:0;
+            }
+            CHECK(pixels[x]==expected);
+        }
+        CHECK(gvdp_capture_presented_scanline(&v,line,&captured)==320 && captured.private_planes);
+        CHECK(captured.host_palette[1]==genesis_dac_cram_to_argb(line<8?0xE:0xE00,GENESIS_DAC_NORMAL));
+        CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(pixels,composed,320));
+    }
+    /* A presented packet keeps plane indices/colors after all providers and
+     * the complete live VRAM image have been retired or overwritten. */
+    gvdp_set_ext_tiles(NULL);memset(markers,0,sizeof markers);memset(&v,0,sizeof v);
+    memset(top,0,sizeof top);memset(bottom,0,sizeof bottom);gvdp_set_ext_colors(top,bottom,0);
+    CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(pixels,composed,320));
+    CHECK(captured.host_palette[1]==genesis_dac_cram_to_argb(0xE00,GENESIS_DAC_NORMAL));
 }
 static void private_planes(void)
 {
@@ -227,6 +351,7 @@ int main(void)
     CHECK(captured.host_palette[35]==genesis_dac_cram_to_argb(0xE0,GENESIS_DAC_NORMAL));
     private_planes();
     noncanonical_host_flags();
+    raster_order();
     puts("host sprites composite behind native sprites with plane priority");
     return 0;
 }

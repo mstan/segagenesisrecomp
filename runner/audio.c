@@ -138,7 +138,10 @@ static uint64_t s_prepare_ticks,s_publish_ticks,s_publish_max_ticks,s_exclusion_
 static uint64_t s_prepared_blocks,s_legacy_blocks;
 static AudioExtraSource s_extra_source;
 static double s_mix_rate;
+static int s_output_rate = 48000;
 void audio_set_extra_source(AudioExtraSource source) { s_extra_source = source; }
+void audio_set_output_rate(int hz)
+{ s_output_rate = hz >= 8000 && hz <= 192000 ? hz : 48000; }
 
 int audio_init(int psg_sample_rate)
 {
@@ -158,15 +161,14 @@ int audio_init(int psg_sample_rate)
      * at the raw PSG rate (~223721 Hz) and SDL did the resample internally,
      * with our nearest-neighbor servo riding on top — both contributed to the
      * crackle. The bridge does a band-limited polyphase 223721->host downsample
-     * with a P-only ratio servo, so the device runs at a clean 48 kHz. */
-    want.freq     = 48000;
+     * with a P-only ratio servo at the selected host-device rate. */
+    want.freq     = s_output_rate;
     want.format   = AUDIO_S16SYS;
     want.channels = 2;
     want.samples  = 1024;
     want.callback = genesis_audio_callback;
 
-    /* Allow SDL to renegotiate the rate (some backends won't give exactly
-     * 48000); the bridge keys off got.freq so any rate works. */
+    /* Allow SDL to renegotiate the request; the bridge keys off got.freq. */
     s_dev = SDL_OpenAudioDevice(NULL, 0, &want, &got,
                                 SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
     if (s_dev == 0) {

@@ -854,6 +854,10 @@ static cc_bool input_requested_cb(void *user_data,
     }
 #endif
 
+    /* Published netplay rows above stay authoritative. Only local sampling
+     * (including script/TCP input) belongs to the host options UI. */
+    if (input_gameplay_blocked()) return cc_false;
+
     /* Dev-driven sources ((.input scripts, --script-* flags, TCP set_input)
      * MERGE with the live keyboard/gamepad instead of replacing it: a button
      * held by ANY source reads as held. Unattended runs stay deterministic
@@ -1001,7 +1005,8 @@ static void collect_sim_input(GenesisSimInput *in)
         in->pad[port] = pad_mask;
     }
     for (int p = 2; p < GENESIS_SIM_MAX_PLAYERS; p++)
-        in->pad[p] = (uint16_t)(input_current_mask(p) | input_script_player_mask(p));
+        if (!input_gameplay_blocked())
+            in->pad[p] = (uint16_t)(input_current_mask(p) | input_script_player_mask(p));
     for (int p = 0; p < GENESIS_SIM_MAX_PLAYERS; p++)
         if (input_player_connected(p) || input_script_player_used(p))
             in->human_mask |= 1u << p;
@@ -2044,7 +2049,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         ls.widescreen       = g_app_config.widescreen;
         ls.widescreen_cells = g_app_config.widescreen_cells;
         ls.enable_audio     = 1;
-        ls.audio_freq       = 48000;   /* engine device rate (audio.c want.freq) */
+        ls.audio_freq       = g_app_config.audio_freq;
         ls.volume           = g_app_config.volume;
         ls.skip_launcher    = g_app_config.skip_launcher;
 #ifdef RECOMP_LAUNCHER_HAS_REWIND_ENABLED
@@ -2150,6 +2155,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
             g_app_config.widescreen       = ls.widescreen;
             g_app_config.widescreen_cells = ls.widescreen_cells;
             g_app_config.volume           = ls.volume;
+            g_app_config.audio_freq       = ls.audio_freq;
             g_app_config.skip_launcher    = ls.skip_launcher;
 #ifdef RECOMP_LAUNCHER_HAS_REWIND_ENABLED
             g_app_config.rewind_enabled   = ls.rewind_enabled != 0;
@@ -2952,6 +2958,7 @@ int main(int argc, char *argv[])
     /* Output at PSG rate (~223721 Hz NTSC) â€” matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
     if (!benchmark_frames) {
+        audio_set_output_rate(g_app_config.audio_freq);
         int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
         if (runtime_measure_frames && audio_status != 0) {
             fprintf(stderr, "--measure-runtime requires a working audio device/mixer\n");
@@ -2971,6 +2978,7 @@ int main(int argc, char *argv[])
         cfg.menu.callbacks.context = &s_runtime_ui; cfg.menu.callbacks.get_value = runtime_ui_get;
         cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
         cfg.menu.callbacks.save = runtime_ui_save;
+        cfg.menu.callbacks.visibility_changed = input_gameplay_capture_changed;
         cfg.features = RECOMP_RUNTIME_UI_STANDARD_FULLSCREEN | RECOMP_RUNTIME_UI_STANDARD_WINDOW_SCALE |
             RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE | RECOMP_RUNTIME_UI_STANDARD_LINEAR_FILTER |
             RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;
@@ -3489,13 +3497,17 @@ session_begin:;
             }
         }
 
+#if RECOMP_LAUNCHER
+        input_set_gameplay_blocked(recomp_runtime_ui_is_open(s_runtime_ui.ui));
+#endif
+
         /* Controller shoulder taps: LB = quicksave slot 1, RB = quickload
          * slot 1. Edge-triggered inside gamepad_handle_event so a single
          * press fires once even at 60 Hz polling. */
         {
             int save_slot = gamepad_consume_quicksave();
             int load_slot = gamepad_consume_quickload();
-            if (save_slot || load_slot) {
+            if ((save_slot || load_slot) && !input_gameplay_blocked()) {
                 int slot = save_slot ? save_slot : load_slot;
                 char slot_name[48];
                 snprintf(slot_name, sizeof(slot_name), "native_save_%d.bin", slot);
@@ -3514,7 +3526,8 @@ session_begin:;
 
         /* Tab OR controller Back = hold for turbo */
         { const Uint8 *ks = SDL_GetKeyboardState(NULL);
-          int held = ks[SDL_SCANCODE_TAB] || gamepad_turbo_held();
+          int held = !input_gameplay_blocked() &&
+                     (ks[SDL_SCANCODE_TAB] || gamepad_turbo_held());
           turbo = held ? 1 : (start_turbo ? 1 : 0);
           if (runtime_measure_frames) turbo = 0;
 #if GENESIS_HAS_RECOMP_NET

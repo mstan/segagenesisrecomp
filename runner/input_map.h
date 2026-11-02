@@ -83,6 +83,13 @@ uint16_t input_map_key_mask(int player);
  * This is what gets pushed to machine_set_pad() / queried by input_requested_cb. */
 uint16_t input_current_mask(int player);
 
+/* Host UI capture suppresses gameplay reads without clearing physical held
+ * state. Keep UI navigation on its own event/raw-device path. */
+void input_set_gameplay_blocked(int blocked);
+int input_gameplay_blocked(void);
+/* Compatible with the runtime menu's visibility notification. */
+void input_gameplay_capture_changed(void *context, int open);
+
 /* Map a GenesisButton to its GPAD_* hardware bit (genesis_bus.h layout). */
 uint16_t input_button_bit(GenesisButton b);
 

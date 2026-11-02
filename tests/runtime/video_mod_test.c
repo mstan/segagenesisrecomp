@@ -55,13 +55,15 @@ int main(int argc,char **argv)
     CHECK(!p->feature_set_option(p->ctx,feature.package_id,feature.id,option.id,"garbage"));
     CHECK(!p->feature_choice_get(p->ctx,feature.package_id,feature.id,option.id,4,&choice));
     /* Simulate a controller rebind saved by the launcher's input bridge. */
-    g_input_map.p[0].key[GB_A]=123;CHECK(app_config_save(argv[1]));
+    g_input_map.p[0].key[GB_A]=123;g_app_config.audio_freq=44100;
+    CHECK(app_config_save(argv[1]));
     g_input_map.p[0].key[GB_A]=999;
     CHECK(p->feature_enable(p->ctx,feature.package_id,feature.id,1));
     CHECK(p->feature_set_option(p->ctx,feature.package_id,feature.id,option.id,"21:9"));
     CHECK(p->commit(p->ctx,NULL));CHECK(g_input_map.p[0].key[GB_A]==123);
     app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2);
+    CHECK(g_app_config.audio_freq==44100); /* Mods commits preserve Audio. */
     app_config_apply_video(&video);CHECK(!strcmp(mode,"21:9"));
     CHECK(p->feature_enable(p->ctx,feature.package_id,feature.id,0));CHECK(p->commit(p->ctx,NULL));
     app_config_defaults();CHECK(app_config_load(argv[1]));app_config_apply_video(&video);
@@ -73,6 +75,15 @@ int main(int argc,char **argv)
     CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
     /* Old installations without a Diagnostics setting inherit default-on. */
     FILE *legacy=fopen(argv[1],"wb");CHECK(legacy);fputs("[video]\nwindow_scale=2\n[mods.widescreen]\nenabled=0\n",legacy);fclose(legacy);
+    app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.audio_freq==48000);
+    const int rates[]={32040,32000,44100,48000};
+    for(unsigned r=0;r<sizeof rates/sizeof rates[0];++r) {
+        g_app_config.audio_freq=rates[r];CHECK(app_config_save(argv[1]));
+        app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.audio_freq==rates[r]);
+    }
+    legacy=fopen(argv[1],"wb");CHECK(legacy);
+    fputs("[audio]\nfrequency=-1\n[mods.widescreen]\nenabled=0\n",legacy);fclose(legacy);
+    CHECK(app_config_load(argv[1]) && g_app_config.audio_freq==48000);
     app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.replay_diagnostics);
     p=app_config_video_mods(&video,argv[1]);
     /* GameSpec.video_default: a game may enable its renderer on a fresh
