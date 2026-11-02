@@ -1,6 +1,6 @@
 # E36 native whole-program optimization
 
-Status: qualification in progress; [draft PR61](https://github.com/mstan/segagenesisrecomp/pull/61). E36 remains open until the actual CD and final portable gates complete. Owner `beads-3z5k.31`, campaign `beads-2wy8.1`.
+Status: implemented, qualified and independently accepted; [PR61](https://github.com/mstan/segagenesisrecomp/pull/61). E36 is resolved. The original37-family burndown is complete; authorized pins/releases are tracked separately. Owner `beads-3z5k.31`, campaign `beads-2wy8.1`.
 
 ## Implemented contract
 
@@ -61,10 +61,16 @@ Current RKA/S1 each pass an actual full5120x3584 readback and native/current-fil
 
 Actual Release commands prove all10,957 native catalog sources,9 device sources,1 disc source and248 app sources use /GL and the no-data guard. SERVER's16GB host reaches C1002 in instrumented code generation. The exact already-compiled inputs and19.41 toolchain move to the owner PC without recompiling the catalog. Code generation completes there with observed peak working set16,678,633,472bytes/private commit15,477,526,528bytes, but a missing SDK resource compiler causes LNK1158 before any executable is created. That is an explicitly retained setup failure and build-memory cost, not game memory or a runtime result.
 
-The exact19041 resource/manifest tools and their dependencies are now validated with real RC/manifest preflights. To avoid another redundant component-only pass, remaining CD qualification uses the combined103dfea E02/E36/E37 batch with the same10957-source IR archive, fresh final-program training and normal USE. This is authorized combined-PR validation, not an isolated LTO attribution. Source/operation/context ABI identities and source/binary/profile/SDK hashes remain explicit. No CD runtime gain or family completion is claimed before that final gate.
+The repaired exact19041 tools pass real RC and manifest preflights. The final combined103dfea E02/E36/E37 program then builds successfully from the same10,957-source IR archive: GENERATE829.812s, normal USE1165.265s; observed USE peak commit24,175,644,672bytes/working set24,578,924,544bytes. The owner-directed BelowNormal-to-Normal scheduling transition keeps CGTHREADS2 and inputs/profile unchanged. These are developer build costs, not runtime game-memory costs.
 
-## Evidence and remaining gate
+Fresh instrumentation normally exits at2,650frames after the existing step watchdog expires under shared CPU pressure; the valid finalized68,173,464-byte PGC is retained. Training-prefix length is reported honestly. Explicit merge/summary succeeds with zero counter-overflow drops. USE consumes profile data for1,225,271of1,226,983functions and100percent of238,199,002,900 training-observed dynamic instructions. PG0188 searches the SHA-renamed PGD for additional PGCs; the actual own data was already merged, and the warning remains visible.
+
+Full3,000-frame canonical A/B then passes all checkpoints, native pictures/state dumps, fullWAV, BRAM and native participation with clean floor/audio. Measured gameplay CPU6.500to5.515625s(-15.144percent), cycles31,090,385,790to26,846,744,510(-13.649percent). This is one same-host/core/backend ambient pair for the combined E02/E36/E37+IPO/PGO package, not isolated LTO attribution, independent-holdout coverage or generalized FPS.
+
+The one final owner-PC16x check also passes at5120x3584: all18,350,080readback pixels match native output; guest/audio/WAV/BRAM match its existing qualified route. No extra scale or timing matrix was added. Exact source103/candidate58676c87058eb9fb6c2b00eaabd66e0fa7abe8aa9af73c62771a2594e5e68abe/113,592,832bytes and baseline76/ordinary-archive identities remain distinct from later policy/docs commits.
+
+## Evidence and disposition
 
 [Machine-readable results](engine-whole-program-results.json) retain per-stage source/binary/profile identities, commands, settings, per-game raw samples and startup/memory/training costs. Local raw root: C:/Temp/Codex/genesis-engine-whole-program-20261101. CD compiler inputs: G:/Temp/Codex/genesis-engine-whole-program-20261101-server. Final combined sources/artifacts: C:/Temp/Codex/genesis-engine-final-integration-20261101. Final cartridge raw evidence and selected OFF siblings: C:/Temp/Codex/genesis-engine-final-cartridge-qa-20261101.
 
-Pending: actual full-IR final CD executable, fresh training/mergedUSE and canonical/GPU comparison; independent E36 whole-family disposition. Owner final play/merge/release handoff remains. No quiet-host wait or additional broad benchmark matrix is required.
+Independent review accepts the complete original E36 contract: IPO/cross-TU native IR, actual trained normal PGO, evaluated layout alternatives, qualified existing kernels, precise arithmetic/ISA, portable fallback and durable per-game adoption. No additional optimization family or timing loop remains. The earlier failed SDK/heap attempts, baseline-only portable rollback failure and adverse/noisy cartridge observations remain explicit. Authorized main pins, release delivery and cleanup follow separately.
