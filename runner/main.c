@@ -2178,7 +2178,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
              * g_input_map; THEN copy this session's display/audio +
              * device/pad_type/deadzone over the top; THEN persist all
              * of it together (app_config_save writes g_input_map too). */
-            app_config_load(settings_ini);
+            app_config_reload_preserving_mods(settings_ini);
             g_app_config.window_scale     = ls.window_scale;
             g_app_config.fullscreen       = ls.fullscreen;
             g_app_config.linear_filter    = ls.linear_filter;
