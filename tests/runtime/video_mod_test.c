@@ -98,7 +98,10 @@ int main(int argc,char **argv)
     /* A native row owner is not an elective viewport/widescreen feature. */
     const GameVideo renderer_only={.renderer_enabled=enabled};
     CHECK(!game_video_has_viewport(&renderer_only));
-    CHECK(!app_config_video_mods(&renderer_only,argv[1]));
+    p=app_config_video_mods(&renderer_only,argv[1]);
+    CHECK(p && p->package_count(p->ctx)==1 && p->feature_count(p->ctx)==1);
+    CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
+    CHECK(!p->feature_get(p->ctx,1,&feature)); /* no viewport/widescreen feature */
     app_config_apply_video(&renderer_only); /* no configure callback */
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
