@@ -682,7 +682,7 @@ static int     s_game_yielded_break = 0;
 /* Called from DoCycles (inside Iterate). Runs game code for a chunk. */
 static cc_u32f s_chunk_cycles = 0;  /* budget for current chunk */
 
-void glue_run_game_chunk(cc_u32f cycles)
+void glue_run_game_chunk(uint32_t cycles)
 {
     /* An opt-in quicksave completes the native tick, then keeps its WaitForVint
      * parked until this wall frame's VDP/Z80/audio drain has completed. */

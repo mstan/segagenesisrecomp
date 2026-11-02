@@ -68,7 +68,7 @@ function(genesisrecomp_native_optimization target)
     endif()
     # Do not silently turn a requested USE build into an ordinary build when
     # the compiler finds no merged training counts (including library IR).
-    set(_optimized "$<CONFIG:Release,RelWithDebInfo,MinSizeRel>")
+    set(_optimized "$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>")
     target_compile_options(${target} PRIVATE
         "$<$<AND:${_optimized},$<COMPILE_LANGUAGE:C,CXX>>:/we4961>")
     if(_type STREQUAL "STATIC_LIBRARY")
