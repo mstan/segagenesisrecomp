@@ -1026,6 +1026,12 @@ static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
     if(presented && s_host_sprites) {
         GVDPSpriteLayer layer={line,(int)row->width,(int)offset,s_spr_idx,s_spr_op,s_spr_hi};
         s_host_sprites(s_host_sprites_user,v,&layer);
+        /* Providers accept arbitrary nonzero masks, including a callback
+         * which unregisters itself. Packed composition requires boolean lanes. */
+        for(unsigned x=0;x<row->width;++x) {
+            s_spr_op[x]=(uint8_t)(s_spr_op[x]!=0);
+            s_spr_hi[x]=(uint8_t)(s_spr_hi[x]!=0);
+        }
     }
     memcpy(row->sprite,s_spr_idx,row->width);memcpy(row->opaque,s_spr_op,row->width);
     memcpy(row->high,s_spr_hi,row->width);memcpy(row->shadow_op,s_spr_shadow_op,row->width);
