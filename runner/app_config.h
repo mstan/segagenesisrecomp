@@ -55,6 +55,8 @@ int  app_config_set_video_default(const char *mode);
 /* Load settings.ini at `path` into g_app_config + g_input_map. Missing file is
  * not an error (defaults stand). Returns 1 if a file was read, 0 otherwise. */
 int  app_config_load(const char *path);
+/* Import bindings saved by the launcher without discarding live Mods edits. */
+void app_config_reload_preserving_mods(const char *path);
 
 /* Write g_app_config + g_input_map to settings.ini at `path`. Returns 1 on
  * success. */

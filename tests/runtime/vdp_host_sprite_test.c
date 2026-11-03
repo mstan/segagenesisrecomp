@@ -20,6 +20,7 @@ uint8_t gbus_z80_read(GenesisBus *b,uint16_t a){(void)b;(void)a;return 0;}
 void gbus_z80_write(GenesisBus *b,uint16_t a,uint8_t x){(void)b;(void)a;(void)x;}
 void glue_run_game_chunk(uint32_t cycles){(void)cycles;}
 int glue_own_vint_service_latched(GVDP *p){(void)p;return 0;}
+int glue_own_hint_service_latched(GVDP *p){(void)p;return 0;}
 static int split_line,last_row,hints,vints,raster_calls,has_output;
 static void raster_color(uint16_t c)
 {
