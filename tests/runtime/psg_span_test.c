@@ -6,6 +6,7 @@ void ref_psg_init(void);
 void ref_psg_advance(uint32_t);
 void ref_psg_write(uint8_t);
 size_t ref_psg_render(int16_t *,size_t);
+size_t ref_psg_render_pair(int16_t *,int16_t *,size_t);
 size_t ref_psg_samples_available(void);
 void ref_psg_reset_leftover(void);
 size_t ref_psg_rb_save(void *,size_t);
@@ -14,10 +15,11 @@ uint64_t psg_cosim_hash(void);
 uint64_t ref_psg_cosim_hash(void);
 #define CHECK(x) do{if(!(x)){fprintf(stderr,"PSG span line%d: %s\n",__LINE__,#x);exit(1);}}while(0)
 static uint32_t seed=0x1830572u;
+static int raw_differs;
 static uint32_t rnd(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}
 static void check(void)
 {
-    uint8_t a[17000],b[17000];size_t n=psg_rb_save(NULL,0);
+    uint8_t a[34000],b[34000];size_t n=psg_rb_save(NULL,0);
     CHECK(n<=sizeof a&&n==ref_psg_rb_save(NULL,0));
     CHECK(psg_rb_save(a,sizeof a)==n&&ref_psg_rb_save(b,sizeof b)==n);
     CHECK(!memcmp(a,b,n)&&psg_cosim_hash()==ref_psg_cosim_hash());
@@ -26,9 +28,12 @@ static void advance(uint32_t cycles){psg_advance(cycles);ref_psg_advance(cycles)
 static void write_byte(uint8_t value){psg_write(value);ref_psg_write(value);check();}
 static void drain(size_t count)
 {
-    int16_t a[8192],b[8192];memset(a,0x5a,sizeof a);memset(b,0x5a,sizeof b);
+    int16_t a[8192],b[8192],raw_a[8192],raw_b[8192];memset(a,0x5a,sizeof a);memset(b,0x5a,sizeof b);
+    memset(raw_a,0x5a,sizeof raw_a);memset(raw_b,0x5a,sizeof raw_b);
     CHECK(count<=8192&&psg_samples_available()==ref_psg_samples_available());
-    CHECK(psg_render(a,count)==ref_psg_render(b,count));CHECK(!memcmp(a,b,sizeof a));check();
+    CHECK(psg_render_pair(a,raw_a,count)==ref_psg_render_pair(b,raw_b,count));
+    CHECK(!memcmp(a,b,sizeof a)&&!memcmp(raw_a,raw_b,sizeof raw_a));
+    raw_differs|=memcmp(a,raw_a,sizeof a)!=0;check();
 }
 int main(void)
 {
@@ -51,7 +56,7 @@ int main(void)
         else write_byte((uint8_t)rnd());
         advance(rnd()%2100000u);drain(rnd()%8193u);
         if(i%29u==0) {
-            uint8_t state[17000];size_t n=psg_rb_save(state,sizeof state);
+            uint8_t state[34000];size_t n=psg_rb_save(state,sizeof state);
             advance(rnd());CHECK(psg_rb_load(state,n)&&ref_psg_rb_load(state,n));check();
             advance(rnd()%30000u);drain(8192);
         }
@@ -59,6 +64,12 @@ int main(void)
     }
     /* Full scratch retains the established drop and remainder behavior. */
     advance(UINT32_MAX);advance(UINT32_MAX);drain(8192);advance(239);drain(8192);
-    puts("PSG spans: exact counters/LFSR/filter/PCM, live writes, pending-output restore and scratch overflow PASS");
+    CHECK(raw_differs);
+    advance(240*64);uint8_t state[34000];size_t n=psg_rb_save(state,sizeof state);
+    int16_t filtered[64],raw[64],legacy[64];
+    CHECK(psg_render_pair(filtered,raw,64)==64);CHECK(psg_rb_load(state,n));
+    CHECK(psg_render(legacy,64)==64&&!memcmp(filtered,legacy,sizeof filtered));
+    CHECK(!psg_rb_load(state,n-1));
+    puts("PSG spans: exact counters/LFSR/filter, paired PCM, live writes, pending-output restore and scratch overflow PASS");
     return 0;
 }

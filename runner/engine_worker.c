@@ -36,7 +36,8 @@ GenesisWorker *genesis_worker_create(void)
 }
 void genesis_worker_join(GenesisWorker *w)
 {
-    if(!w)return;SDL_LockMutex(w->mutex);
+    if(!w)return;
+    SDL_LockMutex(w->mutex);
     while(w->task)SDL_CondWait(w->condition,w->mutex);
     SDL_UnlockMutex(w->mutex);
 }
@@ -69,7 +70,8 @@ int genesis_worker_busy(GenesisWorker *w)
 }
 void genesis_worker_destroy(GenesisWorker *w)
 {
-    if(!w)return;genesis_worker_join(w);SDL_LockMutex(w->mutex);
+    if(!w)return;
+    genesis_worker_join(w);SDL_LockMutex(w->mutex);
     w->stop=1;SDL_CondSignal(w->condition);SDL_UnlockMutex(w->mutex);
     SDL_WaitThread(w->thread,NULL);SDL_DestroyCond(w->condition);SDL_DestroyMutex(w->mutex);free(w);
 }

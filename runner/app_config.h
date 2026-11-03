@@ -28,9 +28,11 @@ typedef struct AppConfig {
     /* Opt-in custom scene renderer, independent of the legacy VDP view. */
     int custom_widescreen;
     int custom_aspect;      /* 0 adaptive, 1 16:9, 2 21:9, 3 32:9 */
+    int presentation_rate; /* 0 off, 120, 144, -1 display; host only */
     /* audio */
     int volume;             /* 0..100 */
     int audio_freq;         /* requested host-device rate, Hz */
+    int audio_filter_bypass; /* native output without hardware low-pass filters */
     /* launcher */
     int skip_launcher;      /* 1 = boot straight to the game next time */
     int rewind_enabled;     /* local rewind; never available in netplay */
@@ -62,6 +64,8 @@ struct GameVideo;
 struct RecompLauncherCModProvider;
 const char *app_config_aspect_mode(int aspect);
 int app_config_aspect_index(const char *mode); /* -1 if not a UI preset */
+int app_config_presentation_index(int rate);
+int app_config_presentation_rate(int index);
 void app_config_apply_video(const struct GameVideo *video);
 /* Built-in recomp-ui provider; available on launcher-enabled targets. */
 const struct RecompLauncherCModProvider *app_config_video_mods(

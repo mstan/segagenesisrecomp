@@ -28,10 +28,12 @@
 #endif
 
 #include <SDL2/SDL.h>
+#include "host_window_events.h"
 
 #include "backend_decls.h"   /* own decls â€” native builds have no clownmdemu paths */
 #include "genesis_clocks.h"
 #include "frame_pacer.h"
+#include "audio/mixer.h"
 #include "host_wait.h"
 #include "host_stream.h"
 #include "persist_writer.h"
@@ -296,6 +298,9 @@ static RuntimeUiContext s_runtime_ui;
 static int s_quickstate_slot=1;
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
+static const char *const s_presentation_rates[]={"Off (original rate)","120 Hz","144 Hz","Display refresh rate"};
+static const RecompRuntimeUiItem s_presentation_item={"video.presentation_rate","Mods","High refresh rate","Smooth camera and actors between original ticks; one tick of visual latency. Game and audio speed stay unchanged.",RECOMP_RUNTIME_UI_CHOICE,0,3,1,s_presentation_rates,4};
+static const RecompRuntimeUiItem s_audio_filter_item={"audio.bypass_filter","Audio","Unfiltered audio","Bypass native hardware low-pass filters. A separate enhanced FM path retains its own sound.",RECOMP_RUNTIME_UI_BOOL,0,1,1};
 static const char *const s_mod_aspects[]={"Adaptive","16:9","21:9","32:9"};
 static const int s_hd_scales[]={1,2,4,8,16,32,64};
 static const char *const s_hd_labels[]={"Native","2x","4x","8x","16x","32x","64x"};
@@ -320,6 +325,8 @@ static int runtime_ui_get(void *p, const RecompRuntimeUiItem *i, int *out) {
     else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_VOLUME)) *out = g_app_config.volume;
     else if (!strcmp(i->key,"mods.widescreen.enabled")) *out = game_video_viewport_enabled(g_game_spec.video);
     else if (!strcmp(i->key,"mods.widescreen.aspect")) *out = g_app_config.custom_aspect;
+    else if (!strcmp(i->key,"video.presentation_rate")) *out=app_config_presentation_index(g_app_config.presentation_rate);
+    else if (!strcmp(i->key,"audio.bypass_filter")) *out=g_app_config.audio_filter_bypass;
     else if (!strcmp(i->key,"states.slot")) *out = s_quickstate_slot;
     else if (!strcmp(i->key,"video.internal_resolution")) {
         *out=0;for(int n=0;n<7;++n)if(s_hd_scales[n]==g_app_config.internal_scale)*out=n;
@@ -333,6 +340,14 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         g_app_config.internal_scale=s_hd_scales[v];return 1;
     }
     if (!strcmp(i->key,"states.slot")) { if (v<1 || v>9) return 0; s_quickstate_slot=v; return 1; }
+    if(!strcmp(i->key,"audio.bypass_filter")) {
+        g_app_config.audio_filter_bypass=v!=0;audio_mixer_set_filter_bypass(v);return 1;
+    }
+    if(!strcmp(i->key,"video.presentation_rate")) {
+        if(v<0 || v>3 || !g_game_spec.video || !g_game_spec.video->interpolate)return 0;
+        g_app_config.presentation_rate=app_config_presentation_rate(v);
+        g_game_spec.video->presentation_configure(v!=0);return 1;
+    }
     if (!strncmp(i->key,"mods.widescreen.",16)) {
 #if GENESIS_HAS_RECOMP_NET
         if(genesis_netplay_active())return 0;
@@ -631,9 +646,12 @@ static int own_custom_row_enabled(void *user)
 {
     (void)user;
     const GameVideo *owner=s_video_frame.owner;
-    if(!owner || (!owner->scanline_lazy && !owner->scanline_presented))return 0;
-    return 1 | (owner->scanline_presented && owner->raster_enabled &&
-                owner->raster_enabled(&g_machine.vdp) ? 2 : 0);
+    const GameVideo *adapter=s_video_frame.adapter;
+    int capture=g_app_config.presentation_rate && adapter && adapter->presentation_capture &&
+                (owner || !s_ws_user_on);
+    if(!owner || (!owner->scanline_lazy && !owner->scanline_presented))return capture?3:0;
+    return 1 | (capture || (owner->scanline_presented && owner->raster_enabled &&
+                owner->raster_enabled(&g_machine.vdp)) ? 2 : 0);
 }
 
 static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
@@ -646,6 +664,10 @@ static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
     s_screen_width = game_video_draw_presented_row(&s_video_frame, vdp, line, native_w,
         row, MAX_SCREEN_WIDTH, native_row, native_ctx, raster);
+    const GameVideo *adapter=s_video_frame.adapter;
+    if(g_app_config.presentation_rate && adapter && adapter->presentation_capture &&
+       (s_video_frame.owner || !s_ws_user_on))
+        adapter->presentation_capture(vdp,line,row,s_screen_width,native_w,raster);
 }
 
 static const GenesisScanlineProducer s_custom_producer = {
@@ -1235,6 +1257,7 @@ int runner_load_state_file(const char *path)
         if (ok) {
             genesis_local_states_clear();
             if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
+            if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
             audio_discard_playback();
             genesis_replay_file_loaded(resolved);
         }
@@ -1308,6 +1331,7 @@ int runner_load_state_file(const char *path)
     if (ok) {
         genesis_local_states_clear();
         if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
+            if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
         audio_discard_playback();
         genesis_replay_file_loaded(resolved);
     }
@@ -1751,7 +1775,7 @@ static void rdb_park_drain(void)
 {
     while (glue_game_yielded_for_break()) {
         SDL_Event pev;
-        while (SDL_PollEvent(&pev)) {
+        while (window_poll_event(&pev)) {
             if (pev.type == SDL_QUIT) { s_quit_via_park_drain = 1; return; }
         }
         (void)cmd_server_poll();
@@ -1788,7 +1812,10 @@ static void live_pre_raster(void *ctx)
  * work that sets simulation parameters (the widescreen margin and its RAM
  * word -- session-pinned online), no rendering, no observation hooks. */
 static const GenesisSimHooks s_resim_hooks = { widescreen_pre_raster, NULL, NULL, NULL, NULL };
-const GenesisSimHooks *genesis_main_resim_hooks(void) { return &s_resim_hooks; }
+const GenesisSimHooks *genesis_main_resim_hooks(void) {
+    if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
+    return &s_resim_hooks;
+}
 
 #if GENESIS_HAS_RECOMP_NET
 /* A replayed tick for the rollback driver (INLINE replay): the same
@@ -2200,7 +2227,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
     uint32_t repeat_dir = 0, repeat_at = 0;
     while (*running && genesis_local_states_is_open()) {
         SDL_Event ev;
-        if (SDL_WaitEventTimeout(&ev, 16)) {
+        if (window_wait_event_timeout(&ev, 16)) {
             do {
                 gamepad_handle_event(&ev);
                 if (ev.type == SDL_QUIT) { *running = 0; break; }
@@ -2215,12 +2242,11 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
                 else if (mode == 2 && key == SDLK_DOWN) genesis_local_states_move(3);
                 else if (!ev.key.repeat && (key == SDLK_RETURN || key == SDLK_SPACE)) {
                     if (genesis_local_states_accept() && mode == 1) {
-                        if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
                         audio_discard_playback();
                     }
                 } else if (!ev.key.repeat && mode == 2 && key == SDLK_s)
                     genesis_local_states_save();
-            } while (*running && SDL_PollEvent(&ev));
+            } while (*running && window_poll_event(&ev));
         }
         if (!*running || !genesis_local_states_is_open()) break;
         uint32_t pad = gamepad_overlay_mask();
@@ -2230,7 +2256,6 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
         if (press & GP_OVERLAY_B) genesis_local_states_cancel();
         else if (press & GP_OVERLAY_A) {
             if (genesis_local_states_accept() && mode == 1) {
-                if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
                 audio_discard_playback();
             }
         } else if (mode == 2 && (press & GP_OVERLAY_X)) genesis_local_states_save();
@@ -2271,7 +2296,8 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
     (void)gamepad_consume_quickload();
     /* Do not forward a held accept/cancel button into the resumed guest. */
     while (*running) {
-        SDL_PumpEvents();
+        /* The cooperative wait below updates input without entering a
+         * native move/resize loop on the scheduler stack. */
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         int key_held = keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_SPACE] ||
                        keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_F7] ||
@@ -2280,7 +2306,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
             (GP_OVERLAY_A | GP_OVERLAY_B | GP_OVERLAY_BACK | GP_OVERLAY_RB | GP_OVERLAY_R3);
         if (!key_held && !pad_held) break;
         SDL_Event ev;
-        if (SDL_WaitEventTimeout(&ev, 16)) {
+        if (window_wait_event_timeout(&ev, 16)) {
             gamepad_handle_event(&ev);
             if (ev.type == SDL_QUIT) *running = 0;
         }
@@ -2838,6 +2864,9 @@ int main(int argc, char *argv[])
      * on it. Only reads env + the compile-time g_game_layout, so it is safe to
      * run this early. */
     widescreen_setup();
+    /* Aspect/viewport qualification does not override the independent FPS choice. */
+    if(g_game_spec.video && g_game_spec.video->presentation_configure)
+        g_game_spec.video->presentation_configure(g_app_config.presentation_rate!=0);
     if(game_video_has_viewport(g_game_spec.video)) {
         if(custom_video_cli) {
             int aspect=app_config_aspect_index(custom_video_cli);
@@ -2988,10 +3017,13 @@ int main(int argc, char *argv[])
             cfg.features &= ~RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE;
         }
         {
-            static RecompRuntimeUiItem items[6]; unsigned count=0;
+            static RecompRuntimeUiItem items[8]; unsigned count=0;
             if (game_video_has_viewport(g_game_spec.video)) {
                 memcpy(items,s_video_mod_items,sizeof s_video_mod_items); count=2;
             }
+            if(g_game_spec.video && g_game_spec.video->interpolate)
+                items[count++]=s_presentation_item;
+            items[count++]=s_audio_filter_item;
             memcpy(items+count,s_hd_items,sizeof s_hd_items);++count;
             if (!g_game_spec.state_unavailable_reason || !g_game_spec.state_unavailable_reason()) {
                 memcpy(items+count,s_quickstate_items,sizeof s_quickstate_items);count+=3;
@@ -3025,6 +3057,7 @@ int main(int argc, char *argv[])
      * instances. Safe to call on oracle too (init functions are idempotent
      * no-ops if stubs). */
     audio_mixer_init();
+    audio_mixer_set_filter_bypass(g_app_config.audio_filter_bypass);
     /* Fixed before the first drain. The existing shadow opt-in remains the
      * feature switch; unavailable workers and diagnostic off use serial. */
     if(!benchmark_frames && fm_shadow_enabled()){
@@ -3312,6 +3345,7 @@ session_begin:;
         return 1;
     }
 #endif
+    (void)window_pump_init(window);
     int running = 1;
     int window_close_requested = 0;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
@@ -3330,6 +3364,18 @@ session_begin:;
     const Uint64 perf_frequency = SDL_GetPerformanceFrequency();
     FramePacer frame_pacer;
     frame_pacer_init(&frame_pacer, perf_frequency, target_fps);
+    PresentationClock presentation_clock={0};
+    uint32_t *interpolation_image=NULL;size_t interpolation_capacity=0;
+    uint64_t presentation_count=0,interpolation_count=0;
+    int presentation_vsync=-1;
+    SDL_RendererInfo initial_renderer_info={0};SDL_GetRendererInfo(renderer,&initial_renderer_info);
+    int original_vsync=(initial_renderer_info.flags&SDL_RENDERER_PRESENTVSYNC)!=0;
+    const char *presentation_trace_path=getenv("GENESIS_PRESENT_TRACE");
+    FILE *presentation_trace=presentation_trace_path && *presentation_trace_path?fopen(presentation_trace_path,"w"):NULL;
+    if(presentation_trace)fputs("guest_tick,present,phase,interpolated,counter,hash\n",presentation_trace);
+    const char *presentation_snap=getenv("GENESIS_PRESENT_SNAP");
+    const char *presentation_snap_at=getenv("GENESIS_PRESENT_SNAP_FRAME");
+    uint64_t presentation_snap_frame=presentation_snap_at?strtoull(presentation_snap_at,NULL,10):0;
     Uint64 benchmark_start = (benchmark_frames || runtime_measure_frames) ? SDL_GetPerformanceCounter() : 0;
     double benchmark_cpu_start =
         (benchmark_frames || runtime_measure_frames) ? benchmark_process_cpu_seconds() : 0.0;
@@ -3371,7 +3417,7 @@ session_begin:;
 #endif
             ) {
             SDL_Event pev;
-            while (SDL_PollEvent(&pev)) {
+            while (window_poll_event(&pev)) {
                 gamepad_handle_event(&pev);
                 if (pev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
             }
@@ -3384,7 +3430,7 @@ session_begin:;
 
         int overlay_request = 0;
         SDL_Event ev;
-        while (SDL_PollEvent(&ev)) {
+        while (window_poll_event(&ev)) {
             if(ev.type==SDL_RENDER_TARGETS_RESET||ev.type==SDL_RENDER_DEVICE_RESET) {
                 genesis_hd_gpu_destroy(hd_gpu);hd_gpu=NULL;hd_checked=0;
             }
@@ -3832,7 +3878,11 @@ session_begin:;
                     runner_write_screenshot_file(state_path);
             }
             if (input_script_should_exit()) {
-                host_timing_dump(&host_timing, stderr);
+                if(presentation_trace)fclose(presentation_trace);
+    if(g_app_config.presentation_rate)fprintf(stderr,"[presentation] guest_ticks=%u presents=%llu interpolated=%llu counter_frequency=%llu\n",
+        frame_num,(unsigned long long)presentation_count,(unsigned long long)interpolation_count,(unsigned long long)perf_frequency);
+    free(interpolation_image);
+    host_timing_dump(&host_timing, stderr);
                 fprintf(stderr, "[input_script] exiting per script directive (code=%d)\n",
                         input_script_exit_code());
                 /* EXIT precedes the ordinary autosave tick. Observe changes
@@ -4014,20 +4064,79 @@ session_begin:;
         if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
-        /* Pace the completed frame immediately before presentation. Waiting
-         * after present only paces frame starts: variable simulation/upload
-         * time then moves each present and makes scrolling judder. The guest
-         * still advances exactly one NTSC tick per iteration. */
-        if (turbo || runtime_uncapped) {
-            frame_pacer_reset(&frame_pacer);
+        /* Guest deadlines stay at the original tick rate. The independent
+         * display clock may issue two OR three fractional pictures in one
+         * tick (144/59.94), without another sim/audio/input call. */
+        double display_rate=g_app_config.presentation_rate;
+        int high_refresh=display_rate!=0 && !turbo && !runtime_uncapped &&
+            target_fps>40 && target_fps<70 && s_screen_height==224 &&
+            g_game_spec.video && g_game_spec.video->interpolate && frame_texture==texture;
+#if RECOMP_LAUNCHER
+        if(recomp_runtime_ui_is_open(s_runtime_ui.ui))high_refresh=0;
+#endif
+#if GENESIS_HAS_RECOMP_NET
+        if(netplay_peer_view_active())high_refresh=0;
+#endif
+        if(high_refresh && display_rate<0) {
+            SDL_DisplayMode dm;int display=SDL_GetWindowDisplayIndex(window);
+            display_rate=display>=0 && SDL_GetCurrentDisplayMode(display,&dm)==0 && dm.refresh_rate>0?dm.refresh_rate:target_fps;
+        }
+        int want_vsync=high_refresh?0:original_vsync;
+        if(want_vsync!=presentation_vsync) {
+            if(SDL_RenderSetVSync(renderer,want_vsync)==0)presentation_vsync=want_vsync;
+        }
+        Uint64 guest_deadline=SDL_GetPerformanceCounter();
+        if(turbo || runtime_uncapped)frame_pacer_reset(&frame_pacer);
+        else guest_deadline=frame_pacer_deadline(&frame_pacer,guest_deadline);
+        if(high_refresh) {
+            size_t need=(size_t)s_frame_stride*MAX_SCREEN_HEIGHT;
+            if(need>interpolation_capacity) {
+                uint32_t *next=(uint32_t*)realloc(interpolation_image,need*sizeof *next);
+                if(next){interpolation_image=next;interpolation_capacity=need;}else high_refresh=0;
+            }
+        }
+        if(high_refresh) {
+            Uint64 now=SDL_GetPerformanceCounter();
+            presentation_clock_begin(&presentation_clock,perf_frequency,display_rate,guest_deadline);
+            Uint64 at;double phase;
+            while(presentation_clock_next(&presentation_clock,guest_deadline,
+                    (double)perf_frequency/target_fps,&at,&phase)) {
+                /* A late draw drops an output deadline rather than queuing
+                 * overdue pictures or changing the guest clock. */
+                if(now>at && now-at>(Uint64)((double)perf_frequency/display_rate))continue;
+                int interpolated=g_game_spec.video->interpolate(phase,interpolation_image,s_frame_stride,s_screen_height);
+                const uint32_t *pixels=interpolated?interpolation_image:s_framebuf;
+                if(s_color_lut_on) {
+                    color_lut_map_frame(&s_color_lut,pixels,s_present_buf,s_screen_width,s_screen_height,s_frame_stride);
+                    pixels=s_present_buf;
+                }
+                SDL_Rect active={0,0,s_screen_width,s_screen_height};
+                SDL_UpdateTexture(texture,&active,pixels,s_frame_stride*(int)sizeof(uint32_t));
+                SDL_RenderClear(renderer);SDL_RenderCopy(renderer,texture,&src,NULL);
+                now=SDL_GetPerformanceCounter();
+                if(now<at)genesis_host_wait_until(at,perf_frequency);
+                SDL_RenderPresent(renderer);
+                ++presentation_count;interpolation_count+=interpolated!=0;
+                if(presentation_trace) {
+                    uint64_t hash=14695981039346656037ull;
+                    for(int y=0;y<s_screen_height;++y)for(int x=0;x<s_screen_width;++x)
+                        {hash^=pixels[(size_t)y*s_frame_stride+x];hash*=1099511628211ull;}
+                    fprintf(presentation_trace,"%u,%llu,%.9f,%d,%llu,%016llx\n",frame_num,
+                        (unsigned long long)presentation_count,phase,interpolated,
+                        (unsigned long long)SDL_GetPerformanceCounter(),(unsigned long long)hash);
+                }
+                if(presentation_snap && presentation_count==presentation_snap_frame)
+                    png_write_argb(presentation_snap,pixels,s_screen_width,s_screen_height,s_frame_stride);
+                now=SDL_GetPerformanceCounter();
+            }
         } else {
-            Uint64 now = SDL_GetPerformanceCounter();
-            Uint64 deadline = frame_pacer_deadline(&frame_pacer, now);
-            if (now < deadline)
-                genesis_host_wait_until(deadline, perf_frequency);
+            presentation_clock_reset(&presentation_clock);
+            Uint64 now=SDL_GetPerformanceCounter();
+            if(!turbo && !runtime_uncapped && now<guest_deadline)
+                genesis_host_wait_until(guest_deadline,perf_frequency);
+            SDL_RenderPresent(renderer);++presentation_count;
         }
         FRAME_PHASE(8);
-        SDL_RenderPresent(renderer);
 #if GENESIS_HAS_RECOMP_NET
         if (!genesis_netplay_active())
 #endif
@@ -4062,6 +4171,10 @@ session_begin:;
         SDL_HideWindow(window);
         audio_close(); /* stop playback before persistence/optional diagnostics */
     }
+    if(presentation_trace)fclose(presentation_trace);
+    if(g_app_config.presentation_rate)fprintf(stderr,"[presentation] guest_ticks=%u presents=%llu interpolated=%llu counter_frequency=%llu\n",
+        frame_num,(unsigned long long)presentation_count,(unsigned long long)interpolation_count,(unsigned long long)perf_frequency);
+    free(interpolation_image);
     runner_sram_complete(1); /* settle last-frame ACK before final state/report */
     host_timing_dump(&host_timing, stderr);
     if (!window_close_requested || host_timing_dump_requested())
@@ -4258,6 +4371,10 @@ session_begin:;
       if (audio_wav_active()) audio_wav_stop(); }
     if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
     genesis_local_states_shutdown();
+    if(!window_pump_shutdown()) {
+        fprintf(stderr,"[window] cannot finish active move/resize loop at shutdown\n");
+        return 1;
+    }
     glue_shutdown();
     audio_close();
     shadow_worker_cleanup();

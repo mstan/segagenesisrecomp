@@ -38,6 +38,27 @@ int main(void)
     frame_pacer_init(&p, frequency, 120.0);
     assert(frame_pacer_deadline(&p, 1) == 1);
     assert(frame_pacer_deadline(&p, 2) == 83334);
+
+    const double display_rates[]={120,144,165};
+    for(unsigned r=0;r<3;++r) {
+        PresentationClock c={0};uint64_t count=0,last=0;
+        for(unsigned tick=0;tick<600;++tick) {
+            uint64_t start=origin+(uint64_t)((double)tick*frequency/60.0),at;
+            double phase;
+            presentation_clock_begin(&c,frequency,display_rates[r],start);
+            while(presentation_clock_next(&c,start,(double)frequency/60.0,&at,&phase)) {
+                assert(phase>=0 && phase<1);
+                assert(!count || at>last);last=at;++count;
+            }
+        }
+        assert(fabs((double)count-display_rates[r]*10)<1.1);
+        /* A stall drops the old display cadence rather than bursting. */
+        presentation_clock_begin(&c,frequency,display_rates[r],last+frequency);
+        uint64_t at;double phase;
+        assert(presentation_clock_next(&c,last+frequency,(double)frequency/60,&at,&phase));
+        assert(at==last+frequency && phase==0);
+        presentation_clock_reset(&c);assert(!c.active);
+    }
     const uint64_t frequencies[] = {1000000, 10000000, 1000000000};
     for (unsigned f = 0; f < sizeof frequencies / sizeof frequencies[0]; ++f) {
         uint64_t hz = frequencies[f], exact = origin, phase = 0;
