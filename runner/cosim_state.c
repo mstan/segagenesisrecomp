@@ -18,6 +18,7 @@
 
 /* --- externs owned by other TUs ------------------------------------------ */
 extern uint32_t g_68k_stamp_rebase;        /* glue.c: interrupt-handler stamp base */
+extern int      glue_cosim_hint_latched(void);
 extern int      glue_cosim_vint_latched(void);  /* glue.c: non-clearing latch read  */
 
 /* Chip statics live in their owning TUs; each exposes a full-state hash so the
@@ -74,6 +75,7 @@ static uint64_t hash_timing(void) {
     h = cosim_fnv_u32(h, g_audio_cycle_counter);
     h = cosim_fnv_u32(h, g_68k_stamp_rebase);
     h = cosim_fnv_u32(h, (uint32_t)glue_cosim_vint_latched());
+    h = cosim_fnv_u32(h, (uint32_t)glue_cosim_hint_latched());
     h = cosim_fnv_u32(h, g_machine.master_cycle);
     h = cosim_fnv_u32(h, g_machine.z80_cycle_debt);
     return h;

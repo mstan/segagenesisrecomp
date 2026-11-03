@@ -17,6 +17,7 @@ void z80_step(z80 *z){(void)z;abort();}
 void glue_run_game_chunk(uint32_t c){(void)c;abort();}
 void glue_own_interrupt(int l,GVDP *v){(void)l;(void)v;abort();}
 int glue_own_vint_service_latched(GVDP *v){(void)v;abort();}
+int glue_own_hint_service_latched(GVDP *v){(void)v;abort();}
 static uint32_t pixels[GVDP_MAX_WIDTH*GVDP_HD_ROWS];
 static const GVDPRasterFrame *publish(void)
 {

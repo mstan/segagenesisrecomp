@@ -1202,14 +1202,15 @@ static const char *resolve_runner_path(const char *path, char *buf, size_t buf_l
 }
 
 /* Own-backend save container: versioned magic, then the glue blob (M68K regs,
- * frame count, cycle accumulators, V-int latch), WRAM, the whole machine
+ * frame count, cycle accumulators, V-int/H-int latches), WRAM, the whole machine
  * (VDP + bus incl. Z80 RAM/SRAM + the full embedded superzazu Z80 core), and
  * both audio chips. Raw-struct format, private to a build â€” same convention as
  * the clownmdemu-path states (which dumped g_clownmdemu raw); the magic keeps
- * the formats from being confused. GROWNS2 = the declown-headers machine
+ * the formats from being confused. GROWNS3 adds pending H-int ownership to
+ * the glue state. GROWNS2 used the declown-headers machine
  * layout (superzazu z80 embedded in g_machine, no side ext blob); GROWNS1
- * saves are rejected with a clear message rather than misloaded. */
-static const char OWN_SAVE_MAGIC[8] = "GROWNS2\0";
+ * and GROWNS2 saves are rejected with a clear message rather than misloaded. */
+static const char OWN_SAVE_MAGIC[8] = "GROWNS3\0";
 #include "host_state.h"
 
 int runner_save_state_file(const char *path)
@@ -2170,12 +2171,14 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
                 genesis_host_lobby_config_from_launch(&ls.netplay_launch, netplay_config_v) != 0)
                 fprintf(stderr, "genesis_netplay: launch refused\n");
     #endif
+        }
+        if (lr == 0 || lr == 1) { /* Play or close: keep the same preferences. */
             /* Ordering matters. Re-load settings.ini FIRST so the
              * key/pad rebinds the launcher just wrote reach
              * g_input_map; THEN copy this session's display/audio +
              * device/pad_type/deadzone over the top; THEN persist all
              * of it together (app_config_save writes g_input_map too). */
-            app_config_load(settings_ini);
+            app_config_reload_preserving_mods(settings_ini);
             g_app_config.window_scale     = ls.window_scale;
             g_app_config.fullscreen       = ls.fullscreen;
             g_app_config.linear_filter    = ls.linear_filter;
@@ -2195,14 +2198,19 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
 #endif
             for (int p = 0; p < gi.num_players; p++) {
                 int src = ls.player_src[p];
-                g_input_map.p[p].device       = (src == 1) ? INPUT_DEV_KEYBOARD
-                                              : (src == 2) ? INPUT_DEV_GAMEPAD
-                                              : INPUT_DEV_NONE;
+                /* The UI's source vocabulary has no combined keyboard/pad
+                 * entry. Keep that native choice when its displayed keyboard
+                 * source was left selected; choosing None/Gamepad still edits it. */
+                if (!(src == 1 && g_input_map.p[p].device ==
+                      (INPUT_DEV_KEYBOARD | INPUT_DEV_GAMEPAD)))
+                    g_input_map.p[p].device = (src == 1) ? INPUT_DEV_KEYBOARD
+                                                : (src == 2) ? INPUT_DEV_GAMEPAD
+                                                : INPUT_DEV_NONE;
                 g_input_map.p[p].pad_type     = (ls.pad_mode[p] == 1) ? PAD_6BUTTON : PAD_3BUTTON;
                 g_input_map.p[p].deadzone_pct = ls.deadzone[p];
             }
             app_config_save(settings_ini);
-            if (*rom_path_io) rom_cfg_write(rom_cfg_path, *rom_path_io);
+            if (lr == 0 && *rom_path_io) rom_cfg_write(rom_cfg_path, *rom_path_io);
         }
     }
     return lr;

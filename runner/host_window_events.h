@@ -1,6 +1,6 @@
 /* Keep the frame loop on its normal scheduler stack while Windows owns a
- * modal move/resize loop. Only event dispatch runs on a second same-thread
- * fiber; a native window timer yields back at frame boundaries. No renderer
+ * modal move/resize or caption-button loop. Only event dispatch runs on a
+ * second same-thread fiber; a native window timer yields at frame boundaries. No renderer
  * or game work runs from a window callback or a second operating-system
  * thread. Other platforms and unavailable window backends use SDL directly.
  * The runner initializes after glue and shuts down before glue/window teardown.
@@ -21,6 +21,15 @@ static struct {
 } window_pump;
 static LRESULT CALLBACK window_pump_proc(HWND window,UINT message,WPARAM w,LPARAM l)
 {
+    /* Caption tracking need not send WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE.
+     * Cover the forwarded press itself, retaining any enclosing modal loop. */
+    int caption=message==WM_NCLBUTTONDOWN &&
+                (w==HTMINBUTTON || w==HTMAXBUTTON || w==HTCLOSE);
+    int enclosing_modal=window_pump.modal;
+    if(caption && !enclosing_modal) {
+        window_pump.modal=1;
+        SetTimer(window,(UINT_PTR)&window_pump,10,NULL);
+    }
     if(message==WM_ENTERSIZEMOVE) {
         window_pump.modal=1;
         SetTimer(window,(UINT_PTR)&window_pump,10,NULL);
@@ -32,7 +41,12 @@ static LRESULT CALLBACK window_pump_proc(HWND window,UINT message,WPARAM w,LPARA
         ++window_pump.yields;
         fiber_switch(window_pump.caller);
     }
-    return CallWindowProcW(window_pump.original,window,message,w,l);
+    LRESULT result=CallWindowProcW(window_pump.original,window,message,w,l);
+    if(caption && !enclosing_modal) {
+        KillTimer(window,(UINT_PTR)&window_pump);
+        window_pump.modal=0;
+    }
+    return result;
 }
 static void window_pump_entry(void *unused)
 {
