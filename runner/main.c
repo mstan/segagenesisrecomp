@@ -28,6 +28,7 @@
 #endif
 
 #include <SDL2/SDL.h>
+#include "host_window_events.h"
 
 #include "backend_decls.h"   /* own decls â€” native builds have no clownmdemu paths */
 #include "genesis_clocks.h"
@@ -1774,7 +1775,7 @@ static void rdb_park_drain(void)
 {
     while (glue_game_yielded_for_break()) {
         SDL_Event pev;
-        while (SDL_PollEvent(&pev)) {
+        while (window_poll_event(&pev)) {
             if (pev.type == SDL_QUIT) { s_quit_via_park_drain = 1; return; }
         }
         (void)cmd_server_poll();
@@ -2226,7 +2227,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
     uint32_t repeat_dir = 0, repeat_at = 0;
     while (*running && genesis_local_states_is_open()) {
         SDL_Event ev;
-        if (SDL_WaitEventTimeout(&ev, 16)) {
+        if (window_wait_event_timeout(&ev, 16)) {
             do {
                 gamepad_handle_event(&ev);
                 if (ev.type == SDL_QUIT) { *running = 0; break; }
@@ -2241,13 +2242,11 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
                 else if (mode == 2 && key == SDLK_DOWN) genesis_local_states_move(3);
                 else if (!ev.key.repeat && (key == SDLK_RETURN || key == SDLK_SPACE)) {
                     if (genesis_local_states_accept() && mode == 1) {
-                        if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
-            if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
                         audio_discard_playback();
                     }
                 } else if (!ev.key.repeat && mode == 2 && key == SDLK_s)
                     genesis_local_states_save();
-            } while (*running && SDL_PollEvent(&ev));
+            } while (*running && window_poll_event(&ev));
         }
         if (!*running || !genesis_local_states_is_open()) break;
         uint32_t pad = gamepad_overlay_mask();
@@ -2257,8 +2256,6 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
         if (press & GP_OVERLAY_B) genesis_local_states_cancel();
         else if (press & GP_OVERLAY_A) {
             if (genesis_local_states_accept() && mode == 1) {
-                if (g_game_spec.on_state_loaded) g_game_spec.on_state_loaded();
-            if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
                 audio_discard_playback();
             }
         } else if (mode == 2 && (press & GP_OVERLAY_X)) genesis_local_states_save();
@@ -2299,7 +2296,8 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
     (void)gamepad_consume_quickload();
     /* Do not forward a held accept/cancel button into the resumed guest. */
     while (*running) {
-        SDL_PumpEvents();
+        /* The cooperative wait below updates input without entering a
+         * native move/resize loop on the scheduler stack. */
         const Uint8 *keys = SDL_GetKeyboardState(NULL);
         int key_held = keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_SPACE] ||
                        keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_F7] ||
@@ -2308,7 +2306,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
             (GP_OVERLAY_A | GP_OVERLAY_B | GP_OVERLAY_BACK | GP_OVERLAY_RB | GP_OVERLAY_R3);
         if (!key_held && !pad_held) break;
         SDL_Event ev;
-        if (SDL_WaitEventTimeout(&ev, 16)) {
+        if (window_wait_event_timeout(&ev, 16)) {
             gamepad_handle_event(&ev);
             if (ev.type == SDL_QUIT) *running = 0;
         }
@@ -3347,6 +3345,7 @@ session_begin:;
         return 1;
     }
 #endif
+    (void)window_pump_init(window);
     int running = 1;
     int window_close_requested = 0;
     int turbo   = start_turbo;   /* F5 toggles turbo (uncapped frame rate, no audio) */
@@ -3418,7 +3417,7 @@ session_begin:;
 #endif
             ) {
             SDL_Event pev;
-            while (SDL_PollEvent(&pev)) {
+            while (window_poll_event(&pev)) {
                 gamepad_handle_event(&pev);
                 if (pev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
             }
@@ -3431,7 +3430,7 @@ session_begin:;
 
         int overlay_request = 0;
         SDL_Event ev;
-        while (SDL_PollEvent(&ev)) {
+        while (window_poll_event(&ev)) {
             if(ev.type==SDL_RENDER_TARGETS_RESET||ev.type==SDL_RENDER_DEVICE_RESET) {
                 genesis_hd_gpu_destroy(hd_gpu);hd_gpu=NULL;hd_checked=0;
             }
@@ -4372,6 +4371,10 @@ session_begin:;
       if (audio_wav_active()) audio_wav_stop(); }
     if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
     genesis_local_states_shutdown();
+    if(!window_pump_shutdown()) {
+        fprintf(stderr,"[window] cannot finish active move/resize loop at shutdown\n");
+        return 1;
+    }
     glue_shutdown();
     audio_close();
     shadow_worker_cleanup();

@@ -2,6 +2,7 @@
 #define GENESIS_LOCAL_STATES_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* Local-only rewind and the visual browser for the existing nine save files.
  * All calls are on the runner thread, at guest frame boundaries. */
@@ -9,6 +10,9 @@ void genesis_local_states_configure(const char *save_dir, int enabled,
                                     int depth, int interval);
 void genesis_local_states_shutdown(void);
 void genesis_local_states_clear(void);
+/* Published guest+presentation blobs and allocated thumbnail metadata.
+ * Excludes the RB capture ring's single reusable unpublished spare. */
+size_t genesis_local_states_history_bytes(void);
 void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
                                      int width, int height);
 void genesis_local_states_slot_saved(int slot);

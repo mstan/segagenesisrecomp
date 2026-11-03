@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "rb_state.h"
+#include "game_spec.h"
 #include "overlay_draw.h"
 #include "retcomm_rbengine/snap_ring.h"
 
@@ -18,10 +19,16 @@ int runner_load_state_file(const char *path);
 #define PANEL_W 640
 #define PANEL_H 448
 #define SLOT_COUNT 9
+#ifndef GENESIS_LOCAL_HISTORY_LIMIT
+#define GENESIS_LOCAL_HISTORY_LIMIT (128u * 1024u * 1024u)
+#endif
+#define PRESENTATION_LIMIT (8u * 1024u * 1024u)
 
 typedef struct LocalSnap {
     uint32_t tick;
     uint32_t thumb[THUMB_W * THUMB_H];
+    void *presentation;
+    size_t presentation_size,guest_size;
 } LocalSnap;
 
 static RbeSnapRing *s_ring;
@@ -34,6 +41,16 @@ static uint32_t s_panel[PANEL_W * PANEL_H];
 static uint32_t s_slot_thumb[SLOT_COUNT][THUMB_W * THUMB_H];
 static int s_slot_has_thumb[SLOT_COUNT], s_slot_exists[SLOT_COUNT];
 static char s_status[64];
+static size_t s_history_bytes;
+
+static void release_snap(LocalSnap *snap)
+{
+    s_history_bytes-=snap->presentation_size+snap->guest_size;
+    free(snap->presentation);snap->presentation=NULL;
+    snap->presentation_size=snap->guest_size=0;
+}
+size_t genesis_local_states_history_bytes(void)
+{ return s_history_bytes+(s_meta?(size_t)s_depth*sizeof *s_meta:0); }
 
 static int clamp(int n, int lo, int hi) { return n < lo ? lo : n > hi ? hi : n; }
 
@@ -46,15 +63,18 @@ static void path_for_slot(int slot, int thumb, char *out, size_t cap)
 void genesis_local_states_clear(void)
 {
     if (s_ring) rbe_snap_ring_clear(s_ring);
+    for(int i=0;s_meta && i<s_depth;++i)release_snap(&s_meta[i]);
     s_count = s_head = s_cadence = 0;
     s_tick = 0;
 }
 
 void genesis_local_states_shutdown(void)
 {
-    if (s_ring) fprintf(stderr, "[rewind] shutdown: %d snapshots retained\n", s_count);
+    if (s_ring) fprintf(stderr, "[rewind] shutdown: %d snapshots retained, %zu guest/presentation/thumbnail bytes\n",
+        s_count,genesis_local_states_history_bytes());
     rbe_snap_ring_destroy(s_ring);
     s_ring = NULL;
+    for(int i=0;s_meta && i<s_depth;++i)release_snap(&s_meta[i]);
     free(s_meta);
     s_meta = NULL;
     s_depth = s_count = s_head = s_mode = 0;
@@ -135,16 +155,29 @@ void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
 {
     if (!pixels || stride < width || width <= 0 || height <= 0 || s_mode)
         return;
-    for (int y = 0; y < THUMB_H; ++y)
-        for (int x = 0; x < THUMB_W; ++x)
-            s_live_thumb[y * THUMB_W + x] =
-                pixels[(size_t)(y * height / THUMB_H) * (size_t)stride +
-                       x * width / THUMB_W] | 0xFF000000u;
+    int tw=THUMB_W,th=(int)((int64_t)height*tw/width);
+    if(th>THUMB_H){th=THUMB_H;tw=(int)((int64_t)width*th/height);}
+    if(tw<1)tw=1;if(th<1)th=1;
+    for(int i=0;i<THUMB_W*THUMB_H;++i)s_live_thumb[i]=0xFF000000u;
+    for(int y=0;y<th;++y)for(int x=0;x<tw;++x)
+        s_live_thumb[(y+(THUMB_H-th)/2)*THUMB_W+x+(THUMB_W-tw)/2]=
+            pixels[(size_t)(y*height/th)*(size_t)stride+x*width/tw]|0xFF000000u;
     if (!s_ring || ++s_cadence < s_interval) return;
     s_cadence = 0;
+    const GameVideo *video=g_game_spec.video;
+    size_t presentation_size=video && video->presentation_state_save?
+        video->presentation_state_save(NULL,0):0;
+    void *presentation=NULL;
+    if(video && video->presentation_state_save && !presentation_size)return;
+    if(presentation_size) {
+        if(!video->presentation_state_load || presentation_size>PRESENTATION_LIMIT)return;
+        presentation=malloc(presentation_size);
+        if(!presentation || video->presentation_state_save(presentation,presentation_size)!=presentation_size){free(presentation);return;}
+    }
     uint32_t tick = s_tick + 1u;
-    if (!rbe_snap_ring_capture(s_ring, tick, genesis_rb_capture, NULL)) return;
+    if (!rbe_snap_ring_capture(s_ring, tick, genesis_rb_capture, NULL)){free(presentation);return;}
     s_tick = tick;
+    size_t guest_size=0;(void)rbe_snap_ring_peek(s_ring,tick,&guest_size);
     if (!s_count) {
         size_t n = 0;
         (void)rbe_snap_ring_peek(s_ring, tick, &n);
@@ -152,10 +185,19 @@ void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
                 n, (double)n * s_depth / (1024.0 * 1024.0));
     }
     LocalSnap *snap = &s_meta[s_head];
+    release_snap(snap);
     snap->tick = s_tick;
+    snap->presentation=presentation;snap->presentation_size=presentation_size;snap->guest_size=guest_size;
+    s_history_bytes+=presentation_size+guest_size;
     memcpy(snap->thumb, s_live_thumb, sizeof snap->thumb);
     s_head = (s_head + 1) % s_depth;
     if (s_count < s_depth) ++s_count;
+    while(s_count>1 && genesis_local_states_history_bytes()>GENESIS_LOCAL_HISTORY_LIMIT) {
+        LocalSnap *old=&s_meta[(s_head-s_count+s_depth)%s_depth];
+        rbe_snap_ring_drop_tick(s_ring,old->tick);release_snap(old);--s_count;
+    }
+    if(s_tick==1)fprintf(stderr,"[rewind] local presentation %zu bytes; retained history %zu bytes; budget %u MiB (plus one capture spare)\n",
+        presentation_size,genesis_local_states_history_bytes(),(unsigned)(GENESIS_LOCAL_HISTORY_LIMIT/(1024u*1024u)));
 }
 
 int genesis_local_states_open_rewind(void)
@@ -196,8 +238,15 @@ int genesis_local_states_accept(void)
         if (!snap) return 0;
         size_t len = 0;
         const uint8_t *blob = rbe_snap_ring_peek(s_ring, snap->tick, &len);
+        const GameVideo *video=g_game_spec.video;
+        if(snap->presentation_size && (!video || !video->presentation_state_load ||
+            !video->presentation_state_load(snap->presentation,snap->presentation_size,0)))return 0;
         if (!blob || !genesis_rb_load(blob, len)) return 0;
+        if(g_game_spec.on_state_loaded)g_game_spec.on_state_loaded();
+        if(video && video->presentation_reset)video->presentation_reset();
+        if(snap->presentation_size && !video->presentation_state_load(snap->presentation,snap->presentation_size,1))abort();
         rbe_snap_ring_drop_after(s_ring, snap->tick);
+        for(int i=0;i<s_selected;++i)release_snap(&s_meta[(s_head-1-i+s_depth)%s_depth]);
         s_tick = snap->tick;
         s_head = (s_head - s_selected + s_depth) % s_depth;
         s_count -= s_selected;

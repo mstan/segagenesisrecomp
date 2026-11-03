@@ -103,7 +103,34 @@ int main(int argc,char **argv)
     CHECK(p->feature_get(p->ctx,0,&feature) && feature.enabled);
     CHECK(app_config_load(argv[1]));CHECK(!g_app_config.custom_widescreen); /* saved off */
     app_config_apply_video(&video);CHECK(!strcmp(mode,"off"));
+    CHECK(remove(argv[1])==0);
+    app_config_defaults();CHECK(!app_config_load(argv[1])); /* no settings file */
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"fit"));
+    CHECK(p->feature_get(p->ctx,0,&feature) && feature.enabled);
+    CHECK(p->feature_option_get(p->ctx,feature.package_id,feature.id,0,&option));
+    CHECK(!strcmp(option.value,"fit"));
     FILE *f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[mods.widescreen]\nenabled=0\naspect=32:9\n",f);CHECK(fclose(f)==0);
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(!g_app_config.custom_widescreen && g_app_config.custom_aspect==3);
+    CHECK(p->feature_get(p->ctx,0,&feature) && !feature.enabled);
+    CHECK(p->feature_option_get(p->ctx,feature.package_id,feature.id,0,&option));
+    CHECK(!strcmp(option.value,"32:9"));
+    CHECK(p->commit(p->ctx,NULL)); /* provider must not replace an explicit off */
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"off") && g_app_config.custom_aspect==3);
+    f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[mods.widescreen]\nenabled=1\naspect=16:9\n",f);CHECK(fclose(f)==0);
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"16:9"));
+    CHECK(p->commit(p->ctx,NULL));
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==1);
+    f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[mods.widescreen]\naspect=21:9\n",f);CHECK(fclose(f)==0);
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2); /* absent enabled inherits on */
+    f=fopen(argv[1],"wb");CHECK(f);
     fputs("[audio]\nvolume = 50\n",f);CHECK(fclose(f)==0); /* settings without the mod key */
     app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==0 && g_app_config.volume==50);

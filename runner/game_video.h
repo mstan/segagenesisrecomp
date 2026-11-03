@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 
 struct GVDP;
@@ -70,6 +71,11 @@ typedef struct GameVideo {
      * snapshots; no guest execution, provider calls or canonical mutations. */
     int (*interpolate)(double phase, uint32_t *image, int stride, int height);
     void (*presentation_reset)(void);
+    /* Optional compact, host-local rewind companion. NULL measures save size.
+     * Validate before guest restore (apply=0), then apply after notifications.
+     * Never enters disk states, deterministic RB images, or netplay digests. */
+    size_t (*presentation_state_save)(void *dst, size_t capacity);
+    int (*presentation_state_load)(const void *src, size_t size, int apply);
 } GameVideo;
 
 /* Host-local derived frame plan, never deterministic machine/snapshot state.
