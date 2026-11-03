@@ -178,6 +178,7 @@ add_executable(local_states_test runtime/local_states_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
 target_include_directories(local_states_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_definitions(local_states_test PRIVATE GENESIS_LOCAL_HISTORY_LIMIT=262144)
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
 
@@ -284,6 +285,19 @@ add_executable(fiber_snapshot_test runtime/fiber_snapshot_test.c
 target_include_directories(fiber_snapshot_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 genesisrecomp_runner_target(fiber_snapshot_test)
 add_test(NAME fiber_snapshot COMMAND fiber_snapshot_test)
+
+if(TARGET SDL2::SDL2)
+    add_executable(window_events_test runtime/window_events_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/fiber_compat.c")
+    target_include_directories(window_events_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner" ${SDL2_PARENT_INCLUDE_DIRS})
+    target_link_libraries(window_events_test PRIVATE SDL2::SDL2)
+    genesisrecomp_runner_target(window_events_test)
+    add_test(NAME window_events COMMAND window_events_test)
+    if(WIN32)
+        set_tests_properties(window_events PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=windows;SDL_AUDIODRIVER=dummy")
+    endif()
+endif()
 
 add_executable(vdp_sprite_limit_test runtime/vdp_sprite_limit_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")
