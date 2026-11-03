@@ -52,12 +52,15 @@ endif()
 add_test(NAME game_video_frame COMMAND game_video_frame_test)
 add_subdirectory(segacd)
 enable_language(CXX)
+add_executable(sim_step_test runtime/sim_step_test.c "${CMAKE_CURRENT_LIST_DIR}/../runner/sim_step.c")
+target_include_directories(sim_step_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include" "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu" "${CMAKE_CURRENT_LIST_DIR}/../runner/external/clowncommon")
+add_test(NAME sim_step COMMAND sim_step_test)
 
 set(_psg_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/sn76489.c")
 add_library(psg_scalar_test_model OBJECT "${_psg_wrapper}")
 target_include_directories(psg_scalar_test_model PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
 target_compile_definitions(psg_scalar_test_model PRIVATE GENESIS_PSG_SILENT_SPANS=0)
-foreach(_psg_api init advance write render samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
+foreach(_psg_api init advance write render render_pair samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
     target_compile_definitions(psg_scalar_test_model PRIVATE psg_${_psg_api}=ref_psg_${_psg_api})
 endforeach()
 add_executable(psg_span_test runtime/psg_span_test.c "${_psg_wrapper}" $<TARGET_OBJECTS:psg_scalar_test_model>)
@@ -77,7 +80,7 @@ add_library(fm_scalar_test_model OBJECT "${_fm_wrapper}")
 target_include_directories(fm_scalar_test_model PRIVATE "${_ymfm}"
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_compile_definitions(fm_scalar_test_model PRIVATE GENESIS_FM_BLOCK_SAMPLES=0)
-foreach(_fm_api init advance write render samples_available sample_rate save_state load_state cosim_hash rb_save rb_load)
+foreach(_fm_api init advance write render render_pair samples_available sample_rate save_state load_state cosim_hash rb_save rb_load)
     target_compile_definitions(fm_scalar_test_model PRIVATE ym2612_${_fm_api}=ref_ym2612_${_fm_api})
 endforeach()
 add_executable(fm_block_test runtime/fm_block_test.cpp "${_fm_wrapper}"
@@ -88,6 +91,15 @@ target_include_directories(fm_block_test PRIVATE "${_ymfm}"
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_compile_definitions(fm_block_test PRIVATE GENESIS_FM_BLOCK_SAMPLES=1)
 add_test(NAME fm_block COMMAND fm_block_test)
+
+add_executable(audio_filter_test runtime/audio_filter_test.cpp
+    "${_fm_wrapper}" "${_psg_wrapper}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/mixer.c"
+    "${_ymfm}/ymfm_opn.cpp" "${_ymfm}/ymfm_ssg.cpp"
+    "${_ymfm}/ymfm_adpcm.cpp" "${_ymfm}/ymfm_pcm.cpp")
+target_include_directories(audio_filter_test PRIVATE "${_ymfm}"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include")
+add_test(NAME audio_filter COMMAND audio_filter_test)
 
 if(TARGET SDL2::SDL2)
     foreach(_writer_threads 1 0)
@@ -166,6 +178,7 @@ add_executable(local_states_test runtime/local_states_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
 target_include_directories(local_states_test PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_definitions(local_states_test PRIVATE GENESIS_LOCAL_HISTORY_LIMIT=262144)
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
 
@@ -272,6 +285,19 @@ add_executable(fiber_snapshot_test runtime/fiber_snapshot_test.c
 target_include_directories(fiber_snapshot_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 genesisrecomp_runner_target(fiber_snapshot_test)
 add_test(NAME fiber_snapshot COMMAND fiber_snapshot_test)
+
+if(TARGET SDL2::SDL2)
+    add_executable(window_events_test runtime/window_events_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/fiber_compat.c")
+    target_include_directories(window_events_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner" ${SDL2_PARENT_INCLUDE_DIRS})
+    target_link_libraries(window_events_test PRIVATE SDL2::SDL2)
+    genesisrecomp_runner_target(window_events_test)
+    add_test(NAME window_events COMMAND window_events_test)
+    if(WIN32)
+        set_tests_properties(window_events PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=windows;SDL_AUDIODRIVER=dummy")
+    endif()
+endif()
 
 add_executable(vdp_sprite_limit_test runtime/vdp_sprite_limit_test.c
     "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_vdp.c")

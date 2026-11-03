@@ -284,6 +284,10 @@ int genesis_rb_load(const void *src, size_t len)
     }
     uint64_t token;memcpy(&token,b+8,sizeof token);
     genesis_replay_snapshot_loaded(token);
+    /* Presentation history is disposable, never part of the restored digest.
+     * Direct rollback/probe loads bypass the frontend's file-load callbacks. */
+    if(g_game_spec.video && g_game_spec.video->presentation_reset)
+        g_game_spec.video->presentation_reset();
     return 1;
 }
 
@@ -365,6 +369,14 @@ int genesis_rb_selftest(void)
         return 1;
     }
     genesis_rb_digest(&d0);
+    /* A framing rejection is read-only, including when a game owns disposable
+     * presentation history. Exercise the actual loader before valid restores. */
+    int rejected=!genesis_rb_load(orig,n-1);
+    genesis_rb_digest(&d1);
+    int unchanged=d1.master==d0.master && !memcmp(d1.part,d0.part,sizeof d0.part);
+    if(!rejected || !unchanged)++fails;
+    fprintf(stderr,"[rb_selftest] truncated framing rejected=%d unchanged=%d %s\n",
+            rejected,unchanged,rejected && unchanged?"OK":"FAIL");
     for (size_t i = 0; i < RB_NSEC; i++) {
         size_t at = sl[i] ? mutate_offset(i, sl[i]) : (size_t)-1;
         if (at == (size_t)-1 || at >= sl[i]) {

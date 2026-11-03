@@ -227,7 +227,6 @@ void rb_probe_pre_tick(void)
         int move=s_rewind_test_phase==0?-240:s_rewind_test_phase==1?-30:0;
         genesis_local_states_move(move);int selected=genesis_local_states_selected_slot();
         if(!genesis_local_states_accept()){fprintf(stderr,"rb_probe: rewind test restore FAIL\n");abort();}
-        if(g_game_spec.on_state_loaded)g_game_spec.on_state_loaded();
         audio_discard_playback();
         fprintf(stderr,"rb_probe: rewind test phase=%u selected=%d before=%u after=%u OK\n",s_rewind_test_phase,selected,before,genesis_sim_tick_count());
         ++s_rewind_test_phase;

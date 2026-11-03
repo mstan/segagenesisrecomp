@@ -27,6 +27,12 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 /* Call once at boot. */
 void audio_mixer_init(void);
 
+/* Presentation preference, default0: bypass the native FM/PSG hardware LPFs.
+ * Both canonical filters keep advancing. Changes on the emulation/main thread
+ * fade over5ms without resetting chips, clocks or playback. Safe before init;
+ * the preference survives chip resets. Separately opted-in enhanced FM retains
+ * its own output path; its verifier still receives canonical filtered PCM. */
+void audio_mixer_set_filter_bypass(int bypass);
 /* Host executor for independent canonical and shadow synthesis after common stable ordering,
  * pairguard and deferred-event ownership. MUST execute each job exactly once
  * and return only after both finish. NULL retains the original serial path.

@@ -1,6 +1,7 @@
 /* sim_step.c -- one simulation tick from sealed inputs (see sim_step.h). */
 #include "sim_step.h"
 #include "diagnostic_replay.h"
+#include "game_spec.h"
 
 #include <string.h>
 
@@ -50,6 +51,11 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
     if(!genesis_replay_begin(&sealed))return 0;
     s_in=sealed;
 
+    /* Game-owned simulation changes run once per sealed tick, including
+     * deterministic replay and rollback. Fractional presentation never
+     * enters this path. Rejected replay input must not execute a callback. */
+    if(g_game_spec.on_frame_pre)g_game_spec.on_frame_pre(s_ticks);
+
     glue_reset_frame_sync();
     glue_run_game_frame();
     for (int port = 0; port < 2; port++) {
@@ -76,6 +82,7 @@ int genesis_sim_step(const GenesisSimInput *in, const GenesisSimAudio *audio,
 
     glue_service_vblank();
     glue_end_of_wall_frame();
+    if(g_game_spec.on_frame_post)g_game_spec.on_frame_post(s_ticks);
     s_ticks++;
     genesis_replay_end();
     return 1;

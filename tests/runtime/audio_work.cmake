@@ -16,7 +16,7 @@ foreach(_name IN ITEMS audio_mixer_init audio_mixer_drain
     target_compile_definitions(audio_work_original PRIVATE ${_name}=ref_${_name})
 endforeach()
 foreach(_prefix IN ITEMS ym2612 psg)
-    foreach(_name IN ITEMS init advance write render samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
+    foreach(_name IN ITEMS init advance write render render_pair samples_available sample_rate reset_leftover save_state load_state cosim_hash rb_save rb_load)
         target_compile_definitions(audio_work_original PRIVATE ${_prefix}_${_name}=ref_${_prefix}_${_name})
     endforeach()
 endforeach()

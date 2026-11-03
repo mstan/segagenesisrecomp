@@ -21,6 +21,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* These are host presentation state, never chip/snapshot state. Each paired
+ * stream advances identically regardless of the selected output. */
+static int s_filter_bypass,s_filter_started;
+static unsigned s_fm_filter_mix,s_psg_filter_mix;
+static unsigned s_fm_filter_span=266,s_psg_filter_span=1118;
+
+void audio_mixer_set_filter_bypass(int bypass)
+{
+    s_filter_bypass=bypass!=0;
+    if(!s_filter_started) {
+        s_fm_filter_mix=s_filter_bypass?s_fm_filter_span:0;
+        s_psg_filter_mix=s_filter_bypass?s_psg_filter_span:0;
+    }
+}
+
+static void filter_present(int16_t *out,const int16_t *raw,size_t count,
+                           unsigned channels,unsigned *mix,unsigned span,int apply)
+{
+    unsigned target=s_filter_bypass?span:0;
+    if(!*mix && !target)return; /* Default PCM remains byte-identical. */
+    for(size_t i=0;i<count;++i) {
+        if(apply && *mix)for(unsigned c=0;c<channels;++c) {
+            size_t p=i*channels+c;
+            out[p]=(int16_t)(((int64_t)out[p]*(span-*mix)+(int64_t)raw[p]*(*mix))/span);
+        }
+        if(*mix<target)++*mix;
+        else if(*mix>target)--*mix;
+    }
+}
+
 void audio_mixer_init(void)
 {
     ym2612_init();
@@ -29,6 +59,12 @@ void audio_mixer_init(void)
      * every fm_shadow_* call below is a cheap no-op and audio is
      * byte-identical to the canon path. */
     fm_shadow_init();
+    s_fm_filter_span=ym2612_sample_rate()/200u;
+    s_psg_filter_span=psg_sample_rate()/200u;
+    if(!s_fm_filter_span)s_fm_filter_span=1;
+    if(!s_psg_filter_span)s_psg_filter_span=1;
+    s_filter_started=0;
+    audio_mixer_set_filter_bypass(s_filter_bypass);
 }
 
 /* The own backend pushes events from two stamp axes (68K instruction counter
@@ -64,6 +100,7 @@ typedef struct MixerChipJob {
     const AudioOrderedEvent *events;size_t count;
     uint32_t end;int16_t *output;size_t capacity,written;
     int keep_psg_leftover;
+    int16_t *raw_output;
 } MixerChipJob;
 static void mixer_fm_job(void *context)
 {
@@ -84,7 +121,7 @@ static void mixer_fm_job(void *context)
     }
     if(job->end>previous)ym2612_advance(job->end-previous);
     size_t available=ym2612_samples_available();job->written=available<job->capacity?available:job->capacity;
-    if(job->output && job->written)ym2612_render(job->output,job->written);
+    if(job->output && job->written)ym2612_render_pair(job->output,job->raw_output,job->written);
 }
 static void mixer_psg_job(void *context)
 {
@@ -98,7 +135,7 @@ static void mixer_psg_job(void *context)
     if(job->end>previous)psg_advance(job->end-previous);
     if(!job->keep_psg_leftover)psg_reset_leftover();
     size_t available=psg_samples_available();job->written=available<job->capacity?available:job->capacity;
-    if(job->output && job->written)psg_render(job->output,job->written);
+    if(job->output && job->written)psg_render_pair(job->output,job->raw_output,job->written);
 }
 typedef struct {MixerChipJob *fm,*psg;} MixerMainJob;
 static void mixer_main_job(void *context)
@@ -214,13 +251,21 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
         audio_event_requeue(defer, d);
     }
 
+    /* Both serial and worker execution consume the same paired chip output.
+     * Selection/fade stays on the owner after shadow verification and join. */
+    static int16_t raw_fm[8192*2],raw_psg[8192];
     if(s_executor && fm_shadow_enabled() &&
        mixer_outputs_disjoint(fm_stereo_out,fm_cap,psg_mono_out,psg_cap)){
-        MixerChipJob fm={evs,n_apply,frame_end_cycle,fm_stereo_out,fm_cap,0,0};
-        MixerChipJob psg={evs,n_apply,frame_end_cycle,psg_mono_out,psg_cap,0,s_no_leftover};
+        MixerChipJob fm={evs,n_apply,frame_end_cycle,fm_stereo_out,fm_cap,0,0,raw_fm};
+        MixerChipJob psg={evs,n_apply,frame_end_cycle,psg_mono_out,psg_cap,0,s_no_leftover,raw_psg};
         MixerMainJob main_job={&fm,&psg};
         s_executor(mixer_main_job,&main_job,mixer_shadow_job,&fm,s_executor_context);
         if(fm.output && fm.written)fm_shadow_verify_and_substitute(fm.output,fm.written);
+        if(fm.output && fm.written)
+            filter_present(fm.output,raw_fm,fm.written,2,&s_fm_filter_mix,s_fm_filter_span,!fm_shadow_active());
+        if(psg.output && psg.written)
+            filter_present(psg.output,raw_psg,psg.written,1,&s_psg_filter_mix,s_psg_filter_span,1);
+        if((fm.output && fm.written) || (psg.output && psg.written))s_filter_started=1;
         /* Diagnostics retain the original merged applied order and clamped
          * stamps. The owner logs only after both jobs really completed. */
         if(s_ad)for(size_t i=0;i<n_apply;i++){
@@ -290,8 +335,10 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
     size_t fm_n  = fm_avail  < fm_cap  ? fm_avail  : fm_cap;
     size_t psg_n = psg_avail < psg_cap ? psg_avail : psg_cap;
 
-    if (fm_stereo_out && fm_n > 0)  ym2612_render(fm_stereo_out,  fm_n);
-    if (psg_mono_out  && psg_n > 0) psg_render(psg_mono_out,   psg_n);
+    /* Chip scratch capacity is8192 samples. Drain paired outputs once, leaving
+     * the canonical queues/filter history independent of this preference. */
+    if (fm_stereo_out && fm_n > 0)  ym2612_render_pair(fm_stereo_out,raw_fm,fm_n);
+    if (psg_mono_out  && psg_n > 0) psg_render_pair(psg_mono_out,raw_psg,psg_n);
 
     /* Verified-enhancement FM shadow: feed (canon, shadow) to the verifier and
      * substitute the shadow FM samples into fm_stereo_out only when proven;
@@ -299,6 +346,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
      * is on, so this keeps fm_stereo_out byte-identical by default. Canon FM
      * (just rendered above) remains the authoritative stream and the oracle. */
     if (fm_stereo_out && fm_n > 0) fm_shadow_verify_and_substitute(fm_stereo_out, fm_n);
+
+    /* Enhanced FM remains an explicit separate choice. Never feed unfiltered
+     * native samples to its verifier or replace its proven output silently. */
+    if(fm_stereo_out && fm_n>0)
+        filter_present(fm_stereo_out,raw_fm,fm_n,2,&s_fm_filter_mix,s_fm_filter_span,!fm_shadow_active());
+    if(psg_mono_out && psg_n>0)
+        filter_present(psg_mono_out,raw_psg,psg_n,1,&s_psg_filter_mix,s_psg_filter_span,1);
+    if((fm_stereo_out && fm_n>0) || (psg_mono_out && psg_n>0))s_filter_started=1;
 
     if (fm_written)  *fm_written  = fm_n;
     if (psg_written) *psg_written = psg_n;

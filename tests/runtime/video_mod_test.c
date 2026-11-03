@@ -20,6 +20,13 @@ static int configure(const char *value) {snprintf(mode,sizeof mode,"%s",value);r
 static int enabled(void) {return strcmp(mode,"off")!=0;}
 static int width(int dw,int dh,int nw,int nh) {(void)dw;(void)dh;(void)nh;return nw;}
 static const GameVideo video={.configure=configure,.enabled=enabled,.width=width};
+static int presentation_enabled;
+static void presentation_configure(int on){presentation_enabled=on;}
+static void presentation_capture(const struct GVDP *v,int l,const uint32_t *p,int w,int n,const struct GVDPRasterRow *r)
+{(void)v;(void)l;(void)p;(void)w;(void)n;(void)r;}
+static int interpolate(double t,uint32_t *p,int s,int h){(void)t;(void)p;(void)s;(void)h;return 0;}
+static const GameVideo interpolated_video={.configure=configure,.enabled=enabled,.width=width,.presentation_configure=presentation_configure,
+    .presentation_capture=presentation_capture,.interpolate=interpolate};
 
 int main(int argc,char **argv)
 {
@@ -27,7 +34,7 @@ int main(int argc,char **argv)
     app_config_defaults();app_config_apply_video(&video);
     CHECK(!g_app_config.custom_widescreen && !strcmp(mode,"off"));
     const RecompLauncherCModProvider *p=app_config_video_mods(&video,argv[1]);
-    CHECK(p && p->package_count(p->ctx)==2 && p->feature_count(p->ctx)==2);
+    CHECK(p && p->package_count(p->ctx)==3 && p->feature_count(p->ctx)==3);
     CHECK(g_app_config.replay_diagnostics);
     RecompLauncherCModFeature diagnostics;
     CHECK(p->feature_get(p->ctx,1,&diagnostics));
@@ -71,7 +78,7 @@ int main(int argc,char **argv)
     CHECK(p->feature_enable(p->ctx,"playtest-diagnostics","replay",0));
     CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(!g_app_config.replay_diagnostics);
-    p=app_config_video_mods(NULL,argv[1]);CHECK(p && p->feature_count(p->ctx)==1);
+    p=app_config_video_mods(NULL,argv[1]);CHECK(p && p->feature_count(p->ctx)==2);
     CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
     /* Old installations without a Diagnostics setting inherit default-on. */
     FILE *legacy=fopen(argv[1],"wb");CHECK(legacy);fputs("[video]\nwindow_scale=2\n[mods.widescreen]\nenabled=0\n",legacy);fclose(legacy);
@@ -96,7 +103,34 @@ int main(int argc,char **argv)
     CHECK(p->feature_get(p->ctx,0,&feature) && feature.enabled);
     CHECK(app_config_load(argv[1]));CHECK(!g_app_config.custom_widescreen); /* saved off */
     app_config_apply_video(&video);CHECK(!strcmp(mode,"off"));
+    CHECK(remove(argv[1])==0);
+    app_config_defaults();CHECK(!app_config_load(argv[1])); /* no settings file */
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"fit"));
+    CHECK(p->feature_get(p->ctx,0,&feature) && feature.enabled);
+    CHECK(p->feature_option_get(p->ctx,feature.package_id,feature.id,0,&option));
+    CHECK(!strcmp(option.value,"fit"));
     FILE *f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[mods.widescreen]\nenabled=0\naspect=32:9\n",f);CHECK(fclose(f)==0);
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(!g_app_config.custom_widescreen && g_app_config.custom_aspect==3);
+    CHECK(p->feature_get(p->ctx,0,&feature) && !feature.enabled);
+    CHECK(p->feature_option_get(p->ctx,feature.package_id,feature.id,0,&option));
+    CHECK(!strcmp(option.value,"32:9"));
+    CHECK(p->commit(p->ctx,NULL)); /* provider must not replace an explicit off */
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"off") && g_app_config.custom_aspect==3);
+    f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[mods.widescreen]\nenabled=1\naspect=16:9\n",f);CHECK(fclose(f)==0);
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    app_config_apply_video(&video);CHECK(!strcmp(mode,"16:9"));
+    CHECK(p->commit(p->ctx,NULL));
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==1);
+    f=fopen(argv[1],"wb");CHECK(f);
+    fputs("[mods.widescreen]\naspect=21:9\n",f);CHECK(fclose(f)==0);
+    app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2); /* absent enabled inherits on */
+    f=fopen(argv[1],"wb");CHECK(f);
     fputs("[audio]\nvolume = 50\n",f);CHECK(fclose(f)==0); /* settings without the mod key */
     app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==0 && g_app_config.volume==50);
@@ -106,13 +140,34 @@ int main(int argc,char **argv)
     app_config_defaults();CHECK(g_app_config.custom_widescreen && g_app_config.custom_aspect==2);
     CHECK(app_config_set_video_default(NULL));
     app_config_defaults();CHECK(!g_app_config.custom_widescreen && g_app_config.custom_aspect==0);
+
+    p=app_config_video_mods(&interpolated_video,argv[1]);
+    CHECK(p->feature_count(p->ctx)==4);
+    CHECK(!g_app_config.presentation_rate && !g_app_config.audio_filter_bypass);
+    CHECK(p->feature_get(p->ctx,2,&feature) && !strcmp(feature.id,"interpolation") && !feature.enabled);
+    for(int n=0;n<4;++n) {
+        CHECK(p->feature_choice_get(p->ctx,"high-refresh","interpolation","rate",n,&choice));
+        CHECK(p->feature_set_option(p->ctx,"high-refresh","interpolation","rate",choice.value));
+        CHECK(g_app_config.presentation_rate==app_config_presentation_rate(n));
+        app_config_apply_video(&interpolated_video);CHECK(presentation_enabled==(n!=0));
+        CHECK(!strcmp(mode,"off")); /* Native interpolation cannot enable wide simulation. */
+    }
+    CHECK(!p->feature_set_option(p->ctx,"high-refresh","interpolation","rate","2000"));
+    CHECK(p->feature_enable(p->ctx,"audio-output","unfiltered",1));
+    CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(g_app_config.presentation_rate==-1 && g_app_config.audio_filter_bypass);
+    CHECK(p->feature_enable(p->ctx,"high-refresh","interpolation",0));
+    CHECK(p->feature_enable(p->ctx,"audio-output","unfiltered",0));
+    CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
+    CHECK(!g_app_config.presentation_rate && !g_app_config.audio_filter_bypass);
     /* A native row owner is not an elective viewport/widescreen feature. */
     const GameVideo renderer_only={.renderer_enabled=enabled};
     CHECK(!game_video_has_viewport(&renderer_only));
     p=app_config_video_mods(&renderer_only,argv[1]);
-    CHECK(p && p->package_count(p->ctx)==1 && p->feature_count(p->ctx)==1);
+    CHECK(p && p->package_count(p->ctx)==2 && p->feature_count(p->ctx)==2);
     CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
-    CHECK(!p->feature_get(p->ctx,1,&feature)); /* no viewport/widescreen feature */
+    CHECK(p->feature_get(p->ctx,1,&feature) && !strcmp(feature.id,"unfiltered"));
+    CHECK(!p->feature_get(p->ctx,2,&feature)); /* no viewport/widescreen feature */
     app_config_apply_video(&renderer_only); /* no configure callback */
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");

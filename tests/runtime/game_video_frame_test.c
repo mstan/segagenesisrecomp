@@ -45,9 +45,9 @@ static void reset(int view,int own,int requested_width)
 }
 int main(void)
 {
-    const GameVideo modern={configure,enabled,width,eager,overlay,lazy,owner,NULL,NULL};
+    const GameVideo modern={configure,enabled,width,eager,overlay,lazy,owner,NULL,NULL,NULL,NULL,NULL,NULL};
     /* Deliberately preserve positional legacy initialization/source defaults. */
-    const GameVideo legacy={configure,enabled,width,eager,overlay,NULL,NULL,NULL,NULL};
+    const GameVideo legacy={configure,enabled,width,eager,overlay,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
     static const int geometries[]={256,320,336,384,464,512};
     unsigned cases=0;
     for(unsigned n=0;n<sizeof geometries/sizeof *geometries;++n)
