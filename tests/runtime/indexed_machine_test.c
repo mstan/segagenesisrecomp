@@ -44,6 +44,7 @@ void glue_own_interrupt(int level,GVDP *v)
     ++active_context->result->interrupts;
 }
 int glue_own_vint_service_latched(GVDP *v){CHECK(v==&active_machine->vdp);return 0;}
+int glue_own_hint_service_latched(GVDP *v){CHECK(v==&active_machine->vdp);return 0;}
 
 static void put16(uint8_t *p,unsigned value){p[0]=(uint8_t)(value>>8);p[1]=(uint8_t)value;}
 static void host_sprites(void *user,const GVDP *v,const GVDPSpriteLayer *layer)
