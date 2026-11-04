@@ -14,7 +14,7 @@ static uint8_t reference(unsigned a,unsigned b,unsigned s,unsigned so,unsigned h
     else if(so)pixel=s;else if(a&64u)pixel=a&63u;else if(b&64u)pixel=b&63u;
     else pixel=backdrop;
     if(mode&&pixel<64u){
-        unsigned dark=!(ah||bh||sh),light=0;
+        unsigned dark=!((a|b)&128u)&&!sh,light=0;
         if(shadow)dark=1;
         if(hilite){if(dark)dark=0;else light=1;}
         if(light)pixel+=128u;else if(dark)pixel+=64u;
@@ -25,6 +25,18 @@ static uint8_t reference(unsigned a,unsigned b,unsigned s,unsigned so,unsigned h
 int main(void)
 {
     uint8_t a[520],b[520],s[520],op[520],hi[520],sh[520],hl[520],out[536];
+    /* Hardware intensity selection includes transparent high-priority planes.
+     * Nine pixels exercise both packed lanes and the portable scalar tail. */
+    memset(a,0x80,9);memset(b,0x41,9);memset(s,0,9);memset(op,0,9);
+    memset(hi,0,9);memset(sh,0,9);memset(hl,0,9);
+    gvdp_compose_span(out,a,b,s,op,hi,sh,hl,9,3,1);
+    for(unsigned i=0;i<9;i++)if(out[i]!=1)return 2;
+    memset(a,0x42,9);memset(b,0x80,9);
+    gvdp_compose_span(out,a,b,s,op,hi,sh,hl,9,3,1);
+    for(unsigned i=0;i<9;i++)if(out[i]!=2)return 3;
+    memset(a,0,9);memset(b,0x41,9);
+    gvdp_compose_span(out,a,b,s,op,hi,sh,hl,9,3,1);
+    for(unsigned i=0;i<9;i++)if(out[i]!=65)return 4;
     for(unsigned test=0;test<12000;++test){
         unsigned count=1u+next_random()%512u,offset=next_random()%8u;
         unsigned backdrop=next_random()%64u;int mode=(int)(test&1u);
