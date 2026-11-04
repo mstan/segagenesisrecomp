@@ -35,7 +35,10 @@ static inline void gvdp_compose_span(uint8_t *out,const uint8_t *plane_a,
         pixel=gvdp_compose_select(pixel,s,sh);
         if(shadow_mode) {
             uint64_t normal=(~(pixel|(pixel<<1))>>7)&one;
-            uint64_t shadow=(one^(ah|bh|sh))|gvdp_compose_load(shadow_op);
+            /* Plane priority affects intensity even for a transparent texel;
+             * opacity still determines which layer supplies the color. */
+            uint64_t normal_planes=((a|b)>>7)&one;
+            uint64_t shadow=(one^(normal_planes|sh))|gvdp_compose_load(shadow_op);
             uint64_t hilite=gvdp_compose_load(hilite_op);
             uint64_t shade=((shadow&(one^hilite))<<6)|(((one^shadow)&hilite)<<7);
             pixel+=shade&(normal*UINT64_C(255));
@@ -51,7 +54,7 @@ static inline void gvdp_compose_span(uint8_t *out,const uint8_t *plane_a,
         unsigned pixel=sh?s:ah?a&63u:bh?b&63u:so?s:
                        (a&64u)?a&63u:(b&64u)?b&63u:backdrop;
         if(shadow_mode && pixel<64u) {
-            unsigned shadow=!(ah||bh||sh),hilite=0;
+            unsigned shadow=!((a|b)&128u)&&!sh,hilite=0;
             if(*shadow_op)shadow=1;
             if(*hilite_op){if(shadow)shadow=0;else hilite=1;}
             if(hilite)pixel+=128u;else if(shadow)pixel+=64u;
