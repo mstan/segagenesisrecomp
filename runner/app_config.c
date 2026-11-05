@@ -370,7 +370,7 @@ static int video_mod_choice(void *ctx,const char *package,const char *feature,co
     }
     if(!out || !option || strcmp(option,"aspect") || i<0 || i>=4 || !video_mod_identity(package,feature))return 0;
     memset(out,0,sizeof(*out));MOD_COPY(out->value,custom_aspects[i]);
-    MOD_COPY(out->label,i?custom_aspects[i]:"Adaptive (fit window)");return 1;
+    MOD_COPY(out->label,i==3?"32:9 (experimental)":i?custom_aspects[i]:"Adaptive (fit window)");return 1;
 }
 static int video_mod_enable(void *ctx,const char *package,const char *feature,int on)
 {
