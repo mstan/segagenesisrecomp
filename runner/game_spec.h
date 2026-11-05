@@ -37,6 +37,13 @@ typedef struct {
     void      (*handler)(int id, const char *json_line);
 } GameDebugCommand;
 
+/* A separately qualified dump with the same address-specific code layout.
+ * All aliases must have expected_rom_size; unknown CRCs remain rejected. */
+typedef struct {
+    const char *label;
+    uint32_t crc32;
+} GameRomAlias;
+
 typedef struct GameSpec {
     const GameVideo *video;          /* NULL = native VDP presentation only */
     /* Custom-video mode for a fresh install (no saved [mods.widescreen]
@@ -81,6 +88,9 @@ typedef struct GameSpec {
     /* Expected ROM size in bytes (0 = skip the check). Sonic 1 is
      * 0x80000, Sonic 2 is 0x100000, Sonic 3K is 0x400000. */
     uint32_t    expected_rom_size;
+
+    const GameRomAlias *rom_aliases;
+    size_t num_rom_aliases;
 
     /* Tier-3 interpreter floor default for THIS game (0 = off). When on,
      * every computed-dispatch miss executes CORRECTLY on the A7-neutral
