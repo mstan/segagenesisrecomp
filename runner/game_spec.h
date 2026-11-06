@@ -172,6 +172,11 @@ typedef struct GameSpec {
      * come from the game's disassembly. */
     uint32_t  (*save_resume_pc)(uint8_t game_mode);
 
+    /* Optional game-owned continuation before entering the saved loop. Some
+     * consumers finish an interrupted native fade here. NULL dispatches the
+     * saved PC directly through recomp_call_addr. */
+    void      (*call_resume)(uint32_t resume_pc);
+
     /* Outer game-mode dispatcher PC. If the save-state resume loop
      * returns because the game changed modes, the restarted host fiber
      * continues here so normal mode dispatch takes over. */
