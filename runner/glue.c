@@ -598,7 +598,8 @@ static void game_fiber_func(void *param)
         uint32_t resume_pc = s_game_fiber_resume_pc & 0xFFFFFFu;
         s_game_fiber_resume_pc = 0;
         g_cpu.A[7] = g_game_layout.initial_ssp;
-        recomp_call_addr(resume_pc);
+        if (g_game_spec.call_resume) g_game_spec.call_resume(resume_pc);
+        else recomp_call_addr(resume_pc);
         if (g_game_spec.dispatch_main_loop_pc) {
             uint32_t dispatch_pc = g_game_spec.dispatch_main_loop_pc & 0xFFFFFFu;
             fprintf(stderr, "[GAME] %s resume loop returned at $%06X; continuing at dispatcher $%06X\n",
@@ -658,7 +659,13 @@ static int     s_game_yielded_vblank = 0;
 static int s_state_requested,s_state_parked;
 void glue_state_boundary_request(int requested)
 { s_state_requested=requested; if (!requested) s_state_parked=0; }
-int glue_state_boundary_ready(void) { return s_state_parked; }
+int glue_state_boundary_ready(void)
+{
+    /* Interrupts can change the resumable phase after the last CPU yield.
+     * Validate the adapter's boundary against the completed wall frame. */
+    return s_state_parked && (!g_game_spec.state_boundary_at_frame_end ||
+        !g_game_spec.state_at_boundary || g_game_spec.state_at_boundary());
+}
 /* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
  * the raster. own_deliver_vint runs the whole handler atomically at the
  * vblank scanline with budget yields gated (s_in_vblank_service), so without
@@ -690,9 +697,9 @@ static cc_u32f s_chunk_cycles = 0;  /* budget for current chunk */
 
 void glue_run_game_chunk(uint32_t cycles)
 {
-    /* An opt-in quicksave completes the native tick, then keeps its WaitForVint
-     * parked until this wall frame's VDP/Z80/audio drain has completed. */
-    if (s_state_parked) return;
+    /* Existing adapters qualify their first CPU yield while held. An adapter
+     * with a completed-raster contract must instead keep doing native work. */
+    if (s_state_parked && !g_game_spec.state_boundary_at_frame_end) return;
     if (!s_game_running || !s_game_fiber)
         return;
     if (s_game_yielded_vblank)
@@ -733,6 +740,9 @@ void glue_run_game_chunk(uint32_t cycles)
     s_budget_cyc_seen = g_audio_cycle_counter;  /* drain from here (see check_cycle_budget) */
     s_interleave_active = 1;
     instruction_watchdog_reset();
+    /* A quicksave samples a naturally parked frame. Do not suppress guest
+     * work after an earlier yield while V-int advances animation timers. */
+    s_state_parked=0;
     fiber_switch(s_game_fiber);
     instruction_watchdog_reset();
     s_interleave_active = 0;

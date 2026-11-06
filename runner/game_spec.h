@@ -68,6 +68,11 @@ typedef struct GameSpec {
     int (*state_load)(const void *data, size_t size, int apply);
     /* At the game's real WaitForVint: is its caller a resumable loop? */
     int (*state_at_boundary)(void);
+    /* Adapter capture contract: keep guest work running until the completed
+     * raster frame also satisfies state_at_boundary. Required for S2's track
+     * drawing phase. Zero retains the existing yield-and-hold contract. This
+     * is game-owned metadata, not a player setting. */
+    int state_boundary_at_frame_end;
     /* ---- Identity ---- */
     /* Clean game name for gameplay and launcher captions, e.g. "Sonic the
      * Hedgehog". Build/backend/debug identity belongs in logs and About. */
@@ -171,6 +176,11 @@ typedef struct GameSpec {
      * outer dispatcher) — correct for transition/init modes. Addresses
      * come from the game's disassembly. */
     uint32_t  (*save_resume_pc)(uint8_t game_mode);
+
+    /* Optional game-owned continuation before entering the saved loop. Some
+     * consumers finish an interrupted native fade here. NULL dispatches the
+     * saved PC directly through recomp_call_addr. */
+    void      (*call_resume)(uint32_t resume_pc);
 
     /* Outer game-mode dispatcher PC. If the save-state resume loop
      * returns because the game changed modes, the restarted host fiber
