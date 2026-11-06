@@ -10,6 +10,9 @@ The recompiler's function finder discards labels that don't decode as
 instructions; we additionally pre-filter labels whose first assembled
 line at that offset is a data directive.
 
+Also discover source-backed call continuations installed as object handlers
+by helpers such as Check_CameraInRange, even when they have no source label.
+
 Run:
     python gen_disasm_labels.py s2disasm/s2.lst > sonic2.discovery.toml
 
@@ -61,6 +64,48 @@ DATA_DIRECTIVE_RE = re.compile(r"^(?:dc\.[bwl]|dcb\.[bwl]|ds\.[bwl]|"
                                re.IGNORECASE)
 
 
+def static_call_target(pc: int, data: bytes) -> int | None:
+    op = int.from_bytes(data[:2], 'big')
+    if op == 0x4EB9 and len(data) == 6:
+        return int.from_bytes(data[2:], 'big') & 0xFFFFFF
+    if op == 0x4EB8 and len(data) == 4:
+        return int.from_bytes(data[2:], 'big', signed=True) & 0xFFFFFF
+    if op == 0x4EBA and len(data) == 4:
+        return (pc + 2 + int.from_bytes(data[2:], 'big', signed=True)) & 0xFFFFFF
+    if op & 0xFF00 == 0x6100 and len(data) == (4 if op & 255 == 0 else 2):
+        displacement = (int.from_bytes(data[2:], 'big', signed=True) if op & 255 == 0
+                        else int.from_bytes(data[1:2], 'big', signed=True))
+        return (pc + 2 + displacement) & 0xFFFFFF
+    return None
+
+
+def return_handler_entries(instructions: dict[int, bytes]) -> dict[int, str]:
+    """Find source-backed calls whose helper installs its return PC in (a0).
+
+    Sonic's Check_CameraInRange does this after its conditional range checks.
+    The unlabeled continuation is then an independently called object handler.
+    Do not infer an entry from a data word or a store after a terminal return.
+    """
+    calls = {pc: static_call_target(pc, data) for pc, data in instructions.items()}
+    helpers = set()
+    for target in set(calls.values()) - {None}:
+        pc = target
+        for _ in range(64):
+            data = instructions.get(pc)
+            if not data:
+                break
+            op = int.from_bytes(data[:2], 'big')
+            if op == 0x2097:  # MOVE.L (A7),(A0): install the caller's continuation
+                helpers.add(target)
+                break
+            if op in (0x4E75, 0x4E73, 0x4E77) or op & 0xFFC0 == 0x4EC0 or op & 0xFF00 == 0x6000:
+                break
+            pc += len(data)
+    return {pc + len(instructions[pc]): f'ReturnHandler_{pc:06X}'
+            for pc, target in calls.items() if target in helpers
+            and pc + len(instructions[pc]) in instructions}
+
+
 def scan_lst(path: str, max_addr: int):
     """Return {addr: (label, is_code)} for every offset that has a label.
 
@@ -72,6 +117,7 @@ def scan_lst(path: str, max_addr: int):
     labels: dict[int, str] = {}
     code_offsets: set[int] = set()
     data_offsets: set[int] = set()
+    instructions: dict[int, bytes] = {}
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
             m = LABEL_RE.match(line)
@@ -98,6 +144,13 @@ def scan_lst(path: str, max_addr: int):
                 data_offsets.add(addr)
             else:
                 code_offsets.add(addr)
+                # AS pads the hex field before source text. Mnemonics such
+                # as DBF also match hex characters; do not consume them.
+                hex_field = re.split(r'\t| {2,}', e.group(2), maxsplit=1)[0]
+                instructions[addr] = bytes.fromhex(hex_field)
+    for addr, name in return_handler_entries(instructions).items():
+        if addr < max_addr:
+            labels.setdefault(addr, name)
     return {addr: (name, addr in code_offsets)
             for addr, name in labels.items()}
 

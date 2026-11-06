@@ -2103,6 +2103,37 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         gi.region               = "NTSC-U (USA)";
         gi.expected_crc         = g_game_spec.expected_rom_crc32;
         gi.has_expected_crc     = g_game_spec.expected_rom_crc32 != 0;
+#ifdef RECOMP_LAUNCHER_HAS_ROM_REVISIONS
+        /* The same game-owned allowlist drives the picker and CLI gate.
+         * Digests and labels are borrowed only while the launcher runs. */
+        size_t alias_count = g_game_spec.rom_aliases ? g_game_spec.num_rom_aliases : 0;
+        RecompLauncherCRomRevision *rom_aliases = NULL;
+        char (*alias_crc)[9] = NULL;
+        if (alias_count) {
+            /* Include the primary image too: the launcher's refusal panel
+             * lists supported catalog entries instead of its legacy CRC. */
+            rom_aliases = calloc(alias_count + 1, sizeof(*rom_aliases));
+            alias_crc = calloc(alias_count + 1, sizeof(*alias_crc));
+            if (!rom_aliases || !alias_crc) {
+                free(rom_aliases); free(alias_crc);
+                return 1;
+            }
+            snprintf(alias_crc[0], sizeof(alias_crc[0]), "%08X",
+                     (unsigned)g_game_spec.expected_rom_crc32);
+            rom_aliases[0].label = g_game_spec.display_name;
+            rom_aliases[0].crc32_hex = alias_crc[0];
+            rom_aliases[0].supported = 1;
+            for (size_t i = 0; i < alias_count; ++i) {
+                snprintf(alias_crc[i + 1], sizeof(alias_crc[i + 1]), "%08X",
+                         (unsigned)g_game_spec.rom_aliases[i].crc32);
+                rom_aliases[i + 1].label = g_game_spec.rom_aliases[i].label;
+                rom_aliases[i + 1].crc32_hex = alias_crc[i + 1];
+                rom_aliases[i + 1].supported = 1;
+            }
+            gi.rom_revisions = rom_aliases;
+            gi.num_rom_revisions = (int)alias_count + 1;
+        }
+#endif
         gi.widescreen_supported = !g_game_spec.video && g_game_layout.ws_capable;
         gi.mods = app_config_video_mods(g_game_spec.video,settings_ini);
         if (g_game_spec.mods) gi.mods = g_game_spec.mods(gi.mods);
@@ -2161,6 +2192,10 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
     #endif
         lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
                                         initial_rom, picked, picked_cap);
+#ifdef RECOMP_LAUNCHER_HAS_ROM_REVISIONS
+        free(rom_aliases);
+        free(alias_crc);
+#endif
         if (lr == 0) {                  /* PLAY */
             if (picked[0]) *rom_path_io = picked;
     #if GENESIS_HAS_RECOMP_NET
@@ -2803,7 +2838,19 @@ int main(int argc, char *argv[])
     }
     if (g_game_spec.expected_rom_crc32) {
         uint32_t actual_crc = rom_crc32(rom_raw, rom_raw_len);
-        if (actual_crc != g_game_spec.expected_rom_crc32) {
+        int accepted = actual_crc == g_game_spec.expected_rom_crc32;
+        if (!accepted && g_game_spec.rom_aliases &&
+            g_game_spec.expected_rom_size && rom_raw_len == g_game_spec.expected_rom_size) {
+            for (size_t i = 0; i < g_game_spec.num_rom_aliases; ++i)
+                if (actual_crc == g_game_spec.rom_aliases[i].crc32) {
+                    accepted = 1;
+                    fprintf(stderr, "ROM verified: %s (CRC32=%08X)\n",
+                            g_game_spec.rom_aliases[i].label,
+                            (unsigned)actual_crc);
+                    break;
+                }
+        }
+        if (!accepted) {
             fprintf(stderr,
                     "ROM identity mismatch for %s: CRC32=%08X, expected=%08X. "
                     "Refusing to execute address-specific recompiled code.\n",

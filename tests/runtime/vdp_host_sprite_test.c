@@ -150,7 +150,7 @@ static void private_planes(void)
             unsigned si=spr>=5?GVDP_HOST_PALETTE_BASE+36:spr==3?62:spr==4?63:19;
             unsigned expected=so&&hi?si:ao&&ah?ai:bh?bi:so?si:ao?ai:bi;
             if(sh&&expected<64){
-                unsigned shade=!((ao&&ah)||bh||(so&&hi)),light=0;
+                unsigned shade=!(ah||bh||(so&&hi)),light=0;
                 if(x<8&&spr==4)shade=1;
                 if(x<8&&spr==3){if(shade)shade=0;else light=1;}
                 expected+=light?128:shade?64:0;

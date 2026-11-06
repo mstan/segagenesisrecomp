@@ -1324,7 +1324,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
          * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
          * shadow on the underlying pixel. */
         if (sh_mode && px < GVDP_CRAM_ENTRIES) {
-            int hi_present = (s_op && s_hi) || (a_op && a_hi) || (b_op && b_hi);
+            /* Transparent plane priority still selects normal intensity. */
+            int hi_present = (s_op && s_hi) || a_hi || b_hi;
             int sh = !hi_present;
             int hl = 0;
             if (s_spr_shadow_op[xo]) sh = 1;
