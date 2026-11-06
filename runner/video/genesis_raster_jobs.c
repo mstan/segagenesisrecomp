@@ -284,6 +284,7 @@ static void sample(const GVDPRasterFrame *f,unsigned first,unsigned count,unsign
         if(k<(s->run&255u)&&(!sprite||((s->color>>(16+k))&1u))) {
             unsigned fx=((s->run>>8)&255u)+k;if(s->run&65536u)fx^=7;
             unsigned nib=(f->pattern_values[s->source]>>(28-fx*4))&15;
+            if(!sprite)*high=(s->color>>8)&1u;
             if(nib){*index=(s->color&255u)+nib;*opaque=1;*high=(s->color>>8)&1u;return;}
         }
         if(!sprite)return;
@@ -307,7 +308,7 @@ int gvdp_hd_render_argb(const GVDPRasterFrame *f,uint32_t *out,unsigned stride)
                     if(so&&sh)pixel=s;else if(ao&&ah)pixel=a;else if(bo&&bh)pixel=b;
                     else if(so)pixel=s;else if(ao)pixel=a;else if(bo)pixel=b;
                     if(r->shadow_mode&&pixel<64) {
-                        unsigned ops=f->operator_words[r->ops_first+x/8],shadow=!((so&&sh)||(ao&&ah)||(bo&&bh)),light=0;
+                        unsigned ops=f->operator_words[r->ops_first+x/8],shadow=!((so&&sh)||ah||bh),light=0;
                         if((ops>>(x&7))&1u)shadow=1;
                         if((ops>>(8+(x&7)))&1u){if(shadow)shadow=0;else light=1;}
                         if(light)pixel+=128;else if(shadow)pixel+=64;

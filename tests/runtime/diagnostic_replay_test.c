@@ -18,6 +18,20 @@ typedef struct Snapshot {
 } Snapshot;
 static Fixture machine;
 static GenesisReplayView view;
+static uint32_t local_scene, saved_scene;
+static size_t local_save(void *data,size_t cap) {
+  if(!data)return sizeof local_scene;
+  if(cap!=sizeof local_scene)return 0;
+  memcpy(data,&local_scene,cap);return cap;
+}
+static int local_load(const void *data,size_t size,int apply) {
+  if(!data || size!=sizeof local_scene)return 0;
+  if(apply)memcpy(&local_scene,data,size);
+  return 1;
+}
+static void local_reset(void) { local_scene=0; }
+static const GameVideo local_video={.presentation_state_save=local_save,
+    .presentation_state_load=local_load,.presentation_reset=local_reset};
 void runner_replay_sram_flushed(void) { machine.part[1]+=31; }
 #if RECOMP_LAUNCHER
 #include "recomp_launcher.h"
@@ -116,7 +130,7 @@ static size_t feedback_context(void *data,size_t size,int load) {
   else memcpy(data,&startup_context,size);
   return size;
 }
-const GameSpec g_game_spec = {.short_name = "fixture",.feedback_context=feedback_context};
+const GameSpec g_game_spec = {.short_name = "fixture",.feedback_context=feedback_context,.video=&local_video};
 uint32_t genesis_build_exe_fingerprint(void) { return 0x1234; }
 const char *genesis_build_info_string(void) { return "fixture"; }
 const char *app_config_aspect_mode(int i) { return i == 2 ? "21:9" : "fit"; }
@@ -130,6 +144,7 @@ size_t genesis_rb_save_untracked(void *dst, size_t cap) {
   return sizeof s;
 }
 static void save(Snapshot *s) {
+  saved_scene=local_scene;
   genesis_rb_save_untracked(s, sizeof *s);
   s->token = genesis_replay_snapshot_saved();
 }
@@ -139,6 +154,7 @@ int genesis_rb_load(const void *src, size_t n) {
   Snapshot s;
   memcpy(&s, src, sizeof s);
   machine = s.machine;
+  local_reset(); /* the real RB loader discards abandoned presentation */
   genesis_replay_snapshot_loaded(s.token);
   return 1;
 }
@@ -175,6 +191,7 @@ static void viewport(GenesisReplayView *v, int apply) {
     *v = view;
 }
 static void tick(const GenesisSimInput *in) {
+  machine.part[1]+=local_scene++;
 #if RECOMP_LAUNCHER
   if (mod_enabled)
     machine.part[0] += (unsigned)mod_value;
@@ -239,8 +256,10 @@ int main(int argc, char **argv) {
         runner_replay_sram_flushed();
         genesis_replay_sram_flushed();
       }
-      if (i == 15 && !genesis_rb_load(&saved, sizeof saved))
-        return 1;
+      if (i == 15) {
+        if(!genesis_rb_load(&saved,sizeof saved) ||
+           !local_load(&saved_scene,sizeof saved_scene,1))return 1;
+      }
       if (i == 20) {
         char path[1200];
         snprintf(path, sizeof path, "%s/load.bin", argv[2]);

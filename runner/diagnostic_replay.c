@@ -30,8 +30,8 @@ enum {
   MAX_CACHE = 256 * 1024 * 1024
 };
 typedef struct ReplayKey {
-  void *blob;
-  size_t size;
+  void *blob,*presentation;
+  size_t size,presentation_size;
   unsigned uses;
 } ReplayKey;
 static GenesisReplayWriter *writer;
@@ -506,26 +506,48 @@ static int playback_command(char *row, size_t cap) {
       if (k->blob)
         break;
       size_t n = genesis_rb_bound();
-      if (n > MAX_CACHE - cache_bytes) {
+      const GameVideo *video=g_game_spec.video;
+      size_t local=video && video->presentation_state_save?
+          video->presentation_state_save(NULL,0):0;
+      if (video && video->presentation_state_save &&
+          (!local || !video->presentation_state_load || local>MAX_SNAPSHOT))break;
+      if (n > MAX_CACHE - cache_bytes || local>MAX_CACHE-cache_bytes-n) {
         fail("playback checkpoint memory limit reached");
         return 0;
+      }
+      /* Match local_states: capture the local scene before its core blob.
+       * Object-loading caches can affect the next simulation after rewind,
+       * even though disposable display history is excluded from RB digests. */
+      if(local) {
+        k->presentation=malloc(local);
+        if(!k->presentation || video->presentation_state_save(k->presentation,local)!=local)break;
+        k->presentation_size=local;
       }
       k->blob = malloc(n);
       k->size = k->blob ? genesis_rb_save_untracked(k->blob, n) : 0;
       if (!k->size)
         break;
-      cache_bytes += k->size;
+      cache_bytes += k->size+k->presentation_size;
       continue;
     }
     if (sscanf(row, "R %llu %c", &id, &extra) == 1) {
-      if (!id || id > key_count || !keys[id].uses || !keys[id].blob ||
-          !genesis_rb_load(keys[id].blob, keys[id].size))
+      if (!id || id > key_count || !keys[id].uses || !keys[id].blob)
         break;
       ReplayKey *k = &keys[id];
+      const GameVideo *video=g_game_spec.video;
+      if(k->presentation_size && (!video || !video->presentation_state_load ||
+          !video->presentation_state_load(k->presentation,k->presentation_size,0)))break;
+      if(!genesis_rb_load(k->blob,k->size))break;
+      if(g_game_spec.on_state_loaded)g_game_spec.on_state_loaded();
+      if(video && video->presentation_reset)video->presentation_reset();
+      if(k->presentation_size &&
+          !video->presentation_state_load(k->presentation,k->presentation_size,1)) {
+        fail("validated local checkpoint restore failed");return 0;
+      }
       if (!--k->uses) {
-        cache_bytes -= k->size;
-        free(k->blob);
-        k->blob = NULL;
+        cache_bytes -= k->size+k->presentation_size;
+        free(k->blob);free(k->presentation);
+        k->blob=k->presentation=NULL;
       }
       continue;
     }
@@ -715,8 +737,9 @@ void genesis_replay_shutdown(void) {
     fclose(states);
   stream = states = NULL;
   if (keys)
-    for (unsigned i = 0; i <= key_count; ++i)
-      free(keys[i].blob);
+    for (unsigned i = 0; i <= key_count; ++i) {
+      free(keys[i].blob);free(keys[i].presentation);
+    }
   free(keys);
   keys = NULL;
   free(scratch);
