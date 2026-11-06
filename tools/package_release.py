@@ -64,6 +64,9 @@ def main():
     args = ap.parse_args()
 
     allow = [args.exe, args.license, args.notices, args.readme] + list(args.extra)
+    permission_path = os.path.join(os.path.dirname(os.path.abspath(args.license)), "PERMISSIONS.md")
+    if os.path.isfile(permission_path) and permission_path not in allow:
+        allow.append(permission_path)
 
     # 1) every allowlisted file must exist
     missing = [p for p in allow if not os.path.isfile(p)]
