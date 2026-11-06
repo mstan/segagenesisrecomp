@@ -163,8 +163,11 @@ const uint8_t *gvdp_sprite_patterns(unsigned size_flags, unsigned *bytes);
 int gvdp_sprite_pattern_line(unsigned size_flags, unsigned tile);
 /* Sprite-only explicit palette overrides. Values 1..3 in tile_lines retain
  * their line-0 contract; GVDP_EXT_SPRITE_FORCE | line applies to any source
- * sprite palette. Plane fetches never honor this marker. */
+ * sprite palette. Plane fetches never honor this marker. Size bit 5 selects
+ * only the bank's palette map, retaining native VRAM patterns. Bit 6 still
+ * chooses the bank; bit 7 also replaces patterns as documented above. */
 #define GVDP_EXT_SPRITE_FORCE 0x80u
+#define GVDP_SPRITE_PALETTE_ONLY 0x20u
 int gvdp_sprite_palette_line(unsigned size_flags, unsigned tile, unsigned source_line);
 /* Read-only color table for index-to-ARGB sinks; NULL when disabled. */
 const uint32_t *gvdp_host_palette(void);

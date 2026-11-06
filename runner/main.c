@@ -522,11 +522,20 @@ static int display_logical_height(void)
     return s_screen_height;
 }
 
+static int display_logical_width(void)
+{
+    /* H32 changes the VDP's horizontal sample count, not the display shape.
+     * Keep screenshots/hashes at 256 pixels; presentation fills the same
+     * logical screen as H40. Expanded game-owned canvases retain their width. */
+    return s_screen_width == 256 ? 320 : s_screen_width;
+}
+
 static void update_render_logical_size(SDL_Renderer *renderer)
 {
     static SDL_Renderer *s_last_renderer = NULL;
     static int s_last_w = 0;
     static int s_last_h = 0;
+    static int s_trace_w = 0, s_trace_h = 0;
     int w;
     int h;
 
@@ -538,7 +547,7 @@ static void update_render_logical_size(SDL_Renderer *renderer)
         w = ws_canvas_w();
         h = ws_canvas_h();
     } else {
-        w = s_screen_width;
+        w = display_logical_width();
         h = display_logical_height();
     }
 
@@ -548,6 +557,16 @@ static void update_render_logical_size(SDL_Renderer *renderer)
             s_last_w = w;
             s_last_h = h;
         }
+    }
+    if(getenv("GENESIS_DISPLAY_TRACE") &&
+       (s_trace_w!=s_screen_width || s_trace_h!=s_screen_height)) {
+        int ow=0,oh=0;SDL_Rect viewport;
+        SDL_GetRendererOutputSize(renderer,&ow,&oh);
+        SDL_RenderGetViewport(renderer,&viewport);
+        fprintf(stderr,"[display] raw=%dx%d logical=%dx%d output=%dx%d viewport=%d,%d,%d,%d\n",
+            s_screen_width,s_screen_height,s_last_w,s_last_h,ow,oh,
+            viewport.x,viewport.y,viewport.w,viewport.h);
+        s_trace_w=s_screen_width;s_trace_h=s_screen_height;
     }
 }
 
@@ -2145,6 +2164,14 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */
         gi.theme                = "genesis";
         gi.rom_noun             = "ROM";
+#ifdef RECOMP_LAUNCHER_HAS_ROM_PATTERNS
+        /* Steam's unheadered Mega Drive images use .68K. The picker only
+         * selects a file; the game's normal byte/revision check still owns it. */
+        static const char *const rom_patterns[]={"*.bin","*.md","*.gen","*.smd","*.68k"};
+        gi.rom_patterns=rom_patterns;
+        gi.num_rom_patterns=(int)(sizeof rom_patterns/sizeof rom_patterns[0]);
+        gi.rom_filter_desc="Sega Genesis ROM (.bin/.md/.gen/.smd/.68k)";
+#endif
         gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
         gi.pad_mode_selectable  = 1;
 #ifdef RECOMP_LAUNCHER_HAS_REWIND_DEPTH
@@ -2329,9 +2356,14 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
         if (!genesis_local_states_overlay(&pixels, &pw, &ph)) break;
         SDL_UpdateTexture(panel, NULL, pixels, pw * (int)sizeof(uint32_t));
         SDL_Rect src = {0, 0, s_screen_width, s_screen_height};
-        int dw = s_screen_height * pw / ph;
-        if (dw > s_screen_width) dw = s_screen_width;
-        SDL_Rect dst = {(s_screen_width - dw) / 2, 0, dw, s_screen_height};
+        int logical_w=0,logical_h=0;
+        SDL_RenderGetLogicalSize(renderer,&logical_w,&logical_h);
+        if(logical_w<=0 || logical_h<=0) {
+            logical_w=display_logical_width();logical_h=display_logical_height();
+        }
+        int dw = logical_h * pw / ph;
+        if (dw > logical_w) dw = logical_w;
+        SDL_Rect dst = {(logical_w - dw) / 2, 0, dw, logical_h};
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, game, &src, NULL);
         SDL_RenderCopy(renderer, panel, NULL, &dst);
@@ -4048,9 +4080,19 @@ session_begin:;
             }
         }
 #if RECOMP_LAUNCHER
+        int ui_width=s_screen_width;
+        if (ui_open && s_screen_width==256) {
+            /* Compose host text after H32 sample expansion so its glyphs keep
+             * their ordinary H40 proportions. Expand backwards in place. */
+            ui_width=320;
+            for(int y=0;y<s_screen_height;++y) {
+                uint32_t *row=s_present_buf+(size_t)y*s_frame_stride;
+                for(int x=319;x>=0;--x)row[x]=row[x*256/320];
+            }
+        }
         if (ui_open)
             recomp_runtime_ui_render_argb8888(s_runtime_ui.ui, s_present_buf,
-                s_screen_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
+                ui_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
 #endif
         update_render_logical_size(renderer);
         SDL_RenderClear(renderer);
@@ -4059,6 +4101,9 @@ session_begin:;
          * reported. Linear filtering keeps the full upload so edge sampling
          * after frame-size transitions never sees stale texture contents. */
         SDL_Rect src = { 0, 0, s_screen_width, s_screen_height };
+#if RECOMP_LAUNCHER
+        if(ui_open)src.w=ui_width;
+#endif
         SDL_Rect upload_rect = src;
         const SDL_Rect *base_upload_rect =
             s_frame_texture_filtered ? NULL : &upload_rect;
