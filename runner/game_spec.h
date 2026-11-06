@@ -68,6 +68,11 @@ typedef struct GameSpec {
     int (*state_load)(const void *data, size_t size, int apply);
     /* At the game's real WaitForVint: is its caller a resumable loop? */
     int (*state_at_boundary)(void);
+    /* Adapter capture contract: keep guest work running until the completed
+     * raster frame also satisfies state_at_boundary. Required for S2's track
+     * drawing phase. Zero retains the existing yield-and-hold contract. This
+     * is game-owned metadata, not a player setting. */
+    int state_boundary_at_frame_end;
     /* ---- Identity ---- */
     /* Clean game name for gameplay and launcher captions, e.g. "Sonic the
      * Hedgehog". Build/backend/debug identity belongs in logs and About. */

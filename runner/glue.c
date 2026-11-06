@@ -663,7 +663,8 @@ int glue_state_boundary_ready(void)
 {
     /* Interrupts can change the resumable phase after the last CPU yield.
      * Validate the adapter's boundary against the completed wall frame. */
-    return s_state_parked && (!g_game_spec.state_at_boundary || g_game_spec.state_at_boundary());
+    return s_state_parked && (!g_game_spec.state_boundary_at_frame_end ||
+        !g_game_spec.state_at_boundary || g_game_spec.state_at_boundary());
 }
 /* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
  * the raster. own_deliver_vint runs the whole handler atomically at the
@@ -696,6 +697,9 @@ static cc_u32f s_chunk_cycles = 0;  /* budget for current chunk */
 
 void glue_run_game_chunk(uint32_t cycles)
 {
+    /* Existing adapters qualify their first CPU yield while held. An adapter
+     * with a completed-raster contract must instead keep doing native work. */
+    if (s_state_parked && !g_game_spec.state_boundary_at_frame_end) return;
     if (!s_game_running || !s_game_fiber)
         return;
     if (s_game_yielded_vblank)
