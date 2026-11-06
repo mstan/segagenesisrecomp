@@ -22,6 +22,7 @@ SOURCE_ROOT = Path(__file__).resolve().parents[2]
 # the code actually linked into this standalone target, plus the project terms.
 SOURCE_NOTICES = {
     "LICENSE": "LICENSE.md",
+    "PERMISSIONS.md": "PERMISSIONS.md",
     "THIRD-PARTY-LICENSES.md": "THIRD-PARTY-LICENSES.md",
     "licenses/SDL2.txt": "runner/external/SDL2/SDL2-2.28.5/COPYING.txt",
     "licenses/ymfm.txt": "runner/external/ymfm/LICENSE",
@@ -37,6 +38,7 @@ PACKAGE_FILES = (
     "README-portable-windows.md",
     "tools/segacd/disc_image.py",
     "LICENSE",
+    "PERMISSIONS.md",
     "THIRD-PARTY-LICENSES.md",
 )
 
