@@ -15,7 +15,8 @@
 uint8_t g_ram[65536],g_rom[0x400000];
 static uint8_t adapter[16];
 static uint32_t machine=17,glue=23,fm=29,psg=31,resumed;
-static int boundary,requested,discarded;
+static int boundary,requested,discarded,replaying;
+static int genesis_replay_playing(void) { return replaying; }
 static size_t state_size(void) { return sizeof adapter; }
 static int state_save(void *p,size_t n) { memcpy(p,adapter,n);return 1; }
 static int state_load(const void *p,size_t n,int apply) {
@@ -64,6 +65,9 @@ static int test_commit(const char *from,const char *to) {
 }
 static SDL_Thread *test_create_thread(SDL_ThreadFunction fn,const char *name,void *p) {
     return fail_thread?NULL:SDL_CreateThread(fn,name,p);
+}
+static int release_commit(void *unused) {
+    (void)unused;SDL_Delay(10);SDL_SemPost(release_write);return 0;
 }
 #undef SDL_CreateThread
 #define SDL_CreateThread test_create_thread
@@ -127,7 +131,17 @@ int main(int argc,char **argv) {
     CHECK(host_state_load(path));check_guest(5);
     fail_thread=1;set_guest(6);CHECK(host_state_save_now(path));CHECK(!host_state_writer);fail_thread=0;
     CHECK(host_state_load(path));check_guest(6);
+
+    /* Uncapped replay can reach another recorded accepted request before the
+     * prior worker completes. Wait without advancing/changing the guest. */
+    block_commit=1;set_guest(7);CHECK(host_state_save_now(path));
+    CHECK(!SDL_SemWaitTimeout(entered,5000));set_guest(8);replaying=1;
+    SDL_Thread *release=test_create_thread(release_commit,"test-release",NULL);CHECK(release);
+    CHECK(host_state_save(path));SDL_WaitThread(release,NULL);replaying=0;block_commit=0;
+    CHECK(*host_state_pending&&requested);check_guest(8);
+    boundary=1;host_state_tick();CHECK(!*host_state_pending);CHECK(host_state_collect(1));
+    CHECK(host_state_load(path));check_guest(8);
     CHECK(!remove(path));SDL_DestroySemaphore(entered);SDL_DestroySemaphore(release_write);SDL_Quit();
-    puts("Host state writer PASS: immutable capture, busy/pending, timeout, atomic failure, load, shutdown, fallback");
+    puts("Host state writer PASS: immutable capture, busy/pending, timeout, atomic failure, load, shutdown, fallback, replay ordering");
     return 0;
 }

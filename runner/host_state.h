@@ -132,7 +132,10 @@ static char host_state_pending[512];
 static unsigned host_state_pending_frames;
 static int host_state_save(const char *path)
 {
-    host_state_collect(0);
+    /* Recorded accepted saves must not become busy rejections merely because
+     * uncapped playback reaches the next request before storage catches up.
+     * Draining here advances no guest tick or mutable simulation state. */
+    host_state_collect(genesis_replay_playing());
     if(host_state_writer){host_state_notice("Save already in progress");return 0;}
     if (strlen(path)>=sizeof host_state_pending || *host_state_pending) return 0;
     strcpy(host_state_pending,path); host_state_pending_frames=0;

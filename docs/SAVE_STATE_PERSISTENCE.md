@@ -11,6 +11,9 @@ rejected explicitly; a load during writing drains that accepted snapshot first.
 Shutdown drains accepted work before SDL cleanup. Failed thread creation uses
 the same synchronous writer. The existing SRAM writer accepts fixed-size memory
 blobs, so it is not reused for this seekable variable-size FILE serializer.
+Uncapped diagnostic playback drains the previous writer before another recorded
+accepted save request; storage speed cannot turn that request into a busy
+rejection. This wait advances no guest simulation state.
 
 The CRC remains reflected IEEE CRC32 with identical incremental/file semantics;
 an immutable256-entry table replaces the per-bit loop on every platform.
@@ -50,3 +53,7 @@ Both modern Sonic adapters also pass six active/paused Blue Spheres cases and
 30 regular save/load cases, including exact repeated/cold RAM/VRAM/PNG and
 malformed/configuration rejection. Linux and final package/owner gates are
 recorded separately before release.
+A paced current-build special-stage recording with four accepted saves only
+four ticks apart and two disk-state loads replays all180 recorded executions
+uncapped with every checkpoint matched. The blocked-writer unit case separately
+forces the storage ordering that a naturally fast disk might not expose.
