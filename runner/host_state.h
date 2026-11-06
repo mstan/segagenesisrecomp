@@ -38,8 +38,62 @@ static int host_machine_read(FILE *f)
     return fread(g_ram,1,65536,f)==65536 && machine_load_state(f) &&
         ym2612_load_state(f) && psg_load_state(f) && !ferror(f);
 }
+typedef struct HostStateWrite {
+    FILE *file;
+    HostStateHeader header;
+    char temporary[640],path[512];
+    Uint64 timing[6];
+    SDL_Thread *thread;
+    SDL_atomic_t done;
+    int ok;
+} HostStateWrite;
+static HostStateWrite *host_state_writer;
+
+/* The worker owns only an immutable captured file/header, never live guest,
+ * renderer or audio data. Flush/checksum/atomic commit may block on storage. */
+static int host_state_write_finish(void *context)
+{
+    HostStateWrite *w=context;
+    FILE *f=w->file; HostStateHeader *h=&w->header;
+    int ok=!fseek(f,sizeof *h,SEEK_SET) && genesis_state_crc32_file(f,h->bytes,&h->crc);
+    ok=ok && !fseek(f,0,SEEK_SET) && fwrite(h,sizeof *h,1,f)==1 && !fflush(f);
+    w->timing[3]=SDL_GetPerformanceCounter();
+    if(fclose(f))ok=0;
+    w->timing[4]=SDL_GetPerformanceCounter();
+    if(ok) {
+#ifdef _WIN32
+        ok=MoveFileExA(w->temporary,w->path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
+#else
+        ok=rename(w->temporary,w->path)==0;
+#endif
+    }
+    if(!ok)remove(w->temporary); /* Only this request's unique temporary file. */
+    w->timing[5]=SDL_GetPerformanceCounter();w->ok=ok;
+    SDL_AtomicSet(&w->done,1);
+    return 0;
+}
+static int host_state_collect(int wait)
+{
+    HostStateWrite *w=host_state_writer;
+    if(!w)return 1;
+    if(!wait && !SDL_AtomicGet(&w->done))return 0;
+    if(w->thread)SDL_WaitThread(w->thread,NULL);
+    int ok=w->ok;
+    if(getenv("GENESIS_STATE_TIMING")) {
+        double us=1e6/(double)SDL_GetPerformanceFrequency();
+        fprintf(stderr,"[SAVE-TIMING] capture_us=%.1f serialize_us=%.1f checksum_us=%.1f close_us=%.1f commit_us=%.1f\n",
+            (w->timing[1]-w->timing[0])*us,(w->timing[2]-w->timing[1])*us,
+            (w->timing[3]-w->timing[2])*us,(w->timing[4]-w->timing[3])*us,(w->timing[5]-w->timing[4])*us);
+    }
+    fprintf(stderr,"[SAVE] %s %s\n",ok?"saved":"failed (previous state retained)",w->path);
+    /* atexit also drains an explicit script exit; SDL may already be down. */
+    if(SDL_WasInit(SDL_INIT_VIDEO))host_state_notice(ok?"State saved":"Save failed: previous state retained");
+    free(w);host_state_writer=NULL;return ok;
+}
+static void host_state_shutdown(void) { (void)host_state_collect(1); }
 static int host_state_save_now(const char *path)
 {
+    Uint64 timing[3]={SDL_GetPerformanceCounter(),0,0};
     HostStateHeader h={0};
     memcpy(h.magic,"GRHOST2",8);
     if (!g_game_spec.state_build_id || strlen(g_game_spec.state_build_id)>=sizeof h.build) return 0;
@@ -49,37 +103,37 @@ static int host_state_save_now(const char *path)
     if (!size || size>HOST_STATE_LIMIT) return 0;
     uint8_t *host=malloc(size); if (!host) return 0;
     int ok=g_game_spec.state_save(host,size);
+    timing[1]=SDL_GetPerformanceCounter();
     if (!ok) { free(host); host_state_notice("Save failed: wait for supported gameplay"); fprintf(stderr,"[SAVE] The game adapter cannot save in its current mode.\n"); return 0; }
     char tmp[640]; snprintf(tmp,sizeof tmp,"%s.tmp.%llu",path,(unsigned long long)SDL_GetPerformanceCounter());
     FILE *f=fopen(tmp,"w+b");
     if (!f) { free(host); return 0; }
     h.section[0]=(uint32_t)size;
     ok=fwrite(&h,sizeof h,1,f)==1 && fwrite(host,1,size,f)==size && host_machine_write(f,&h);
+    timing[2]=SDL_GetPerformanceCounter();
     free(host);
     long end=ftell(f);
     if (end<(long)sizeof h || end-(long)sizeof h>HOST_STATE_LIMIT) ok=0;
-    if (ok) {
-        h.bytes=(uint32_t)(end-sizeof h);
-        ok=!fseek(f,sizeof h,SEEK_SET) && genesis_state_crc32_file(f,h.bytes,&h.crc);
-        ok=ok && !fseek(f,0,SEEK_SET) && fwrite(&h,sizeof h,1,f)==1 && !fflush(f);
-    }
-    if (fclose(f)) ok=0;
-    if (ok) {
-#ifdef _WIN32
-        ok=MoveFileExA(tmp,path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=0;
-#else
-        ok=rename(tmp,path)==0;
-#endif
-    }
-    if (!ok) remove(tmp); /* Only our exact, unique temporary file. */
-    fprintf(stderr,"[SAVE] %s %s\n",ok?"saved":"failed (previous state retained)",path);
-    host_state_notice(ok?"State saved":"Save failed: previous state retained");
-    return ok;
+    if (ok) h.bytes=(uint32_t)(end-sizeof h);
+    HostStateWrite *w=ok?calloc(1,sizeof *w):NULL;
+    if(!w) { fclose(f);remove(tmp);host_state_notice("Save failed: previous state retained");return 0; }
+    w->file=f;w->header=h;
+    memcpy(w->timing,timing,sizeof timing);
+    strcpy(w->temporary,tmp);strcpy(w->path,path);
+    host_state_writer=w;
+    static int shutdown_registered;
+    if(!shutdown_registered){atexit(host_state_shutdown);shutdown_registered=1;}
+    w->thread=SDL_CreateThread(host_state_write_finish,"state-writer",w);
+    if(!w->thread) { host_state_write_finish(w);return host_state_collect(1); }
+    host_state_notice("Saving state...");
+    return 1;
 }
 static char host_state_pending[512];
 static unsigned host_state_pending_frames;
 static int host_state_save(const char *path)
 {
+    host_state_collect(0);
+    if(host_state_writer){host_state_notice("Save already in progress");return 0;}
     if (strlen(path)>=sizeof host_state_pending || *host_state_pending) return 0;
     strcpy(host_state_pending,path); host_state_pending_frames=0;
     glue_state_boundary_request(1);
@@ -89,6 +143,7 @@ static int host_state_save(const char *path)
 }
 static void host_state_tick(void)
 {
+    host_state_collect(0);
 #if RECOMP_LAUNCHER
     if (host_state_notice_until && (Sint32)(SDL_GetTicks()-host_state_notice_until)>=0) {
         if (s_runtime_ui.window) SDL_SetWindowTitle(s_runtime_ui.window,g_game_spec.display_name);
@@ -105,7 +160,14 @@ static void host_state_tick(void)
 }
 static int host_state_load(const char *path)
 {
-    host_state_pending[0]=0; glue_state_boundary_request(0);
+    if(*host_state_pending) {
+        host_state_notice("Save capture pending: load after confirmation");
+        fprintf(stderr,"[LOAD] rejected: save capture still pending; previous slot not loaded.\n");return 0;
+    }
+    if(!host_state_collect(1)) {
+        host_state_notice("Latest save failed: previous state retained");return 0;
+    }
+    glue_state_boundary_request(0);
     HostStateHeader h={0},expected={0};
     FILE *f=fopen(path,"rb"),*backup=NULL,*staged=NULL;
     uint8_t *body=NULL; int ok=0;

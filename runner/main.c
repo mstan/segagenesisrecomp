@@ -3933,6 +3933,8 @@ session_begin:;
                     runner_write_screenshot_file(state_path);
             }
             if (input_script_should_exit()) {
+                if(host_state_writer)audio_set_playback_enabled(0);
+                host_state_shutdown();
                 if(presentation_trace)fclose(presentation_trace);
     if(g_app_config.presentation_rate)fprintf(stderr,"[presentation] guest_ticks=%u presents=%llu interpolated=%llu counter_frequency=%llu\n",
         frame_num,(unsigned long long)presentation_count,(unsigned long long)interpolation_count,(unsigned long long)perf_frequency);
@@ -4410,6 +4412,8 @@ session_begin:;
     }
 
     /* --- Cleanup --- */
+    if(host_state_writer)audio_set_playback_enabled(0);
+    host_state_shutdown();
     genesis_host_wait_shutdown();
 #if GENESIS_HAS_RECOMP_NET
     genesis_netplay_print_summary();

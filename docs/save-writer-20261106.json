@@ -1,0 +1,133 @@
+{
+  "package": "portable-table-CRC32 + bounded-immutable-state-file-writer",
+  "host": "DESKTOP-HN15M1H",
+  "profile": {
+    "guest_fps": 60,
+    "presentation_hz": 144,
+    "aspect": "off",
+    "army": false,
+    "audio_device": "SDL dummy (muted),48000Hz,1024frames",
+    "isolated_profiles": true
+  },
+  "games": {
+    "sonic3k": {
+      "before": {
+        "save_request_to_confirmation_ms": [
+          80.38629998918623,
+          79.50029999483377,
+          79.85169999301434,
+          78.460399992764
+        ],
+        "conceals": 1,
+        "repeated_audio_frames": 900,
+        "underruns": 0,
+        "overflows": 63323,
+        "host_timing": "[HOST-TIMING] events=4 retained=4 max_frame_us=83336 phases=input,simulation,reserved,post,audio,persistence,present,layout,pacer",
+        "raw": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-final-sonic3k-before"
+      },
+      "after": {
+        "save_request_to_confirmation_ms": [
+          48.78730000928044,
+          49.79710001498461,
+          48.78329997882247,
+          48.76569996122271
+        ],
+        "conceals": 0,
+        "repeated_audio_frames": 0,
+        "underruns": 0,
+        "overflows": 93075,
+        "host_timing": "[HOST-TIMING] events=0 retained=0 max_frame_us=32102 phases=input,simulation,reserved,post,audio,persistence,present,layout,pacer",
+        "raw": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-final-sonic3k-after"
+      },
+      "matched_saved_guest_RAM_equal": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "decision": "improved save behavior; no candidate save-frame hitch events or repeated audio"
+    },
+    "sandk": {
+      "before": {
+        "save_request_to_confirmation_ms": [
+          67.23899999633431,
+          66.8645000550896,
+          66.15950004197657,
+          66.55019999016076
+        ],
+        "conceals": 1,
+        "repeated_audio_frames": 390,
+        "underruns": 0,
+        "overflows": 88789,
+        "host_timing": "[HOST-TIMING] events=4 retained=4 max_frame_us=69508 phases=input,simulation,reserved,post,audio,persistence,present,layout,pacer",
+        "raw": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-final-sandk-before"
+      },
+      "after": {
+        "save_request_to_confirmation_ms": [
+          48.67970000486821,
+          49.25110004842281,
+          48.65299991797656,
+          48.523199977353215
+        ],
+        "conceals": 0,
+        "repeated_audio_frames": 0,
+        "underruns": 0,
+        "overflows": 100780,
+        "host_timing": "[HOST-TIMING] events=0 retained=0 max_frame_us=34890 phases=input,simulation,reserved,post,audio,persistence,present,layout,pacer",
+        "raw": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-final-sandk-after"
+      },
+      "matched_saved_guest_RAM_equal": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "decision": "improved save behavior; no candidate save-frame hitch events or repeated audio"
+    },
+    "sonic3": {
+      "before": {
+        "save_request_to_confirmation_ms": [
+          0.4768999060615897,
+          0.327700050547719,
+          0.3331999760121107,
+          0.31729997135698795
+        ],
+        "conceals": 0,
+        "repeated_audio_frames": 0,
+        "underruns": 0,
+        "overflows": 45000,
+        "host_timing": "[HOST-TIMING] events=0 retained=0 max_frame_us=22224 phases=input,simulation,reserved,post,audio,persistence,present,layout,pacer",
+        "raw": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-final-sonic3-before"
+      },
+      "after": {
+        "save_request_to_confirmation_ms": [
+          0.29429991263896227,
+          0.31779997516423464,
+          0.32540003303438425,
+          0.3328999737277627
+        ],
+        "conceals": 0,
+        "repeated_audio_frames": 0,
+        "underruns": 0,
+        "overflows": 70936,
+        "host_timing": "[HOST-TIMING] events=0 retained=0 max_frame_us=31248 phases=input,simulation,reserved,post,audio,persistence,present,layout,pacer",
+        "raw": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-final-sonic3-after"
+      },
+      "decision": "neutral legacy-path; no audio conceal/repetition in either build"
+    }
+  },
+  "candidate_binaries": [
+    {
+      "Path": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-async-frozen\\Sonic3KRecomp.exe",
+      "Hash": "55F5F2E21CD52E31FA7645B681B9B74670F07B0256E44119867F543B191EF19C"
+    },
+    {
+      "Path": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-async-frozen\\SonicAndKnucklesRecomp.exe",
+      "Hash": "5A48CD5BFDEE69FD36EF33F1D2A7A447A9D4B9CEA2FF73A2F4336CD9A78AAC45"
+    },
+    {
+      "Path": "G:\\Temp\\Codex\\sonic-feedback-native-hrr-20261106\\n02-async-frozen\\Sonic3Recomp.exe",
+      "Hash": "3C23F3B52D2C34D68CEECB8BAD1693B64955F1CAD0EA35222637F967476868F3"
+    }
+  ]
+}
