@@ -17,6 +17,7 @@ static uint8_t adapter[16];
 static uint32_t machine=17,glue=23,fm=29,psg=31,resumed;
 static int boundary,requested,discarded,replaying;
 static int genesis_replay_playing(void) { return replaying; }
+static void genesis_local_states_save_finished(const char *path,int ok) { (void)path;(void)ok; }
 static size_t state_size(void) { return sizeof adapter; }
 static int state_save(void *p,size_t n) { memcpy(p,adapter,n);return 1; }
 static int state_load(const void *p,size_t n,int apply) {

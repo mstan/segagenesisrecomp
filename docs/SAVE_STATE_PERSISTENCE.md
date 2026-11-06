@@ -11,6 +11,11 @@ rejected explicitly; a load during writing drains that accepted snapshot first.
 Shutdown drains accepted work before SDL cleanup. Failed thread creation uses
 the same synchronous writer. The existing SRAM writer accepts fixed-size memory
 blobs, so it is not reused for this seekable variable-size FILE serializer.
+The slot browser resumes gameplay after accepting a modern request, allowing
+the native capture boundary to be reached. The requested thumbnail is retained
+privately and published only after file replacement succeeds; a failed save
+keeps the previous preview as well as its data. Legacy immediate saves keep
+their existing browser behavior.
 Uncapped diagnostic playback drains the previous writer before another recorded
 accepted save request; storage speed cannot turn that request into a busy
 rejection. This wait advances no guest simulation state.

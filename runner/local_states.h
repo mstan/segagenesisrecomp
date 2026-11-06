@@ -16,6 +16,10 @@ size_t genesis_local_states_history_bytes(void);
 void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
                                      int width, int height);
 void genesis_local_states_slot_saved(int slot);
+/* Modern saves are accepted before storage completes. Keep their requested
+ * preview private until success; failed writes retain the prior slot preview. */
+void genesis_local_states_save_started(const char *path);
+void genesis_local_states_save_finished(const char *path,int ok);
 int  genesis_local_states_open_rewind(void);
 int  genesis_local_states_open_menu(void);
 int  genesis_local_states_is_open(void); /* 0, 1 rewind, 2 menu */
@@ -23,7 +27,8 @@ void genesis_local_states_move(int direction); /* rewind: -1 older; menu: signed
 void genesis_local_states_cancel(void);
 /* Rewind restores a snapshot; menu loads its selected slot. Returns success. */
 int  genesis_local_states_accept(void);
-/* Save the selected menu slot; returns success. */
+/* Save the selected menu slot; returns acceptance. Modern requests resume
+ * gameplay for capture and publish their preview only after completion. */
 int  genesis_local_states_save(void);
 /* ARGB overlay, 640x448. The rewind overlay has transparent pixels. */
 int  genesis_local_states_overlay(const uint32_t **pixels, int *width, int *height);

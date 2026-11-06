@@ -86,6 +86,7 @@ static int host_state_collect(int wait)
             (w->timing[3]-w->timing[2])*us,(w->timing[4]-w->timing[3])*us,(w->timing[5]-w->timing[4])*us);
     }
     fprintf(stderr,"[SAVE] %s %s\n",ok?"saved":"failed (previous state retained)",w->path);
+    genesis_local_states_save_finished(w->path,ok);
     /* atexit also drains an explicit script exit; SDL may already be down. */
     if(SDL_WasInit(SDL_INIT_VIDEO))host_state_notice(ok?"State saved":"Save failed: previous state retained");
     free(w);host_state_writer=NULL;return ok;
@@ -155,9 +156,13 @@ static void host_state_tick(void)
 #endif
     if (!*host_state_pending) return;
     if (glue_state_boundary_ready()) {
-        host_state_save_now(host_state_pending);
+        if(!host_state_save_now(host_state_pending)) {
+            genesis_local_states_save_finished(host_state_pending,0);
+            host_state_notice("Save failed: previous state retained");
+        }
     } else if (++host_state_pending_frames<120) return;
     else { host_state_notice("Save unavailable in the current game mode");
+        genesis_local_states_save_finished(host_state_pending,0);
         fprintf(stderr,"[SAVE] no resumable game boundary; previous state retained.\n"); }
     host_state_pending[0]=0; glue_state_boundary_request(0);
 }

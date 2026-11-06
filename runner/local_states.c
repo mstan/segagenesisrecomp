@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "rb_state.h"
 #include "game_spec.h"
@@ -41,6 +42,9 @@ static uint32_t s_panel[PANEL_W * PANEL_H];
 static uint32_t s_slot_thumb[SLOT_COUNT][THUMB_W * THUMB_H];
 static int s_slot_has_thumb[SLOT_COUNT], s_slot_exists[SLOT_COUNT];
 static char s_status[64];
+static int s_pending_slot;
+static char s_pending_path[640];
+static uint32_t s_pending_thumb[THUMB_W * THUMB_H];
 static size_t s_history_bytes;
 
 static void release_snap(LocalSnap *snap)
@@ -78,6 +82,7 @@ void genesis_local_states_shutdown(void)
     free(s_meta);
     s_meta = NULL;
     s_depth = s_count = s_head = s_mode = 0;
+    s_pending_slot=0;
 }
 
 void genesis_local_states_configure(const char *save_dir, int enabled,
@@ -136,7 +141,7 @@ static void refresh_slots(void)
     }
 }
 
-void genesis_local_states_slot_saved(int slot)
+static void save_slot_thumb(int slot,const uint32_t *pixels)
 {
     if (slot < 1 || slot > SLOT_COUNT) return;
     char path[640];
@@ -144,10 +149,39 @@ void genesis_local_states_slot_saved(int slot)
     FILE *f = fopen(path, "wb");
     if (f) {
         (void)fwrite("GTHUMB1", 1, 8, f);
-        (void)fwrite(s_live_thumb, sizeof(uint32_t), THUMB_W * THUMB_H, f);
+        (void)fwrite(pixels, sizeof(uint32_t), THUMB_W * THUMB_H, f);
         fclose(f);
     }
     refresh_slots();
+}
+void genesis_local_states_slot_saved(int slot) { save_slot_thumb(slot,s_live_thumb); }
+static int same_path(const char *a,const char *b)
+{
+    while(*a && *b) {
+        unsigned char x=(unsigned char)*a++,y=(unsigned char)*b++;
+#ifdef _WIN32
+        if(x=='\\')x='/';if(y=='\\')y='/';
+        x=(unsigned char)tolower(x);y=(unsigned char)tolower(y);
+#endif
+        if(x!=y)return 0;
+    }
+    return *a==*b;
+}
+void genesis_local_states_save_started(const char *path)
+{
+    for(int slot=1;slot<=SLOT_COUNT;++slot) {
+        char expected[640];path_for_slot(slot,0,expected,sizeof expected);
+        if(same_path(expected,path)) {
+            s_pending_slot=slot;snprintf(s_pending_path,sizeof s_pending_path,"%s",path);
+            memcpy(s_pending_thumb,s_live_thumb,sizeof s_pending_thumb);return;
+        }
+    }
+}
+void genesis_local_states_save_finished(const char *path,int ok)
+{
+    if(!s_pending_slot || !same_path(path,s_pending_path))return;
+    if(ok)save_slot_thumb(s_pending_slot,s_pending_thumb);
+    s_pending_slot=0;
 }
 
 void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
@@ -275,6 +309,9 @@ int genesis_local_states_save(void)
         snprintf(s_status, sizeof s_status, "SAVE FAILED");
         return 0;
     }
+    /* Resume the guest so its requested native boundary can be reached.
+     * Completion publishes the stored preview and the runner's notice. */
+    if(s_pending_slot) { s_mode=0;return 1; }
     genesis_local_states_slot_saved(s_selected + 1);
     snprintf(s_status, sizeof s_status, "SLOT %d SAVED", s_selected + 1);
     return 1;
