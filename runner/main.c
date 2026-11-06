@@ -2142,6 +2142,14 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         gi.platform             = "SEGA GENESIS";  /* infers the genesis profile */
         gi.theme                = "genesis";
         gi.rom_noun             = "ROM";
+#ifdef RECOMP_LAUNCHER_HAS_ROM_PATTERNS
+        /* Steam's unheadered Mega Drive images use .68K. The picker only
+         * selects a file; the game's normal byte/revision check still owns it. */
+        static const char *const rom_patterns[]={"*.bin","*.md","*.gen","*.smd","*.68k"};
+        gi.rom_patterns=rom_patterns;
+        gi.num_rom_patterns=(int)(sizeof rom_patterns/sizeof rom_patterns[0]);
+        gi.rom_filter_desc="Sega Genesis ROM (.bin/.md/.gen/.smd/.68k)";
+#endif
         gi.pad_mode_supported   = 1;   /* 3-Button / 6-Button selector */
         gi.pad_mode_selectable  = 1;
 #ifdef RECOMP_LAUNCHER_HAS_REWIND_DEPTH
