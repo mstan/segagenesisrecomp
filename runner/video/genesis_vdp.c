@@ -583,7 +583,7 @@ int gvdp_sprite_palette_line(unsigned flags,unsigned tile,unsigned source_line)
 {
     unsigned bank=(flags>>6)&1u;
     unsigned line;
-    if((flags&0x80u) && s_sprite_patterns[bank])
+    if((flags&(0x80u|GVDP_SPRITE_PALETTE_ONLY)) && s_sprite_patterns[bank])
         line=s_sprite_pattern_lines[bank] && tile<s_sprite_pattern_bytes[bank]/32
             ?s_sprite_pattern_lines[bank][tile]:0;
     else line=s_ext_tiles?s_ext_tiles[tile&0x7FFu]:0;
