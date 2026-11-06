@@ -168,8 +168,49 @@ static void private_planes(void)
     CHECK(gvdp_compose_captured(&captured,composed)==320 && !memcmp(pixels,composed,320));
     CHECK(captured.host_palette[1]==genesis_dac_cram_to_argb(0xE00,GENESIS_DAC_NORMAL));
 }
+static void native_pattern_private_palette(void)
+{
+    uint8_t patterns[65536],lines[2048]={0},planes[2048]={0};
+    uint8_t pixels[GVDP_MAX_WIDTH],composed[GVDP_MAX_WIDTH],original[65536];
+    uint16_t top[GVDP_EXT_LINES*16]={0},bottom[GVDP_EXT_LINES*16]={0};
+    GVDPRasterRow captured;
+    memset(patterns,0x22,sizeof patterns);lines[1]=2;
+    top[17]=0xE;bottom[17]=0xE00;
+    CHECK(gvdp_set_sprite_patterns_bank(0,patterns,sizeof patterns,lines));
+    gvdp_set_ext_tiles(planes);gvdp_set_ext_colors(top,bottom,8);
+    unsigned bytes=1;
+    CHECK(!gvdp_sprite_patterns(GVDP_SPRITE_PALETTE_ONLY,&bytes) && !bytes);
+    for(unsigned mode=0;mode<3;++mode)for(unsigned line=0;line<=8;line+=8) {
+        int interlace=mode==2,width=mode==0?256:320;
+        memset(&v,0,sizeof v);v.reg[1]=64;v.reg[2]=0x30;
+        v.reg[4]=7;v.reg[5]=0x7C;v.reg[13]=0x3F;
+        v.reg[12]=(uint8_t)(mode==0?0:interlace?7:1);
+        memset(v.vram+(interlace?64:32),0x11,interlace?64:32);
+        for(unsigned n=0;n<3;++n) {
+            unsigned at=0xF800+n*8;
+            word(at,(interlace?256:128)+line);
+            v.vram[at+2]=(uint8_t)(n==0?GVDP_SPRITE_PALETTE_ONLY:0);
+            v.vram[at+3]=(uint8_t)(n==2?0:n+1);
+            word(at+4,n==2?0x2001:1);word(at+6,128+n*16);
+        }
+        /* The same tile in a plane and an unmarked sprite keeps native CRAM. */
+        for(unsigned cell=0;cell<1024;++cell)word(0xC000+cell*2,1);
+        memcpy(original,v.vram,sizeof original);
+        CHECK(gvdp_render_scanline(&v,(int)line,pixels)==width);
+        CHECK(pixels[0]==GVDP_HOST_PALETTE_BASE+17);
+        CHECK(pixels[8]==1 && pixels[16]==1 && pixels[32]==17 && pixels[48]==1);
+        CHECK(!memcmp(original,v.vram,sizeof original));
+        CHECK(!v.sprite_collision && !v.sprite_overflow);
+        CHECK(gvdp_capture_presented_scanline(&v,(int)line,&captured)==width);
+        CHECK(gvdp_compose_captured(&captured,composed)==width);
+        CHECK(!memcmp(pixels,composed,(size_t)width));
+        CHECK(captured.host_palette[17]==genesis_dac_cram_to_argb(line<8?0xE:0xE00,GENESIS_DAC_NORMAL));
+    }
+    gvdp_set_sprite_patterns_bank(0,NULL,0,NULL);gvdp_set_ext_tiles(NULL);
+}
 int main(void)
 {
+    native_pattern_private_palette();
     uint8_t row[320];
     gvdp_init(&v);
     v.reg[1]=64; v.reg[2]=0x30; v.reg[4]=7; v.reg[5]=0x7C;
