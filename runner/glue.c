@@ -23,6 +23,9 @@
 
 /* genesis_runtime.h interface */
 #include "genesis_runtime.h"
+#include "native_interrupt_frame.h"
+#include "native_interruptible.h"
+static int s_native_pc_scope,s_native_instruction_open,s_native_vblank_completed;
 
 /* Tier-3 clean-room 68000 interpreter — the runtime correctness floor. On a
  * dispatch miss the native build used to silently no-op the missed function;
@@ -721,7 +724,7 @@ void glue_run_game_chunk(uint32_t cycles)
     }
 
     s_chunk_cycles = cycles;
-    unsigned divisor = g_game_spec.main_cpu_divisor ? g_game_spec.main_cpu_divisor() : 1;
+    unsigned divisor = !s_native_pc_scope && g_game_spec.main_cpu_divisor ? g_game_spec.main_cpu_divisor() : 1;
     if (!divisor) divisor = 1;
     if (divisor != s_main_cpu_divisor) s_main_cpu_clock.remainder = 0;
     s_main_cpu_divisor = divisor;
@@ -855,8 +858,14 @@ static void own_deliver_vint(GVDP *vdp)
     M68KState saved = g_cpu;
     int saved_split_sp_popped = recomp_interrupt_context_enter();
     for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
-    g_cpu.A[7] = STK;
+    int precise=s_native_pc_scope;
+    uint32_t exception_sp=(saved.A[7]-6u)&0xFFFFFFu;
+    g_cpu.A[7] = precise ? exception_sp : STK;
     s_in_vblank_service = 1;
+    if(precise) {
+        native_interrupt_frame_write(g_ram,exception_sp,saved.SR,saved.PC);
+        g_cpu.SR=(uint16_t)((saved.SR&~0x0700u)|0x0600u);
+    }
     uint32_t saved_rebase = g_68k_stamp_rebase;
     g_68k_stamp_rebase = machine_z80_stamp() - g_audio_cycle_counter * 7u;
     g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
@@ -865,6 +874,7 @@ static void own_deliver_vint(GVDP *vdp)
      * generated code bumps g_audio_cycle_counter per instruction, including
      * through the handler). See s_irq_cycle_debt. */
     uint32_t cyc_before = g_audio_cycle_counter;
+    if(precise) { g_audio_cycle_counter+=44; g_cycle_accumulator+=44; }
 #ifdef GEN_DEV_TRACE
     /* Snapshot the VBlank routine byte BEFORE the handler consumes it — the
      * giant-spin probe needs to know whether the dispatch input was valid. */
@@ -911,8 +921,18 @@ static void own_deliver_vint(GVDP *vdp)
     vdp->in_vblank = saved_vb;
     g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
     s_in_vblank_service = 0;
-    for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+    uint32_t return_pc=saved.PC;
+    uint16_t return_sr=saved.SR;
+    if(precise)native_interrupt_frame_read(g_ram,exception_sp,&return_sr,&return_pc);
+    else for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
     g_cpu = saved;
+    if(precise) {
+        g_cpu.PC=return_pc&0xFFFFFFu; g_cpu.SR=return_sr;
+        s_native_vblank_completed=1;
+        /* Scheduler debt already owns these IRQ cycles. Do not charge them
+         * to the resumed main instruction's chunk budget a second time. */
+        s_budget_cyc_seen=g_audio_cycle_counter;
+    }
     recomp_interrupt_context_leave(saved_split_sp_popped);
     s_game_yielded_vblank = 0;
 }
@@ -961,6 +981,11 @@ static void own_run_handler_interleaved(int level, GVDP *vdp)
 void glue_own_interrupt(int level, GVDP *vdp)
 {
     if (!s_game_running) return;
+    if(s_native_pc_scope && s_native_instruction_open) {
+        if(level==6)s_own_vint_latched=1;
+        if(level==4)s_own_hint_latched=1;
+        return;
+    }
     /* An interleaved handler is already running on the game fiber (the scheduler
      * is crossing raster lines DURING it). Do not start another delivery — latch
      * a crossing V-int and let it deliver after the current handler RTEs. (SR
@@ -1059,6 +1084,7 @@ void glue_own_interrupt(int level, GVDP *vdp)
 int glue_own_vint_service_latched(GVDP *vdp)
 {
     if (!s_own_vint_latched || !s_game_running) return 0;
+    if(s_native_pc_scope && s_native_instruction_open)return 0;
     /* Deliver as soon as the mask drops; do NOT hold behind outstanding raster
      * debt (that indefinitely-deferred S1's SEGA-screen V-int — see
      * glue_own_interrupt). Debt is still charged/drained for cycle stamping. */
@@ -1073,12 +1099,53 @@ int glue_own_vint_service_latched(GVDP *vdp)
  * Multiple expiries coalesce into the same asserted request. */
 int glue_own_hint_service_latched(GVDP *vdp)
 {
+    if(s_native_pc_scope && s_native_instruction_open)return 0;
     if (!s_own_hint_latched || !s_game_running || s_irq_in_progress || s_pending_irq ||
         !(vdp->reg[0]&16) || ((g_cpu.SR>>8)&7)>=4) return 0;
     glue_own_interrupt(4,vdp);
     return 1;
 }
 int glue_cosim_hint_latched(void) { return s_own_hint_latched; }
+
+int genesis_interruptible_native(uint32_t entry,GenesisNativeInstruction step,void *user)
+{
+    if(s_native_pc_scope || !step)return 0;
+    uint32_t return_sp=g_cpu.A[7];
+    int split=g_split_sp_popped;
+    g_cpu.PC=entry&0xFFFFFFu;
+    s_native_pc_scope=1;
+    /* Drain prior main-program work with its original headroom before
+     * entering the source-timed helper. Later slices select divisor1 too. */
+    check_cycle_budget();
+    s_main_cpu_divisor=1;s_main_cpu_clock.remainder=0;
+    for(unsigned guard=0;guard<10000000u;++guard) {
+        s_native_instruction_open=0;
+        glue_own_vint_service_latched(&g_machine.vdp);
+        glue_own_hint_service_latched(&g_machine.vdp);
+        int returning=g_cpu.A[7]==return_sp && glue_peek16(g_cpu.PC)==0x4E75u;
+        unsigned cycles=0;
+        s_native_instruction_open=1;
+        if(!step(user,&cycles) || !cycles || cycles>65535u) {
+            fprintf(stderr,"native instruction scope failed at $%06X\n",g_cpu.PC);
+            abort();
+        }
+        s_native_instruction_open=0;
+        ++g_native_insn_count;
+        g_cycle_accumulator+=cycles; g_audio_cycle_counter+=cycles;
+        GEN_COSIM_TICK(cycles);
+        check_cycle_budget();
+        if(returning) {
+            g_cpu.A[7]=return_sp; /* generated caller performs the single pop */
+            g_split_sp_popped=split;
+            s_native_pc_scope=0;
+            unsigned divisor=g_game_spec.main_cpu_divisor ? g_game_spec.main_cpu_divisor() : 1;
+            s_main_cpu_divisor=divisor ? divisor : 1;s_main_cpu_clock.remainder=0;
+            return 1;
+        }
+    }
+    fprintf(stderr,"native instruction scope exceeded its instruction guard\n");
+    abort();
+}
 
 /* Non-clearing read of the masked-V-int latch for full-state hashing
  * (glue_own_vint_service_latched() would consume it — must not, during a
@@ -1107,6 +1174,17 @@ void glue_yield_for_vblank(void)
     if (s_in_vblank_service || s_irq_in_progress)
         return;   /* inside a handler (atomic or interleaved) — don't re-park */
     s_watchdog_counter = 0;
+    /* The original LevelLoop arms VInt, decompresses, then polls. A VInt
+     * that interrupted decompression has already cleared that request;
+     * parking again would halve the following redraw's guest cadence. */
+    if(s_native_vblank_completed) {
+        unsigned routine=g_game_layout.vint_routine_addr ?
+            glue_peek8(g_game_layout.vint_routine_addr) : 1;
+        if(native_interrupt_wait_satisfied(&s_native_vblank_completed,routine,s_state_requested)) {
+            if(g_pacing_mode==GLUE_PACING_FIBER_FULL)g_cycle_accumulator=0;
+            return;
+        }
+    }
 #ifdef GENESIS_COSIM
     /* Cross-backend work-cycle ruler: g_cycle_accumulator is this logical
      * frame's 68K work (summed from the same clown-measured cost table the
@@ -1517,6 +1595,7 @@ void glue_restart_game_fiber(uint32_t resume_pc)
 
     s_game_running = 0;
     s_game_yielded_vblank = 0;
+    s_native_pc_scope=s_native_instruction_open=s_native_vblank_completed=0;
 #if SONIC_REVERSE_DEBUG
     s_game_yielded_break = 0;
 #endif
@@ -2441,6 +2520,7 @@ typedef struct GlueRbSched {
      * _STATICS probe on Sonic 3 (2026-09-25): omitting it forked the replay
      * in cpu/sched/ram at step 1 in 5 of 149 probe passes. */
     int32_t  split_sp_popped;
+    int32_t  native_pc_scope,native_instruction_open,native_vblank_completed;
 } GlueRbSched;
 
 size_t glue_rb_sched_save(void *dst, size_t cap)
@@ -2494,6 +2574,9 @@ size_t glue_rb_sched_save(void *dst, size_t cap)
     s.in_floor             = s_in_floor;
     s.watchdog_counter     = s_watchdog_counter;
     s.split_sp_popped      = g_split_sp_popped;
+    s.native_pc_scope=s_native_pc_scope;
+    s.native_instruction_open=s_native_instruction_open;
+    s.native_vblank_completed=s_native_vblank_completed;
     memcpy(dst, &s, sizeof s);
     return sizeof s;
 }
@@ -2503,6 +2586,9 @@ int glue_rb_sched_load(const void *src, size_t len)
     GlueRbSched s;
     if (!src || len != sizeof s) return 0;
     memcpy(&s, src, sizeof s);
+    if(s.native_pc_scope<0 || s.native_pc_scope>1 ||
+       s.native_instruction_open<0 || s.native_instruction_open>s.native_pc_scope ||
+       s.native_vblank_completed<0 || s.native_vblank_completed>1)return 0;
     g_frame_count               = s.frame_count;
     g_cycle_accumulator         = s.cycle_accumulator;
     g_vblank_threshold          = s.vblank_threshold;
@@ -2548,6 +2634,9 @@ int glue_rb_sched_load(const void *src, size_t len)
     s_in_floor                  = s.in_floor;
     s_watchdog_counter          = s.watchdog_counter;
     g_split_sp_popped           = s.split_sp_popped;
+    s_native_pc_scope=s.native_pc_scope;
+    s_native_instruction_open=s.native_instruction_open;
+    s_native_vblank_completed=s.native_vblank_completed;
     return 1;
 }
 
