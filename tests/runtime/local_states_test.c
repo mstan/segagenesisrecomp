@@ -9,7 +9,7 @@
 static uint32_t guest;
 static uint32_t presentation;
 static size_t presentation_bytes=sizeof presentation;
-static int reject_presentation,loaded_calls;
+static int reject_presentation,loaded_calls,defer_save;
 static void reset_presentation(void){presentation=0;}
 static void state_loaded(void){++loaded_calls;presentation=0;}
 static size_t presentation_save(void *dst,size_t cap)
@@ -44,6 +44,7 @@ int genesis_rb_load(const void *src, size_t len)
 }
 int runner_save_state_file(const char *path)
 {
+    if(defer_save) { genesis_local_states_save_started(path);return 1; }
     FILE *f = fopen(path, "wb");
     int ok = f && fwrite(&guest, sizeof guest, 1, f) == 1;
     if (f) fclose(f);
@@ -142,6 +143,37 @@ int main(int argc, char **argv)
             }
         }
     }
+    /* A queued modern save closes the paused browser to reach its native
+     * boundary, without claiming success or replacing the old preview. */
+    genesis_local_states_cancel();
+    for(unsigned i=0;i<64;++i)wide[i]=0xFFABCDEFu;
+    genesis_local_states_note_frame(wide,16,16,4);
+    defer_save=1;
+    fails+=check(genesis_local_states_open_menu() && genesis_local_states_save() &&
+                 !genesis_local_states_is_open(),"pending save did not resume the guest");
+    uint32_t pending_thumb[128*90];
+    tf=fopen(path,"rb");
+    fails+=check(tf && fread(magic,1,8,tf)==8 && fread(pending_thumb,sizeof *pending_thumb,128*90,tf)==128*90,
+                 "old thumbnail vanished during pending save");if(tf)fclose(tf);
+    fails+=check(!memcmp(thumb,pending_thumb,sizeof thumb),"pending save replaced the prior thumbnail");
+    char state_path[1024];snprintf(state_path,sizeof state_path,"%snative_save_1.bin",argv[1]);
+    genesis_local_states_save_finished(state_path,0);
+    tf=fopen(path,"rb");
+    fails+=check(tf && fread(magic,1,8,tf)==8 && fread(pending_thumb,sizeof *pending_thumb,128*90,tf)==128*90,
+                 "old thumbnail vanished after failed save");if(tf)fclose(tf);
+    fails+=check(!memcmp(thumb,pending_thumb,sizeof thumb),"failed save replaced the prior thumbnail");
+
+    fails+=check(genesis_local_states_open_menu() && genesis_local_states_save() &&
+                 !genesis_local_states_is_open(),"second pending save did not resume the guest");
+    for(unsigned i=0;i<64;++i)wide[i]=0xFF777777u;
+    genesis_local_states_note_frame(wide,16,16,4); /* live frame advances during storage */
+    defer_save=0;fails+=check(runner_save_state_file(state_path),"mock atomic replacement failed");
+    genesis_local_states_save_finished(state_path,1);
+    tf=fopen(path,"rb");
+    fails+=check(tf && fread(magic,1,8,tf)==8 && fread(pending_thumb,sizeof *pending_thumb,128*90,tf)==128*90,
+                 "completed save thumbnail missing");if(tf)fclose(tf);
+    fails+=check(pending_thumb[29*128]==0xFFABCDEFu && pending_thumb[60*128+127]==0xFFABCDEFu,
+                 "completed save used a later live thumbnail instead of the request");
     genesis_local_states_shutdown();
     return fails ? 1 : 0;
 }

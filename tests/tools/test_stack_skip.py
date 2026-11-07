@@ -36,6 +36,7 @@ M68KState g_cpu;
 uint8_t g_rom[0x400000], g_ram[0x10000];
 const GameSpec g_game_spec = {0};
 uint64_t g_native_insn_count, g_native_span_count;
+uint64_t g_frame_count;
 uint64_t g_native_direct_calls,g_native_direct_tails;
 GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
 uint32_t g_cycle_accumulator, g_audio_cycle_counter, g_vblank_threshold = 0xFFFFFFFFu;
@@ -49,8 +50,16 @@ void m68k_write32(uint32_t a,uint32_t v) { m68k_write16(a,v>>16);m68k_write16(a+
 void recomp_push_return(uint32_t a) { g_cpu.A[7]-=4;m68k_write32(g_cpu.A[7],a); }
 void glue_check_vblank(void) { abort(); }
 uint32_t recomp_resolve_ram_trampoline(uint32_t a) { return a; }
-static unsigned dynamic_visits,native_visits;
-int recomp_dispatch_ram_stub(uint32_t a) { if(a==0x800000u){++dynamic_visits;return 1;}return 0; }
+static unsigned dynamic_visits,native_visits,guard_visits,guard_mode;
+int recomp_dispatch_ram_stub(uint32_t a) {
+    if(a==0x800000u){++dynamic_visits;return 1;}
+    if(a==0x800004u) {
+        if(++guard_visits>2000100u)return 1;
+        if(guard_mode==1 && !(guard_visits%1024u))++g_frame_count;
+        recomp_tail_call(a);return 1;
+    }
+    return 0;
+}
 void genesis_log_dispatch_miss(uint32_t a) { fprintf(stderr,"miss %x\n",a); abort(); }
 void hybrid_jmp_interpret(uint32_t a) { call_by_address(a); }
 void hybrid_call_interpret(uint32_t a) { call_by_address(a); }
@@ -110,6 +119,11 @@ static void frame_contract(void) {
 #endif
 int main(int argc,char **argv) {
     int skip=atoi(argv[1]), mixed=atoi(argv[2]); (void)argc;
+    if(argc>3) {
+        guard_mode=(unsigned)atoi(argv[3]);
+        recomp_call_addr(0x800004u);
+        return guard_mode==1 && guard_visits==2000101u ? 0 : 1;
+    }
     g_cpu.A[7]=0xFFFE00; g_cpu.SR=0x2700;
     recomp_call_addr(0x200);
     if (g_cpu.D[0]!=42 || g_cpu.D[1]!=(skip<2 ? 1u:0u) ||
@@ -188,5 +202,10 @@ def main():
                     run([args.cc.resolve(),"-std=c11","-O1",*flags,"-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
                 run([exe,str(slots),str(int(mixed))],td)
                 print(f"PASS skip {slots} return slots, split={split}, mixed-width-data={mixed}")
+                if not slots and not split and not mixed:
+                    run([exe,"0","0","1"],td)
+                    stalled=subprocess.run([str(exe),"0","0","2"],cwd=td,capture_output=True)
+                    assert stalled.returncode==2 and b"tail-dispatch runaway" in stalled.stderr
+                    print("PASS multi-frame tail chain and retained no-progress runaway guard")
 
 if __name__ == "__main__": main()

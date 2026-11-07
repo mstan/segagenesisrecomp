@@ -182,6 +182,14 @@ target_compile_definitions(local_states_test PRIVATE GENESIS_LOCAL_HISTORY_LIMIT
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
 
+add_executable(host_state_test runtime/host_state_test.c)
+target_include_directories(host_state_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_link_libraries(host_state_test PRIVATE SDL2::SDL2)
+if(MSVC)
+    target_compile_definitions(host_state_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+add_test(NAME host_state COMMAND host_state_test "${CMAKE_CURRENT_BINARY_DIR}")
+
 # Both fixtures include production sources directly for allocator interception.
 # Do not also link retcomm_rbengine or compile rb_capture.c into these targets.
 foreach(_fixture rb_capture state_crc)

@@ -1240,7 +1240,10 @@ int runner_save_state_file(const char *path)
     const char *resolved = resolve_runner_path(path, full_path, sizeof(full_path));
     if (g_game_spec.state_size) {
         int ok=host_state_save(resolved);
-        if(ok)genesis_replay_save_requested();
+        if(ok) {
+            genesis_local_states_save_started(resolved);
+            genesis_replay_save_requested();
+        }
         return ok;
     }
     FILE *sf = fopen(resolved, "wb");
@@ -3586,7 +3589,7 @@ session_begin:;
                         } else
 #endif
                         if (is_save) {
-                            if (runner_save_state_file(slot_name))
+                            if (runner_save_state_file(slot_name) && !g_game_spec.state_size)
                                 genesis_local_states_slot_saved(slot);
                         }
                         else runner_load_state_file(slot_name);
@@ -3650,7 +3653,7 @@ session_begin:;
                 else
 #endif
                 if (save_slot) {
-                    if (runner_save_state_file(slot_name))
+                    if (runner_save_state_file(slot_name) && !g_game_spec.state_size)
                         genesis_local_states_slot_saved(slot);
                 }
                 else runner_load_state_file(slot_name);
@@ -3965,6 +3968,8 @@ session_begin:;
                     runner_write_screenshot_file(state_path);
             }
             if (input_script_should_exit()) {
+                if(host_state_writer)audio_set_playback_enabled(0);
+                host_state_shutdown();
                 if(presentation_trace)fclose(presentation_trace);
     if(g_app_config.presentation_rate)fprintf(stderr,"[presentation] guest_ticks=%u presents=%llu interpolated=%llu counter_frequency=%llu\n",
         frame_num,(unsigned long long)presentation_count,(unsigned long long)interpolation_count,(unsigned long long)perf_frequency);
@@ -4455,6 +4460,8 @@ session_begin:;
     }
 
     /* --- Cleanup --- */
+    if(host_state_writer)audio_set_playback_enabled(0);
+    host_state_shutdown();
     genesis_host_wait_shutdown();
 #if GENESIS_HAS_RECOMP_NET
     genesis_netplay_print_summary();
