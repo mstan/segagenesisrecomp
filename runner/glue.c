@@ -1529,6 +1529,9 @@ void glue_restart_game_fiber(uint32_t resume_pc)
     } else if (!create_game_fiber(resume_pc)) {
         return;
     }
+    /* The old dispatch frames lived on the stack just reset above. A cold
+     * resume starts a new chain; rollback restores its own captured chain. */
+    recomp_tail_frame_set(NULL);
     fprintf(stderr, "[fiber] restarted game fiber at $%06X\n",
             (unsigned)(resume_pc & 0xFFFFFFu));
 }
