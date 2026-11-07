@@ -301,7 +301,7 @@ int runner_load_state_file(const char *path);
 static const char *const s_presentation_rates[]={"Off (original rate)","120 Hz","144 Hz","Display refresh rate"};
 static const RecompRuntimeUiItem s_presentation_item={"video.presentation_rate","Mods","High refresh rate","Smooth camera and actors between original ticks; one tick of visual latency. Game and audio speed stay unchanged.",RECOMP_RUNTIME_UI_CHOICE,0,3,1,s_presentation_rates,4};
 static const RecompRuntimeUiItem s_audio_filter_item={"audio.bypass_filter","Audio","Unfiltered audio","Bypass native hardware low-pass filters. A separate enhanced FM path retains its own sound.",RECOMP_RUNTIME_UI_BOOL,0,1,1};
-static const char *const s_mod_aspects[]={"Adaptive","16:9","21:9","32:9"};
+static const char *const s_mod_aspects[]={"Adaptive","16:9","21:9","32:9 (experimental)"};
 static const int s_hd_scales[]={1,2,4,8,16,32,64};
 static const char *const s_hd_labels[]={"Native","2x","4x","8x","16x","32x","64x"};
 static const RecompRuntimeUiItem s_hd_items[]={
