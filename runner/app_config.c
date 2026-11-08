@@ -32,7 +32,7 @@ void app_config_defaults(void)
     g_app_config.fullscreen       = 0;
     g_app_config.linear_filter    = 0;
     g_app_config.internal_scale   = 1;
-    g_app_config.integer_scale    = 1;
+    g_app_config.integer_scale    = 0;
     g_app_config.widescreen       = 0;
     g_app_config.widescreen_cells = 8;
     g_app_config.custom_widescreen = s_default_custom_widescreen;

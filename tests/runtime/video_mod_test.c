@@ -32,6 +32,7 @@ int main(int argc,char **argv)
 {
     CHECK(argc==2);
     app_config_defaults();app_config_apply_video(&video);
+    CHECK(!g_app_config.integer_scale); /* elective output scaling is opt-in */
     CHECK(!g_app_config.custom_widescreen && !strcmp(mode,"off"));
     const RecompLauncherCModProvider *p=app_config_video_mods(&video,argv[1]);
     CHECK(p && p->package_count(p->ctx)==3 && p->feature_count(p->ctx)==3);
@@ -182,6 +183,10 @@ int main(int argc,char **argv)
     CHECK(p->feature_get(p->ctx,1,&feature) && !strcmp(feature.id,"unfiltered"));
     CHECK(!p->feature_get(p->ctx,2,&feature)); /* no viewport/widescreen feature */
     app_config_apply_video(&renderer_only); /* no configure callback */
+    g_app_config.integer_scale=1;CHECK(app_config_save(argv[1]));
+    app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.integer_scale==1);
+    g_app_config.integer_scale=0;CHECK(app_config_save(argv[1]));
+    app_config_defaults();CHECK(app_config_load(argv[1]) && g_app_config.integer_scale==0);
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
     return 0;
