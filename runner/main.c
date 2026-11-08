@@ -3048,6 +3048,10 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         return 1;
     }
+    /* Some SDL software drivers enable vsync independently of creation flags.
+     * An explicitly uncapped qualification must disable that driver pacing. */
+    if (benchmark_frames || runtime_uncapped)
+        (void)SDL_RenderSetVSync(renderer, 0);
     {
         SDL_RendererInfo ri;
         memset(&ri, 0, sizeof(ri));
