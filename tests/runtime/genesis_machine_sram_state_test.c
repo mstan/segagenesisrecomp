@@ -58,6 +58,12 @@ int glue_own_vint_service_latched(GVDP *vdp)
     return 0;
 }
 
+int glue_own_hint_service_latched(GVDP *vdp)
+{
+    (void)vdp;
+    return 0;
+}
+
 void gvdp_init(GVDP *v)
 {
     memset(v, 0, sizeof(*v));
@@ -115,6 +121,24 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     (void)v;
     (void)line;
     (void)out;
+    return 0;
+}
+
+int gvdp_active_width(const GVDP *v)
+{
+    (void)v;
+    return 320;
+}
+
+int gvdp_capture_presented_scanline(GVDP *v,int line,GVDPRasterRow *row)
+{
+    (void)v;(void)line;(void)row;
+    return 0;
+}
+
+int gvdp_compose_captured(const GVDPRasterRow *row,uint8_t *out)
+{
+    (void)row;(void)out;
     return 0;
 }
 
