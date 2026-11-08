@@ -571,12 +571,16 @@ static void update_render_logical_size(SDL_Renderer *renderer)
     }
     if(getenv("GENESIS_DISPLAY_TRACE") &&
        (s_trace_w!=s_screen_width || s_trace_h!=s_screen_height)) {
-        int ow=0,oh=0;SDL_Rect viewport;
+        int ow=0,oh=0,mw=0,mh=0;SDL_Rect viewport;
+        SDL_Window *traced_window=SDL_RenderGetWindow(renderer);
+        if(traced_window)SDL_GetWindowMinimumSize(traced_window,&mw,&mh);
         SDL_GetRendererOutputSize(renderer,&ow,&oh);
         SDL_RenderGetViewport(renderer,&viewport);
-        fprintf(stderr,"[display] raw=%dx%d logical=%dx%d output=%dx%d viewport=%d,%d,%d,%d\n",
+        fprintf(stderr,"[display] raw=%dx%d logical=%dx%d output=%dx%d viewport=%d,%d,%d,%d integer=%d minimum=%dx%d hidpi=%d\n",
             s_screen_width,s_screen_height,s_last_w,s_last_h,ow,oh,
-            viewport.x,viewport.y,viewport.w,viewport.h);
+            viewport.x,viewport.y,viewport.w,viewport.h,
+            SDL_RenderGetIntegerScale(renderer),mw,mh,
+            traced_window && (SDL_GetWindowFlags(traced_window)&SDL_WINDOW_ALLOW_HIGHDPI)!=0);
         s_trace_w=s_screen_width;s_trace_h=s_screen_height;
     }
 }
