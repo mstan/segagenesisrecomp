@@ -1,4 +1,5 @@
 #include "genesis_raster_jobs.h"
+#include "genesis_vdp_compose.h"
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -198,11 +199,12 @@ void gvdp_hd_emit(unsigned layer,unsigned x,unsigned count,uint32_t bits,
     list[n].color=(palette&255u)|((!!high)<<8)|((visible&255u)<<16);
     s_counts[layer]=n+1;
 }
-void gvdp_hd_operator(unsigned x,unsigned highlight)
+void gvdp_hd_operator(unsigned x,unsigned highlight,unsigned high)
 {
     if(!s_active||x>=s_build->frame.width)return;
     GVDPHdRow *r=&s_build->frame.rows[s_line];
     s_build->frame.operator_words[r->ops_first+x/8]|=1u<<((x&7)+(highlight?8:0));
+    if(high)s_build->frame.operator_words[r->ops_first+x/8]|=1u<<((x&7)+16);
 }
 static int compare_span(const void *a,const void *b)
 {
@@ -308,10 +310,11 @@ int gvdp_hd_render_argb(const GVDPRasterFrame *f,uint32_t *out,unsigned stride)
                     if(so&&sh)pixel=s;else if(ao&&ah)pixel=a;else if(bo&&bh)pixel=b;
                     else if(so)pixel=s;else if(ao)pixel=a;else if(bo)pixel=b;
                     if(r->shadow_mode&&pixel<64) {
-                        unsigned ops=f->operator_words[r->ops_first+x/8],shadow=!((so&&sh)||ah||bh),light=0;
-                        if((ops>>(x&7))&1u)shadow=1;
-                        if((ops>>(8+(x&7)))&1u){if(shadow)shadow=0;else light=1;}
-                        if(light)pixel+=128;else if(shadow)pixel+=64;
+                        unsigned ops=f->operator_words[r->ops_first+x/8];
+                        unsigned level=gvdp_shadow_level(ao,ah,bo,bh,s,so,
+                            sh|((ops>>(16+(x&7)))&1u),
+                            (ops>>(x&7))&1u,(ops>>(8+(x&7)))&1u);
+                        if(level==2)pixel+=128;else if(!level)pixel+=64;
                     }
                     if(r->diagnostic&&pixel<GVDP_HOST_PALETTE_BASE&&!((x-r->diag_offset)&r->diag_mask))pixel=(pixel&63)+64;
                 }

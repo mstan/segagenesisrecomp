@@ -14,10 +14,15 @@ static uint8_t reference(unsigned a,unsigned b,unsigned s,unsigned so,unsigned h
     else if(so)pixel=s;else if(a&64u)pixel=a&63u;else if(b&64u)pixel=b&63u;
     else pixel=backdrop;
     if(mode&&pixel<64u){
-        unsigned dark=!((a|b)&128u)&&!sh,light=0;
-        if(shadow)dark=1;
-        if(hilite){if(dark)dark=0;else light=1;}
-        if(light)pixel+=128u;else if(dark)pixel+=64u;
+        unsigned normal=((a|b)&128u)!=0u;
+        unsigned wins=(so||shadow||hilite)&&(high||!(ah||bh));
+        unsigned level=normal;
+        if(wins){
+            if(shadow)level=0;
+            else if(hilite)level=normal?2:1;
+            else level=high||normal||((s&15u)==14u);
+        }
+        if(level==2)pixel+=128u;else if(!level)pixel+=64u;
     }
     return (uint8_t)pixel;
 }

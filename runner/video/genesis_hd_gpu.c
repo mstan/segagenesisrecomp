@@ -123,13 +123,13 @@ static const char fragment_source[]=
 "uint pattern_at(uint id){return texelFetch(patterns_tex,ivec2(int(id&1023u),int(id>>10)),0).r;}\n"
 "uint ops_at(uint id){return texelFetch(operators_tex,ivec2(int(id&1023u),int(id>>10)),0).r;}\n"
 "uint upper_bound(uint first,uint count,uint x){uint lo=0u,hi=count;for(int k=0;k<20&&lo<hi;++k){uint m=(lo+hi)>>1;if(span_at(first+m).x<=x)lo=m+1u;else hi=m;}return lo;}\n"
-"uvec3 sample_span(uvec4 s,uint x,bool sprite){uint k=x-s.x,n=s.z&255u;if(k>=n)return uvec3(0u);if(sprite&&((s.w>>(16u+k))&1u)==0u)return uvec3(0u);uint q=((s.z>>8)&255u)+k;if((s.z&65536u)!=0u)q^=7u;if(q>7u)return uvec3(0u);uint nib=(pattern_at(s.y)>>(28u-q*4u))&15u;if(nib==0u)return uvec3(0u);return uvec3((s.w&255u)+nib,1u,(s.w>>8)&1u);}\n"
+"uvec3 sample_span(uvec4 s,uint x,bool sprite){uint k=x-s.x,n=s.z&255u;if(k>=n)return uvec3(0u);if(sprite&&((s.w>>(16u+k))&1u)==0u)return uvec3(0u);uint q=((s.z>>8)&255u)+k;if((s.z&65536u)!=0u)q^=7u;if(q>7u)return uvec3(0u);uint nib=(pattern_at(s.y)>>(28u-q*4u))&15u;if(nib==0u)return uvec3(0u,0u,sprite?0u:(s.w>>8)&1u);return uvec3((s.w&255u)+nib,1u,(s.w>>8)&1u);}\n"
 "uvec3 plane(uint first,uint count,uint x){uint p=upper_bound(first,count,x);if(p==0u)return uvec3(0u);return sample_span(span_at(first+p-1u),x,false);}\n"
 "uvec3 sprite(uint first,uint count,uint x){uint p=upper_bound(first,count,x);for(int n=0;n<15&&p>0u;++n){uvec4 s=span_at(first+--p);if(x-s.x>7u)break;uvec3 c=sample_span(s,x,true);if(c.y!=0u)return c;}return uvec3(0u);}\n"
 "void main(){ivec2 p=ivec2(gl_FragCoord.xy)*native_size/output_size;uint x=uint(p.x),y=uint(p.y);uvec4 r0=row_at(y*5u),r1=row_at(y*5u+1u),r2=row_at(y*5u+2u),r3=row_at(y*5u+3u),r4=row_at(y*5u+4u);uint c=r1.x;\n"
-"if(x>=r0.y&&x-r0.y<r0.z){c=r0.w;if(r4.y!=0u){uvec3 s=sprite(r3.z,r3.w,x);bool high=s.y!=0u&&s.z!=0u;\n"
-"if(high)c=s.x;else{uvec3 a=plane(r2.z,r2.w,x);if(a.y!=0u&&a.z!=0u){c=a.x;high=true;}else{uvec3 b=plane(r3.x,r3.y,x);if(b.y!=0u&&b.z!=0u){c=b.x;high=true;}else if(s.y!=0u)c=s.x;else if(a.y!=0u)c=a.x;else if(b.y!=0u)c=b.x;}}\n"
-"if(r1.y!=0u&&c<64u){uint o=ops_at(r4.x+x/8u);bool shadow=!high,highlight=false;if(((o>>(x&7u))&1u)!=0u)shadow=true;if(((o>>(8u+(x&7u)))&1u)!=0u){if(shadow)shadow=false;else highlight=true;}if(highlight)c+=128u;else if(shadow)c+=64u;}\n"
+"if(x>=r0.y&&x-r0.y<r0.z){c=r0.w;if(r4.y!=0u){uvec3 s=sprite(r3.z,r3.w,x),a=plane(r2.z,r2.w,x),b=plane(r3.x,r3.y,x);bool ah=a.y!=0u&&a.z!=0u,bh=b.y!=0u&&b.z!=0u;\n"
+"if(s.y!=0u&&s.z!=0u)c=s.x;else if(ah)c=a.x;else if(bh)c=b.x;else if(s.y!=0u)c=s.x;else if(a.y!=0u)c=a.x;else if(b.y!=0u)c=b.x;\n"
+"if(r1.y!=0u&&c<64u){uint o=ops_at(r4.x+x/8u);bool dark=((o>>(x&7u))&1u)!=0u,light=((o>>(8u+(x&7u)))&1u)!=0u,high=s.z!=0u||((o>>(16u+(x&7u)))&1u)!=0u,normal=a.z!=0u||b.z!=0u;bool wins=(s.y!=0u||dark||light)&&(high||!(ah||bh));uint level=normal?1u:0u;if(wins){if(dark)level=0u;else if(light)level=normal?2u:1u;else level=(high||normal||(s.x&15u)==14u)?1u:0u;}if(level==2u)c+=128u;else if(level==0u)c+=64u;}\n"
 "if(r1.z!=0u&&c<193u&&((x-r1.w)&r2.x)==0u)c=(c&63u)+64u;}}\n"
 "uint argb=texelFetch(palettes_tex,ivec2(int(c),int(r2.y)),0).r;result=vec4(float((argb>>16)&255u),float((argb>>8)&255u),float(argb&255u),float((argb>>24)&255u))/255.0;}\n";
 

@@ -13,6 +13,19 @@ static inline uint64_t gvdp_compose_load(const uint8_t *p)
 static inline uint64_t gvdp_compose_select(uint64_t under,uint64_t over,uint64_t flags)
 { return under ^ ((under ^ over) & (flags * UINT64_C(255))); }
 
+/* The front SAT pixel owns both color and operator priority. Transparent
+ * high-priority plane tiles still select normal background intensity. */
+static inline unsigned gvdp_shadow_level(unsigned ao,unsigned ah,unsigned bo,
+    unsigned bh,unsigned s,unsigned so,unsigned high,unsigned shadow,unsigned hilite)
+{
+    unsigned normal=ah||bh;
+    unsigned wins=(so||shadow||hilite)&&(high||!((ao&&ah)||(bo&&bh)));
+    if(!wins)return normal;
+    if(shadow)return 0;
+    if(hilite)return normal?2:1;
+    return high||normal||((s&15u)==14u);
+}
+
 static inline void gvdp_compose_span(uint8_t *out,const uint8_t *plane_a,
     const uint8_t *plane_b,const uint8_t *sprite,const uint8_t *opaque,
     const uint8_t *high,const uint8_t *shadow_op,const uint8_t *hilite_op,
@@ -38,9 +51,17 @@ static inline void gvdp_compose_span(uint8_t *out,const uint8_t *plane_a,
             /* Plane priority affects intensity even for a transparent texel;
              * opacity still determines which layer supplies the color. */
             uint64_t normal_planes=((a|b)>>7)&one;
-            uint64_t shadow=(one^(normal_planes|sh))|gvdp_compose_load(shadow_op);
-            uint64_t hilite=gvdp_compose_load(hilite_op);
-            uint64_t shade=((shadow&(one^hilite))<<6)|(((one^shadow)&hilite)<<7);
+            uint64_t shadow_op_lanes=gvdp_compose_load(shadow_op);
+            uint64_t hilite_op_lanes=gvdp_compose_load(hilite_op);
+            uint64_t sprite_high=gvdp_compose_load(high);
+            uint64_t wins=(so|shadow_op_lanes|hilite_op_lanes)&
+                (sprite_high|(one^(ah|bh)));
+            uint64_t color14=((s>>1)&(s>>2)&(s>>3)&~s)&one;
+            uint64_t dark=(one^normal_planes)&
+                (one^(wins&(sprite_high|color14|hilite_op_lanes)));
+            dark=(dark&(one^wins))|((dark|shadow_op_lanes)&wins);
+            uint64_t light=wins&hilite_op_lanes&(one^shadow_op_lanes)&normal_planes;
+            uint64_t shade=(dark<<6)|(light<<7);
             pixel+=shade&(normal*UINT64_C(255));
         }
         memcpy(out,&pixel,sizeof pixel);
@@ -49,15 +70,14 @@ static inline void gvdp_compose_span(uint8_t *out,const uint8_t *plane_a,
     }
     while(count--) {
         unsigned a=*plane_a++,b=*plane_b++,s=*sprite++;
-        unsigned so=*opaque++,sh=*high++&&so;
+        unsigned so=*opaque++,sprite_high=*high++,sh=sprite_high&&so;
         unsigned ah=(a&0xc0u)==0xc0u,bh=(b&0xc0u)==0xc0u;
         unsigned pixel=sh?s:ah?a&63u:bh?b&63u:so?s:
                        (a&64u)?a&63u:(b&64u)?b&63u:backdrop;
         if(shadow_mode && pixel<64u) {
-            unsigned shadow=!((a|b)&128u)&&!sh,hilite=0;
-            if(*shadow_op)shadow=1;
-            if(*hilite_op){if(shadow)shadow=0;else hilite=1;}
-            if(hilite)pixel+=128u;else if(shadow)pixel+=64u;
+            unsigned level=gvdp_shadow_level((a>>6)&1u,a>>7,
+                (b>>6)&1u,b>>7,s,so,sprite_high,*shadow_op,*hilite_op);
+            if(level==2)pixel+=128u;else if(!level)pixel+=64u;
         }
         ++shadow_op;++hilite_op;*out++=(uint8_t)pixel;
     }

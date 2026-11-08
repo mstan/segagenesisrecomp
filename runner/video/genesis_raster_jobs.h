@@ -32,7 +32,8 @@ typedef struct GVDPHdSpan {
  * Each plane range covers [start,start+count) with ordered nonoverlapping
  * spans. Sprite visible masks are disjoint; scan backwards from the last
  * span with x<=pixel until x<pixel-7 (at most15 nonempty visible spans).
- * operator_words[ops_first+x/8]: shadow bits[7:0], highlight bits[15:8]. */
+ * operator_words[ops_first+x/8]: shadow bits[7:0], highlight bits[15:8],
+ * operator priority bits[23:16]. */
 typedef struct GVDPHdRow {
     uint32_t width, start, count, backdrop;
     uint32_t bar, shadow_mode, diagnostic, diag_offset;
@@ -86,7 +87,7 @@ void gvdp_hd_set_diagnostic(unsigned enabled, unsigned offset, unsigned mask);
 void gvdp_hd_emit(unsigned layer, unsigned x, unsigned count, uint32_t bits,
                   unsigned first, unsigned flip, unsigned palette_base,
                   unsigned high, unsigned visible_mask);
-void gvdp_hd_operator(unsigned x, unsigned highlight);
+void gvdp_hd_operator(unsigned x, unsigned highlight, unsigned high);
 void gvdp_hd_ineligible(void);
 void gvdp_hd_end_row(void);
 extern unsigned g_gvdp_hd_capture_active;
