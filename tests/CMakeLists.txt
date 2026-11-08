@@ -15,6 +15,9 @@
 cmake_minimum_required(VERSION 3.16)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     project(GenesisRecompTests C)
+    # Game projects normally supply this imported target. The documented
+    # standalone test build must discover the same dependency itself.
+    find_package(SDL2 REQUIRED CONFIG)
 endif()
 
 # This directory is consumed from game repositories rather than configured as
