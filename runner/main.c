@@ -555,7 +555,7 @@ static void update_render_logical_size(SDL_Renderer *renderer)
 
     /* The custom renderer sizes its canvas from the window, so it keeps the
      * fractional fill. */
-    int integer = g_app_config.integer_scale && !s_custom_width;
+    int integer = g_app_config.integer_scale && !s_video_frame.viewport;
     if (renderer != s_last_renderer || w != s_last_w || h != s_last_h || integer != s_last_integer) {
         /* SDL never scales below 1x, so a window smaller than the frame
          * would crop it; integer mode keeps the window at least 1x. */
