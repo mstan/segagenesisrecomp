@@ -756,18 +756,18 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                     if (drawn[sx]) { v->sprite_collision = 1; continue; }
                     if (!ext && sh_mode && pal == 3 && nib == 14) {
                         s_spr_hilite_op[sx] = 1;
-                        if(hd)gvdp_hd_operator((unsigned)sx,1);
+                        if(hd)gvdp_hd_operator((unsigned)sx,1,(unsigned)pri);
                     } else if (!ext && sh_mode && pal == 3 && nib == 15) {
                         s_spr_shadow_op[sx] = 1;
-                        if(hd)gvdp_hd_operator((unsigned)sx,0);
+                        if(hd)gvdp_hd_operator((unsigned)sx,0,(unsigned)pri);
                     } else {
                         s_spr_idx[sx] = ext?(uint8_t)(GVDP_HOST_PALETTE_BASE+(ext-1)*16+nib)
                                           :(uint8_t)(pal*16+nib);
                         s_spr_op[sx] = 1;
-                        s_spr_hi[sx] = (uint8_t)pri;
-                        drawn[sx] = 1;
                         if(hd)visible|=1u<<fx;
                     }
+                    s_spr_hi[sx] = (uint8_t)pri;
+                    drawn[sx] = 1;
                 }
                 if(visible) {
                     int left=screen_x+cell*8,right=left+8,first=0;
@@ -805,9 +805,9 @@ static void sprite_render_line(GVDP *v, int line, int total, int offset)
                     s_spr_idx[sx] = ext ? (uint8_t)(GVDP_HOST_PALETTE_BASE + (ext - 1) * 16 + nib)
                                         : (uint8_t)(pal * 16 + nib);
                     s_spr_op[sx]  = 1;
-                    s_spr_hi[sx]  = (uint8_t)pri;
-                    drawn[sx] = 1;
                 }
+                s_spr_hi[sx] = (uint8_t)pri;
+                drawn[sx] = 1;
             }
 #endif
             }
@@ -1026,8 +1026,12 @@ static int capture_scanline(GVDP *v, int line, GVDPRasterRow *row,int presented)
 
     sprite_render_line(v,line,(int)row->width,(int)offset);
     if(presented && s_host_sprites) {
+        if(row->shadow_mode)for(unsigned x=0;x<row->width;++x)
+            s_spr_op[x]|=s_spr_shadow_op[x]|s_spr_hilite_op[x];
         GVDPSpriteLayer layer={line,(int)row->width,(int)offset,s_spr_idx,s_spr_op,s_spr_hi};
         s_host_sprites(s_host_sprites_user,v,&layer);
+        if(row->shadow_mode)for(unsigned x=0;x<row->width;++x)
+            if(s_spr_shadow_op[x]|s_spr_hilite_op[x])s_spr_op[x]=0;
         /* Providers accept arbitrary nonzero masks, including a callback
          * which unregisters itself. Packed composition requires boolean lanes. */
         for(unsigned x=0;x<row->width;++x) {
@@ -1170,6 +1174,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
     if (host_flags) {
         uint8_t before_idx[GVDP_MAX_WIDTH],before_op[GVDP_MAX_WIDTH],before_hi[GVDP_MAX_WIDTH];
         int hd=gvdp_hd_capturing();
+        if(sh_mode)for(int x=0;x<total;++x)
+            s_spr_op[x]|=s_spr_shadow_op[x]|s_spr_hilite_op[x];
         if(hd){memcpy(before_idx,s_spr_idx,(size_t)total);memcpy(before_op,s_spr_op,(size_t)total);memcpy(before_hi,s_spr_hi,(size_t)total);}
         GVDPSpriteLayer layer = { line, total, offset, s_spr_idx, s_spr_op, s_spr_hi };
         s_host_sprites(s_host_sprites_user, v, &layer);
@@ -1179,6 +1185,8 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
                               (before_hi[x]!=0)!=(s_spr_hi[x]!=0)))) {
                 gvdp_hd_ineligible();break;
             }
+        if(sh_mode)for(int x=0;x<total;++x)
+            if(s_spr_shadow_op[x]|s_spr_hilite_op[x])s_spr_op[x]=0;
     }
 
 #if GENESIS_BATCHED_PLANES
@@ -1324,14 +1332,10 @@ int gvdp_render_scanline(GVDP *v, int line, uint8_t *out)
          * is shadowed; operator sprites (pal3 colours 14/15) force highlight or
          * shadow on the underlying pixel. */
         if (sh_mode && px < GVDP_CRAM_ENTRIES) {
-            /* Transparent plane priority still selects normal intensity. */
-            int hi_present = (s_op && s_hi) || a_hi || b_hi;
-            int sh = !hi_present;
-            int hl = 0;
-            if (s_spr_shadow_op[xo]) sh = 1;
-            if (s_spr_hilite_op[xo]) { if (sh) sh = 0; else hl = 1; }
-            if (hl)      px += GVDP_PALETTE_HIGHLIGHT;
-            else if (sh) px += GVDP_PALETTE_SHADOW;
+            unsigned level=gvdp_shadow_level(a_op,a_hi,b_op,b_hi,s_idx,s_op,
+                s_hi,s_spr_shadow_op[xo],s_spr_hilite_op[xo]);
+            if(level==2)px+=GVDP_PALETTE_HIGHLIGHT;
+            else if(!level)px+=GVDP_PALETTE_SHADOW;
         }
 
         out[xo] = px;

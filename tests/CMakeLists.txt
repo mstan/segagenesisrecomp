@@ -24,6 +24,32 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+foreach(_shadow_variant scalar batched packed hd)
+    add_executable(vdp_shadow_${_shadow_variant}_test runtime/vdp_shadow_highlight_test.c
+        ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c)
+    target_include_directories(vdp_shadow_${_shadow_variant}_test PRIVATE ../runner/video)
+    target_compile_features(vdp_shadow_${_shadow_variant}_test PRIVATE c_std_11)
+    if(_shadow_variant STREQUAL "scalar")
+        target_compile_definitions(vdp_shadow_${_shadow_variant}_test PRIVATE GENESIS_BATCHED_PLANES=0 GENESIS_NATIVE_COMPOSE=0)
+    elseif(_shadow_variant STREQUAL "batched")
+        target_compile_definitions(vdp_shadow_${_shadow_variant}_test PRIVATE GENESIS_BATCHED_PLANES=1 GENESIS_NATIVE_COMPOSE=0)
+    else()
+        target_compile_definitions(vdp_shadow_${_shadow_variant}_test PRIVATE GENESIS_BATCHED_PLANES=1 GENESIS_NATIVE_COMPOSE=1)
+    endif()
+    if(_shadow_variant STREQUAL "hd")
+        target_compile_definitions(vdp_shadow_${_shadow_variant}_test PRIVATE GENESIS_HD_JOBS=1)
+    endif()
+    add_test(NAME vdp_shadow_${_shadow_variant} COMMAND vdp_shadow_${_shadow_variant}_test)
+endforeach()
+if(TARGET SDL2::SDL2)
+    add_executable(vdp_shadow_gpu_test runtime/vdp_shadow_highlight_test.c
+        ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c ../runner/video/genesis_hd_gpu.c)
+    target_include_directories(vdp_shadow_gpu_test PRIVATE ../runner/video ../runner ${SDL2_PARENT_INCLUDE_DIRS})
+    target_compile_definitions(vdp_shadow_gpu_test PRIVATE GENESIS_HD_JOBS=1 GVDP_TEST_GPU=1 GENESIS_BATCHED_PLANES=1)
+    target_compile_features(vdp_shadow_gpu_test PRIVATE c_std_11)
+    target_link_libraries(vdp_shadow_gpu_test PRIVATE SDL2::SDL2)
+    # Requires an actual GL device; run explicitly under the hidden GPU gate.
+endif()
 foreach(_hd_planes 0 1)
     add_executable(vdp_hd_jobs_${_hd_planes}_test runtime/vdp_hd_jobs_test.c
         ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c)
