@@ -143,7 +143,7 @@ void gbus_init(GenesisBus *b, GVDP *vdp)
  * longwords). Called from main.c AFTER glue_init populates g_rom —
  * machine_init/gbus_init run before the ROM copy exists. Sonic 3:
  * "RA F8 20" start $200001 end $2003FF (odd-byte serial FRAM). */
-void gbus_sram_setup(GenesisBus *b)
+void gbus_sram_setup(GenesisBus *b, uint32_t rom_size)
 {
     if (g_rom[0x1B0] == 'R' && g_rom[0x1B1] == 'A') {
         uint32_t start = ((uint32_t)g_rom[0x1B4] << 24) | ((uint32_t)g_rom[0x1B5] << 16)
@@ -156,6 +156,8 @@ void gbus_sram_setup(GenesisBus *b)
             b->sram_base    = base;
             b->sram_end     = end;
             b->sram_size    = end - base + 1u;
+            b->sram_always_mapped =
+                (uint8_t)gbus_sram_range_is_always_mapped(base, rom_size);
         }
     }
 }
@@ -164,10 +166,10 @@ void gbus_sram_setup(GenesisBus *b)
  * (S3&K lock-on, standalone S&K). Header detection wins: if gbus_sram_setup
  * already mapped SRAM ("RA" present), this is a no-op so a self-describing
  * cart is never overridden. Otherwise map [start & ~1, end] if it fits the
- * buffer. The $A130F1 overlay gate (sram_hit) is unchanged, so when the game
- * disables SRAM the same addresses read back as ROM — exactly the lock-on
- * behaviour where this range overlaps the locked-on Sonic 3 bank. */
-void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end)
+ * buffer. $A130F1 continues to gate ranges that overlap ROM, such as the
+ * lock-on Sonic 3 bank; ranges wholly beyond ROM are always visible. */
+void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end,
+                            uint32_t rom_size)
 {
     if (b->sram_present) return;                 /* header already mapped it */
     if (start == 0u) return;                     /* not requested            */
@@ -177,17 +179,16 @@ void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end)
         b->sram_base    = base;
         b->sram_end     = end;
         b->sram_size    = end - base + 1u;
+        b->sram_always_mapped =
+            (uint8_t)gbus_sram_range_is_always_mapped(base, rom_size);
     }
 }
 
-/* SRAM overlay active for this address? The $A130F1 enable bit gates the
- * overlay when the SRAM range shadows ROM (cart < 4 MB games still toggle it;
- * honour the bit always — games that never touch $A130F1 and expect
- * always-mapped SRAM can be handled when one shows up). */
+/* SRAM overlay active for this address? $A130F1 gates ranges that shadow ROM;
+ * save RAM wholly beyond the loaded ROM is physically always visible. */
 static int sram_hit(const GenesisBus *b, uint32_t a)
 {
-    return b->sram_present && b->sram_enabled
-        && a >= b->sram_base && a <= b->sram_end;
+    return gbus_sram_mapped_at(b, a);
 }
 
 /* Persistence accessors (main.c .srm load/flush). */

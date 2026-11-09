@@ -60,33 +60,76 @@ typedef struct GenesisBus {
     uint8_t  version;                   /* $A10000 region/version register    */
 
     /* Battery-backed cartridge SRAM, geometry parsed from the ROM header
-     * ($1B0 "RA", device type, start/end) at gbus_init. Mapped as raw bus
-     * bytes over [sram_start & ~1, sram_end] when the $A130F1 overlay bit is
-     * set (or always, for carts whose SRAM range lies outside ROM). Sonic 3
-     * declares $200001-$2003FF odd-byte serial FRAM; raw-byte storage covers
-     * odd/even/both layouts uniformly. (S3K lock-on declares no "RA" header —
-     * its SRAM support will need a spec-driven override when the combined
-     * target is brought up.) */
+     * ($1B0 "RA", device type, start/end) or supplied by the game spec.
+     * Mapped as raw bus bytes over [sram_start & ~1, sram_end] when the
+     * $A130F1 overlay bit is set, or always when the range lies beyond ROM.
+     * Sonic 3 declares $200001-$2003FF odd-byte serial FRAM; raw-byte storage
+     * covers odd/even/both layouts uniformly. */
     uint8_t  sram[0x4000];              /* raw bus bytes from sram_base       */
     uint32_t sram_base;                 /* sram_start & ~1                    */
     uint32_t sram_end;                  /* inclusive end address              */
     uint32_t sram_size;                 /* bytes spanned (0 = none)           */
-    uint8_t  sram_present;              /* "RA" header found                  */
+    uint8_t  sram_present;              /* cartridge save window configured   */
     uint8_t  sram_enabled;              /* $A130F1 bit0 overlay state         */
+    uint8_t  sram_always_mapped;         /* save range lies wholly beyond ROM  */
 } GenesisBus;
+
+typedef struct GenesisSramGeometry {
+    uint32_t base;
+    uint32_t end;
+    uint32_t size;
+    uint8_t present;
+    uint8_t always_mapped;
+} GenesisSramGeometry;
+
+static inline GenesisSramGeometry gbus_sram_geometry(const GenesisBus *b)
+{
+    GenesisSramGeometry geometry = {
+        b->sram_base,
+        b->sram_end,
+        b->sram_size,
+        b->sram_present,
+        b->sram_always_mapped
+    };
+    return geometry;
+}
+
+static inline void gbus_sram_restore_geometry(
+    GenesisBus *b, GenesisSramGeometry geometry)
+{
+    b->sram_base = geometry.base;
+    b->sram_end = geometry.end;
+    b->sram_size = geometry.size;
+    b->sram_present = geometry.present;
+    b->sram_always_mapped = geometry.always_mapped;
+}
+
+static inline int gbus_sram_range_is_always_mapped(
+    uint32_t base, uint32_t rom_size)
+{
+    return rom_size != 0u && base >= rom_size;
+}
+
+static inline int gbus_sram_mapped_at(const GenesisBus *b, uint32_t addr)
+{
+    return b->sram_present && (b->sram_enabled || b->sram_always_mapped)
+        && addr >= b->sram_base && addr <= b->sram_end;
+}
 
 void gbus_init(GenesisBus *b, GVDP *vdp);
 
 /* Parse battery-SRAM geometry from the ROM header. Must run AFTER g_rom is
- * populated (glue_init) — gbus_init runs before the ROM copy exists. */
-void gbus_sram_setup(GenesisBus *b);
+ * populated (glue_init) — gbus_init runs before the ROM copy exists.
+ * rom_size is the actual loaded cartridge image size. */
+void gbus_sram_setup(GenesisBus *b, uint32_t rom_size);
 
 /* Map battery SRAM over the inclusive byte range [start & ~1, end] when the
  * cart's standard header does NOT declare it (the Sonic 3 & Knuckles lock-on
  * cart and standalone S&K — see GameSpec.sram_start). No-op if a header "RA"
  * marker already mapped SRAM (gbus_sram_setup wins) or the range is invalid /
  * larger than the SRAM buffer. Must run AFTER gbus_sram_setup. */
-void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end);
+void gbus_sram_set_geometry(GenesisBus *b, uint32_t start, uint32_t end,
+                            uint32_t rom_size);
 
 uint16_t gbus_read16 (GenesisBus *b, uint32_t addr);
 uint8_t  gbus_read8  (GenesisBus *b, uint32_t addr);
