@@ -22,6 +22,7 @@ int genesis_game_instruction_hook(uint32_t pc){(void)pc;return 0;}
 uint8_t m68k_read8(uint32_t a){a&=0xFFFFFFu;bus_event(1,a);if(a<sizeof g_rom)return g_rom[a];CHECK(a>=0xFF0000u);return g_ram[a&65535];}
 uint16_t m68k_read16(uint32_t a){uint16_t hi=m68k_read8(a);uint16_t lo=m68k_read8(a+1);return (uint16_t)((hi<<8)|lo);}
 uint32_t m68k_read32(uint32_t a){uint32_t hi=m68k_read16(a);uint32_t lo=m68k_read16(a+2);return (hi<<16)|lo;}
+uint32_t glue_peek32(uint32_t a){uint32_t v=0;for(unsigned i=0;i<4;++i){uint32_t p=(a+i)&0xFFFFFFu;CHECK(p<sizeof g_rom||p>=0xFF0000u);v=(v<<8)|(p<sizeof g_rom?g_rom[p]:g_ram[p&65535]);}return v;}
 void m68k_write8(uint32_t a,uint8_t v){a&=0xFFFFFFu;bus_event(2,a);CHECK(a>=0xFF0000u);g_ram[a&65535]=v;}
 void m68k_write16(uint32_t a,uint16_t v){m68k_write8(a,(uint8_t)(v>>8));m68k_write8(a+1,(uint8_t)v);}
 void m68k_write32(uint32_t a,uint32_t v){m68k_write16(a,(uint16_t)(v>>16));m68k_write16(a+2,(uint16_t)v);}
