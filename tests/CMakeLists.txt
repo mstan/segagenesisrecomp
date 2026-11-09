@@ -104,6 +104,10 @@ add_executable(audio_event_order_test runtime/audio_event_order_test.c)
 target_include_directories(audio_event_order_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 add_test(NAME audio_event_order COMMAND audio_event_order_test)
 
+add_executable(audio_latched_write_test runtime/audio_latched_write_test.c)
+target_include_directories(audio_latched_write_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+add_test(NAME audio_latched_write COMMAND audio_latched_write_test)
+
 # Compile the same public wrapper under both fixed implementations. Share the
 # unmodified ymfm chip, compare full state and PCM, and exercise pending output.
 set(_fm_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/ym2612_ymfm.cpp")
