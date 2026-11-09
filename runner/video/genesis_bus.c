@@ -506,7 +506,13 @@ void gbus_z80_write(GenesisBus *b, uint16_t addr, uint8_t val)
     if (addr < 0x6000u) {
         uint8_t port = (uint8_t)(addr & 3);
         ym_write_side_effect(b, port, val, ym_abs_z80_stamp());
-        CHIP_PC_Z80(); audio_event_push(machine_z80_stamp(), port, val); return;
+        CHIP_PC_Z80();
+        if (port & 1u)
+            audio_event_push_latched(machine_z80_stamp(), port,
+                                     b->ym_addr[port >> 1], val);
+        else
+            audio_event_push(machine_z80_stamp(), port, val);
+        return;
     } /* FM */
     if (addr < 0x6100u) {                                /* $6000 bank register   */
         b->z80_bank = ((b->z80_bank >> 1) | ((val & 1) << 8)) & 0x1FF;
