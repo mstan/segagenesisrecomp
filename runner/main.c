@@ -536,6 +536,7 @@ static void update_render_logical_size(SDL_Renderer *renderer)
     static int s_last_w = 0;
     static int s_last_h = 0;
     static int s_trace_w = 0, s_trace_h = 0;
+    static int s_last_integer = -1;
     int w;
     int h;
 
@@ -545,27 +546,41 @@ static void update_render_logical_size(SDL_Renderer *renderer)
      * non-gameplay screens carry their pillarbox bars within the canvas. */
     if (ws_armed()) {
         w = ws_canvas_w();
-        h = ws_canvas_h();
+        /* Integer scale keeps the 224 lines unstretched (square pixels). */
+        h = g_app_config.integer_scale ? display_logical_height() : ws_canvas_h();
     } else {
         w = display_logical_width();
         h = display_logical_height();
     }
 
-    if (renderer != s_last_renderer || w != s_last_w || h != s_last_h) {
+    /* The custom renderer sizes its canvas from the window, so it keeps the
+     * fractional fill. */
+    int integer = g_app_config.integer_scale && !s_video_frame.viewport;
+    if (renderer != s_last_renderer || w != s_last_w || h != s_last_h || integer != s_last_integer) {
+        /* SDL never scales below 1x, so a window smaller than the frame
+         * would crop it; integer mode keeps the window at least 1x. */
+        SDL_Window *window = SDL_RenderGetWindow(renderer);
+        if (window) SDL_SetWindowMinimumSize(window, integer ? w : 1, integer ? h : 1);
+        SDL_RenderSetIntegerScale(renderer, integer ? SDL_TRUE : SDL_FALSE);
         if (SDL_RenderSetLogicalSize(renderer, w, h) == 0) {
             s_last_renderer = renderer;
             s_last_w = w;
             s_last_h = h;
+            s_last_integer = integer;
         }
     }
     if(getenv("GENESIS_DISPLAY_TRACE") &&
        (s_trace_w!=s_screen_width || s_trace_h!=s_screen_height)) {
-        int ow=0,oh=0;SDL_Rect viewport;
+        int ow=0,oh=0,mw=0,mh=0;SDL_Rect viewport;
+        SDL_Window *traced_window=SDL_RenderGetWindow(renderer);
+        if(traced_window)SDL_GetWindowMinimumSize(traced_window,&mw,&mh);
         SDL_GetRendererOutputSize(renderer,&ow,&oh);
         SDL_RenderGetViewport(renderer,&viewport);
-        fprintf(stderr,"[display] raw=%dx%d logical=%dx%d output=%dx%d viewport=%d,%d,%d,%d\n",
+        fprintf(stderr,"[display] raw=%dx%d logical=%dx%d output=%dx%d viewport=%d,%d,%d,%d integer=%d minimum=%dx%d hidpi=%d\n",
             s_screen_width,s_screen_height,s_last_w,s_last_h,ow,oh,
-            viewport.x,viewport.y,viewport.w,viewport.h);
+            viewport.x,viewport.y,viewport.w,viewport.h,
+            SDL_RenderGetIntegerScale(renderer),mw,mh,
+            traced_window && (SDL_GetWindowFlags(traced_window)&SDL_WINDOW_ALLOW_HIGHDPI)!=0);
         s_trace_w=s_screen_width;s_trace_h=s_screen_height;
     }
 }
@@ -2989,7 +3004,7 @@ int main(int argc, char *argv[])
     /* Scripted launcher tests must stay hidden after the handoff to gameplay. */
     int test_hidden = getenv("LNG_SCRIPT") && getenv("LNG_TEST_HIDDEN");
     Uint32 win_flags = ((benchmark_frames || test_hidden) ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
-                     | SDL_WINDOW_RESIZABLE;
+                     | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     /* Launcher tri-state: 1 = borderless (desktop resolution, letterboxed by
      * SDL_RenderSetLogicalSize), 2 = exclusive (real mode change). */
     if (!benchmark_frames) {
@@ -3037,6 +3052,10 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         return 1;
     }
+    /* Some SDL software drivers enable vsync independently of creation flags.
+     * An explicitly uncapped qualification must disable that driver pacing. */
+    if (benchmark_frames || runtime_uncapped)
+        (void)SDL_RenderSetVSync(renderer, 0);
     {
         SDL_RendererInfo ri;
         memset(&ri, 0, sizeof(ri));
