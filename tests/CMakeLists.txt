@@ -15,6 +15,9 @@
 cmake_minimum_required(VERSION 3.16)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     project(GenesisRecompTests C)
+    # Game projects normally supply this imported target. The documented
+    # standalone test build must discover the same dependency itself.
+    find_package(SDL2 REQUIRED CONFIG)
 endif()
 
 # This directory is consumed from game repositories rather than configured as
@@ -47,7 +50,10 @@ target_compile_features(game_video_frame_test PRIVATE c_std_11)
 if(MSVC)
     target_compile_options(game_video_frame_test PRIVATE /W4 /WX)
 else()
-    target_compile_options(game_video_frame_test PRIVATE -Wall -Wextra -Werror)
+    # This fixture deliberately compiles an old positional prefix. C guarantees
+    # zero initialization for appended optional callbacks.
+    target_compile_options(game_video_frame_test PRIVATE -Wall -Wextra -Werror
+        -Wno-missing-field-initializers)
 endif()
 add_test(NAME game_video_frame COMMAND game_video_frame_test)
 add_subdirectory(segacd)
