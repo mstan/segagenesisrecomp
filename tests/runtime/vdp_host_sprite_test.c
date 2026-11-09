@@ -151,8 +151,11 @@ static void private_planes(void)
             unsigned expected=so&&hi?si:ao&&ah?ai:bh?bi:so?si:ao?ai:bi;
             if(sh&&expected<64){
                 unsigned shade=!(ah||bh||(so&&hi)),light=0;
-                if(x<8&&spr==4)shade=1;
-                if(x<8&&spr==3){if(shade)shade=0;else light=1;}
+                /* These operators are low priority: an opaque high plane
+                 * hides them before intensity is selected. */
+                unsigned operator_visible=x<8 && !(ao&&ah) && !bh;
+                if(operator_visible&&spr==4)shade=1;
+                if(operator_visible&&spr==3){if(shade)shade=0;else light=1;}
                 expected+=light?128:shade?64:0;
             }
             CHECK(pixels[x]==expected);
