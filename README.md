@@ -143,7 +143,11 @@ rewind. In its filmstrip, Left goes back, Right moves toward the present,
 Enter/A restores, and Esc/B cancels. The guest and audio pause while either
 overlay is open. Save-state files remain `native_save_1.bin` through
 `native_save_9.bin`; thumbnail sidecars are optional. Shift+F1–F9 still
-saves directly; F1–F6 and F9 load directly, and Ctrl+F7/F8 loads slots 7/8.
+saves directly. Hold F1–F6 or F9 for 1.5 seconds to load; Ctrl+F7/F8 uses
+the same hold for slots 7/8. On a 3-button controller, LB saves slot 1 and
+holding RB loads it. A “Loading State...” notice and progress bar appear
+during the hold. Releasing early, losing focus or opening a menu cancels it;
+each completed press loads once and requires release before another load.
 Both overlays are unavailable during netplay.
 
 The launcher's Rewind settings control whether snapshots are kept, ring

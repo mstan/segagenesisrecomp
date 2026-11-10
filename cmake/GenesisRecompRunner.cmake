@@ -60,6 +60,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
     rb_capture.c
     rb_probe.c
     local_states.c
+    load_hold.c
     overlay_draw.c
     audio.c
     glue.c
@@ -110,6 +111,7 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     rb_state.c
     rb_probe.c
     local_states.c
+    load_hold.c
     overlay_draw.c
     runtime_evidence.c
     diagnostic_replay.c

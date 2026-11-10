@@ -17,7 +17,8 @@
  *   gamepad_turbo_held()          — 1 while Back/View is held.
  *   gamepad_consume_quicksave()   — returns slot 1..9 once per LB press,
  *                                   0 otherwise. (Currently always 1.)
- *   gamepad_consume_quickload()   — same shape for RB.
+ *   gamepad_consume_quickload()   — a new RB press, for the runner's hold timer.
+ *   gamepad_quickload_held()      — continuous eligible RB state.
  *   gamepad_shutdown()
  *
  * The consume_* helpers are edge-triggered: each press fires the slot
@@ -49,6 +50,10 @@ int gamepad_player_connected(int player);
 int     gamepad_turbo_held(void);
 int     gamepad_consume_quicksave(void);
 int     gamepad_consume_quickload(void);
+/* Continuous physical P1 RB, only in 3-button mode and without Back/View. */
+int     gamepad_quickload_held(void);
+/* Read before handling the event, while the original P1 assignment is valid. */
+int     gamepad_cancels_quickload(const SDL_Event *event);
 
 /* Physical P1 buttons for the modal save/rewind overlays. */
 enum {
