@@ -52,6 +52,8 @@ int     gamepad_consume_quicksave(void);
 int     gamepad_consume_quickload(void);
 /* Continuous physical P1 RB, only in 3-button mode and without Back/View. */
 int     gamepad_quickload_held(void);
+/* Read before handling the event, while the original P1 assignment is valid. */
+int     gamepad_cancels_quickload(const SDL_Event *event);
 
 /* Physical P1 buttons for the modal save/rewind overlays. */
 enum {
