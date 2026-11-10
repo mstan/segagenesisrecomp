@@ -25,7 +25,7 @@ intr_stack=0
 player_object=0
 level_modes=[]
 ''')
-    run=subprocess.run([str(a.recompiler.resolve()),'expansion.bin','--game','game.toml','--output-dir',str(root/'generated')],cwd=root,capture_output=True,text=True)
+    run=subprocess.run([str(a.recompiler.resolve()),'expansion.bin','--game','game.toml','--output-dir',str(root/'generated')],cwd=root,capture_output=True,text=True,encoding='utf-8',errors='replace')
     if run.returncode:raise AssertionError(run.stdout+run.stderr)
     dispatch=(root/'generated/expansion_dispatch.c').read_text()
     assert '0x400000u, func_400000' in dispatch
@@ -33,6 +33,6 @@ level_modes=[]
     cycles=(root/'generated/expansion_cycles.c').read_text()
     assert '{0x400000u,20}' in cycles and '{0x7FFFFEu,16}' in cycles
     with (root/'expansion.bin').open('ab') as f:f.write(b'\x4e\x75')
-    bad=subprocess.run([str(a.recompiler.resolve()),'expansion.bin','--game','game.toml'],cwd=root,capture_output=True,text=True)
+    bad=subprocess.run([str(a.recompiler.resolve()),'expansion.bin','--game','game.toml'],cwd=root,capture_output=True,text=True,encoding='utf-8',errors='replace')
     assert bad.returncode and 'ROM too large' in bad.stderr
 print('PASS expansion-ROM native entries and instruction costs through $7FFFFE; oversize input rejected')
