@@ -60,6 +60,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
     rb_capture.c
     rb_probe.c
     local_states.c
+    load_hold.c
     overlay_draw.c
     audio.c
     glue.c

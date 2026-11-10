@@ -218,6 +218,12 @@ target_compile_definitions(local_states_test PRIVATE GENESIS_LOCAL_HISTORY_LIMIT
 target_link_libraries(local_states_test PRIVATE retcomm_rbengine)
 add_test(NAME local_states COMMAND local_states_test "${CMAKE_CURRENT_BINARY_DIR}/")
 
+add_executable(load_hold_test runtime/load_hold_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/load_hold.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
+target_include_directories(load_hold_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+add_test(NAME load_hold COMMAND load_hold_test)
+
 add_executable(host_state_test runtime/host_state_test.c)
 target_include_directories(host_state_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_link_libraries(host_state_test PRIVATE SDL2::SDL2)
@@ -339,6 +345,21 @@ genesisrecomp_runner_target(fiber_snapshot_test)
 add_test(NAME fiber_snapshot COMMAND fiber_snapshot_test)
 
 if(TARGET SDL2::SDL2)
+    add_executable(load_hold_gamepad_test runtime/load_hold_gamepad_test.c
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/gamepad.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/input_map.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/load_hold.c"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/overlay_draw.c")
+    target_include_directories(load_hold_gamepad_test PRIVATE
+        "${CMAKE_CURRENT_LIST_DIR}/../runner"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
+        "${CMAKE_CURRENT_LIST_DIR}/../runner/external/clowncommon"
+        ${SDL2_PARENT_INCLUDE_DIRS})
+    target_compile_definitions(load_hold_gamepad_test PRIVATE OWN_BACKEND=1)
+    target_link_libraries(load_hold_gamepad_test PRIVATE SDL2::SDL2)
+    genesisrecomp_runner_target(load_hold_gamepad_test)
+    add_test(NAME load_hold_gamepad COMMAND load_hold_gamepad_test)
+
     add_executable(window_events_test runtime/window_events_test.c
         "${CMAKE_CURRENT_LIST_DIR}/../runner/fiber_compat.c")
     target_include_directories(window_events_test PRIVATE

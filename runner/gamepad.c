@@ -218,3 +218,11 @@ int gamepad_consume_quickload(void)
     s_pending_load = 0;
     return 1;   /* slot 1 */
 }
+
+int gamepad_quickload_held(void)
+{
+    return gamepad_player_connected(0) &&
+        g_input_map.p[0].pad_type != PAD_6BUTTON &&
+        !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK) &&
+        SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+}
