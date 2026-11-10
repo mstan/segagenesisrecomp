@@ -50,7 +50,6 @@
 
 static GenesisLoadHold s_load_hold;
 static SDL_Keycode s_load_key;
-static int s_load_key_held;
 static int s_load_hold_focused;
 static SDL_Texture *s_load_hold_texture;
 
@@ -58,13 +57,14 @@ static void cancel_load_hold(void)
 {
     genesis_load_hold_cancel(&s_load_hold);
     s_load_key = 0;
-    s_load_key_held = 0;
 }
 
 static void load_hold_event(const SDL_Event *event, SDL_Window *window)
 {
-    if (event->type == SDL_KEYUP && event->key.keysym.sym == s_load_key)
-        s_load_key_held = 0;
+    if ((event->type == SDL_KEYUP && s_load_hold.source == GENESIS_LOAD_HOLD_KEYBOARD &&
+         event->key.keysym.sym == s_load_key) ||
+        (s_load_hold.source == GENESIS_LOAD_HOLD_PAD && gamepad_cancels_quickload(event)))
+        cancel_load_hold();
     if (event->type == SDL_WINDOWEVENT && event->window.windowID == SDL_GetWindowID(window)) {
         if (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
             s_load_hold_focused = 1;
@@ -75,8 +75,7 @@ static void load_hold_event(const SDL_Event *event, SDL_Window *window)
             cancel_load_hold();
         }
     }
-    if (event->type == SDL_CONTROLLERDEVICEREMOVED)
-        cancel_load_hold();
+    gamepad_handle_event(event);
     /* A press made in another window must not arm on focus gain later in
      * this event batch. Consume it while its original context is known. */
     if (!s_load_hold_focused) (void)gamepad_consume_quickload();
@@ -2379,7 +2378,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
         SDL_Event ev;
         if (window_wait_event_timeout(&ev, 16)) {
             do {
-                gamepad_handle_event(&ev);
+                load_hold_event(&ev, SDL_RenderGetWindow(renderer));
                 if (ev.type == SDL_QUIT) { *running = 0; break; }
                 if (ev.type != SDL_KEYDOWN) continue;
                 int mode = genesis_local_states_is_open();
@@ -2462,7 +2461,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
         if (!key_held && !pad_held) break;
         SDL_Event ev;
         if (window_wait_event_timeout(&ev, 16)) {
-            gamepad_handle_event(&ev);
+            load_hold_event(&ev, SDL_RenderGetWindow(renderer));
             if (ev.type == SDL_QUIT) *running = 0;
         }
     }
@@ -3594,7 +3593,6 @@ session_begin:;
             cancel_load_hold();
             SDL_Event pev;
             while (window_poll_event(&pev)) {
-                gamepad_handle_event(&pev);
                 load_hold_event(&pev, window);
                 (void)gamepad_consume_quickload();
                 if (pev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
@@ -3613,7 +3611,6 @@ session_begin:;
                 genesis_hd_gpu_destroy(hd_gpu);hd_gpu=NULL;hd_checked=0;
                 SDL_DestroyTexture(s_load_hold_texture);s_load_hold_texture=NULL;
             }
-            gamepad_handle_event(&ev);
             load_hold_event(&ev, window);
 #if RECOMP_LAUNCHER
             if (recomp_runtime_ui_is_open(s_runtime_ui.ui))
@@ -3694,7 +3691,6 @@ session_begin:;
                             genesis_load_hold_begin(&s_load_hold, GENESIS_LOAD_HOLD_KEYBOARD,
                                                     slot, SDL_GetTicks64());
                             s_load_key = ev.key.keysym.sym;
-                            s_load_key_held = 1;
                         }
                     }
                 }
@@ -3774,7 +3770,7 @@ session_begin:;
 #endif
             int held = s_load_hold.source == GENESIS_LOAD_HOLD_PAD
                 ? gamepad_quickload_held()
-                : s_load_key_held && !(SDL_GetModState() & KMOD_SHIFT);
+                : !(SDL_GetModState() & KMOD_SHIFT);
             int slot = genesis_load_hold_update(&s_load_hold, SDL_GetTicks64(), held, allowed);
             if (slot) {
                 char slot_name[48];

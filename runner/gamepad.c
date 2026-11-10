@@ -61,6 +61,7 @@ static void close_pad_by_jid(SDL_JoystickID jid)
             SDL_GameControllerClose(s_pad[i]);
             s_pad[i]     = NULL;
             s_pad_jid[i] = -1;
+            if (i == 0) s_pending_load = 0;
         }
     }
 }
@@ -95,6 +96,7 @@ void gamepad_shutdown(void)
 void gamepad_handle_event(const SDL_Event *ev)
 {
     if (!ev) return;
+    if (gamepad_cancels_quickload(ev)) s_pending_load = 0;
     switch (ev->type) {
         case SDL_CONTROLLERDEVICEADDED:
             /* cdevice.which is a joystick index here (not an instance id). */
@@ -225,4 +227,18 @@ int gamepad_quickload_held(void)
         g_input_map.p[0].pad_type != PAD_6BUTTON &&
         !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK) &&
         SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+}
+
+int gamepad_cancels_quickload(const SDL_Event *ev)
+{
+    if (!ev || !s_pad[0]) return 0;
+    if (ev->type == SDL_CONTROLLERDEVICEREMOVED)
+        return ev->cdevice.which == s_pad_jid[0];
+    if (ev->type != SDL_CONTROLLERBUTTONDOWN && ev->type != SDL_CONTROLLERBUTTONUP)
+        return 0;
+    return ev->cbutton.which == s_pad_jid[0] &&
+        ((ev->type == SDL_CONTROLLERBUTTONUP &&
+          ev->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) ||
+         (ev->type == SDL_CONTROLLERBUTTONDOWN &&
+          ev->cbutton.button == SDL_CONTROLLER_BUTTON_BACK));
 }

@@ -6,7 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define CHECK(c) do{if(!(c)){fprintf(stderr,"line %d: %s (%s)\n",__LINE__,#c,SDL_GetError());exit(1);}}while(0)
-static void events(void){SDL_Event e;SDL_JoystickUpdate();while(SDL_PollEvent(&e))gamepad_handle_event(&e);}
+static GenesisLoadHold hold;
+static void events(void)
+{
+    SDL_Event e;SDL_JoystickUpdate();
+    while(SDL_PollEvent(&e)){
+        if(gamepad_cancels_quickload(&e))genesis_load_hold_cancel(&hold);
+        gamepad_handle_event(&e);
+    }
+}
 int main(void)
 {
     SDL_SetMainReady();
@@ -23,9 +31,17 @@ int main(void)
     CHECK(!SDL_JoystickSetVirtualButton(a,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,1));events();
     CHECK(gamepad_consume_quickload()==1&&gamepad_quickload_held());
     CHECK(!gamepad_consume_quickload());
-    GenesisLoadHold hold={0};genesis_load_hold_begin(&hold,GENESIS_LOAD_HOLD_PAD,1,100);
+    genesis_load_hold_begin(&hold,GENESIS_LOAD_HOLD_PAD,1,100);
     CHECK(!genesis_load_hold_update(&hold,1599,gamepad_quickload_held(),1));
-    CHECK(genesis_load_hold_update(&hold,1600,gamepad_quickload_held(),1)==1);
+    /* Both edges arrive in one event batch. Polling just the final button
+     * state would incorrectly finish the previous press at time 1600. */
+    CHECK(!SDL_JoystickSetVirtualButton(a,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,0));SDL_JoystickUpdate();
+    CHECK(!SDL_JoystickSetVirtualButton(a,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,1));events();
+    CHECK(!hold.source&&gamepad_consume_quickload()==1&&gamepad_quickload_held());
+    genesis_load_hold_begin(&hold,GENESIS_LOAD_HOLD_PAD,1,1600);
+    CHECK(!genesis_load_hold_update(&hold,1600,gamepad_quickload_held(),1));
+    CHECK(!genesis_load_hold_update(&hold,3099,gamepad_quickload_held(),1));
+    CHECK(genesis_load_hold_update(&hold,3100,gamepad_quickload_held(),1)==1);
     CHECK(!genesis_load_hold_update(&hold,9000,gamepad_quickload_held(),1));
     CHECK(!SDL_JoystickSetVirtualButton(a,SDL_CONTROLLER_BUTTON_BACK,1));events();
     CHECK(!gamepad_quickload_held());
