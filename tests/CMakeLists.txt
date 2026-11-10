@@ -104,6 +104,10 @@ add_executable(audio_event_order_test runtime/audio_event_order_test.c)
 target_include_directories(audio_event_order_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 add_test(NAME audio_event_order COMMAND audio_event_order_test)
 
+add_executable(audio_latched_write_test runtime/audio_latched_write_test.c)
+target_include_directories(audio_latched_write_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+add_test(NAME audio_latched_write COMMAND audio_latched_write_test)
+
 # Compile the same public wrapper under both fixed implementations. Share the
 # unmodified ymfm chip, compare full state and PCM, and exercise pending output.
 set(_fm_wrapper "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/ym2612_ymfm.cpp")
@@ -281,6 +285,11 @@ if(Python3_Interpreter_FOUND)
         "${CMAKE_CURRENT_LIST_DIR}/tools/test_disasm_inline_tables.py")
     add_test(NAME sonic_disassembly_provenance COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/tools/test_sonic_disassembly.py")
+    if(TARGET GenesisRecomp)
+        add_test(NAME expansion_generation COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_LIST_DIR}/tools/test_expansion_generation.py"
+            --recompiler "$<TARGET_FILE:GenesisRecomp>")
+    endif()
     add_test(NAME generated_input_paths COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_CURRENT_LIST_DIR}/tools/test_generated_paths.py"
         --cmake "${CMAKE_COMMAND}" --generator "${CMAKE_GENERATOR}")
@@ -366,6 +375,13 @@ add_test(NAME vdp_host_sprite_batched COMMAND vdp_host_sprite_batched_test)
 add_executable(expansion_rom_test runtime/expansion_rom_test.c)
 target_include_directories(expansion_rom_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")
 add_test(NAME expansion_rom COMMAND expansion_rom_test)
+
+add_executable(expansion_ram_test runtime/expansion_ram_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video/genesis_bus.c")
+target_include_directories(expansion_ram_test PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/video"
+    "${CMAKE_CURRENT_LIST_DIR}/../runner")
+add_test(NAME expansion_ram COMMAND expansion_ram_test)
 
 add_executable(genesis_bus_sram_test runtime/genesis_bus_sram_test.c)
 target_include_directories(genesis_bus_sram_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/video")

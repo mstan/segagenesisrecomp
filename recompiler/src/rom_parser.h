@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #define GENESIS_HEADER_SIZE  0x200       /* 512-byte system header */
-#define GENESIS_ROM_MAX_SIZE 0x400000    /* 4MB maximum */
+#define GENESIS_ROM_MAX_SIZE 0x800000    /* cartridge plus $400000 expansion ROM */
 
 typedef struct {
     uint8_t  *rom_data;

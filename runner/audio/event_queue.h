@@ -33,6 +33,20 @@ typedef struct AudioEvent {
 /* Push one event. Safe to call from anywhere inside the game fiber. */
 void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value);
 
+/* Materialize a data-only FM write's guest address latch before timestamp
+ * ordering. Z80 PCM loops can retain $2A across many writes; 68K writes from
+ * a different clock axis must not redirect those bytes into other registers.
+ * Both events have the data write's stamp, so the existing stable pair guard
+ * keeps the address and data together. This adds no guest bus access/cycles.
+ * data_port must be AUDIO_PORT_FM1_DATA or AUDIO_PORT_FM2_DATA. */
+static inline void audio_event_push_latched(uint32_t cycle_stamp,
+                                           uint8_t data_port, uint8_t reg,
+                                           uint8_t value)
+{
+    audio_event_push(cycle_stamp, (uint8_t)(data_port - 1u), reg);
+    audio_event_push(cycle_stamp, data_port, value);
+}
+
 /* Drain iterator. Returns 1 if *out was filled, 0 if queue empty.
  * Call repeatedly until it returns 0 to walk the frame's events in order. */
 int  audio_event_pop(AudioEvent *out);
