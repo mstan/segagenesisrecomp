@@ -44,7 +44,66 @@
 #include "png_write.h"
 #include "runtime_evidence.h"
 #include "local_states.h"
+#include "load_hold.h"
+#include "gamepad.h"
 #include "diagnostic_replay.h"
+
+static GenesisLoadHold s_load_hold;
+static SDL_Keycode s_load_key;
+static int s_load_key_held;
+static int s_load_hold_focused;
+static SDL_Texture *s_load_hold_texture;
+
+static void cancel_load_hold(void)
+{
+    genesis_load_hold_cancel(&s_load_hold);
+    s_load_key = 0;
+    s_load_key_held = 0;
+}
+
+static void load_hold_event(const SDL_Event *event, SDL_Window *window)
+{
+    if (event->type == SDL_KEYUP && event->key.keysym.sym == s_load_key)
+        s_load_key_held = 0;
+    if (event->type == SDL_WINDOWEVENT && event->window.windowID == SDL_GetWindowID(window)) {
+        if (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+            s_load_hold_focused = 1;
+        else if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST ||
+                 event->window.event == SDL_WINDOWEVENT_HIDDEN ||
+                 event->window.event == SDL_WINDOWEVENT_MINIMIZED) {
+            s_load_hold_focused = 0;
+            cancel_load_hold();
+        }
+    }
+    if (event->type == SDL_CONTROLLERDEVICEREMOVED)
+        cancel_load_hold();
+    /* A press made in another window must not arm on focus gain later in
+     * this event batch. Consume it while its original context is known. */
+    if (!s_load_hold_focused) (void)gamepad_consume_quickload();
+}
+
+static void draw_load_hold(SDL_Renderer *renderer)
+{
+    if (!genesis_load_hold_visible(&s_load_hold)) return;
+    if (!s_load_hold_texture) {
+        s_load_hold_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+            SDL_TEXTUREACCESS_STREAMING, GENESIS_LOAD_HOLD_WIDTH, GENESIS_LOAD_HOLD_HEIGHT);
+        if (!s_load_hold_texture) return;
+        SDL_SetTextureBlendMode(s_load_hold_texture, SDL_BLENDMODE_BLEND);
+    }
+    uint32_t pixels[GENESIS_LOAD_HOLD_WIDTH * GENESIS_LOAD_HOLD_HEIGHT];
+    genesis_load_hold_draw(&s_load_hold, SDL_GetTicks64(), pixels);
+    SDL_UpdateTexture(s_load_hold_texture, NULL, pixels, GENESIS_LOAD_HOLD_WIDTH * 4);
+    int w, h;
+    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    if (w <= 0 || h <= 0) SDL_GetRendererOutputSize(renderer, &w, &h);
+    int width = w - 16;
+    if (width > GENESIS_LOAD_HOLD_WIDTH) width = GENESIS_LOAD_HOLD_WIDTH;
+    if (width <= 0 || h <= 16) return;
+    int height = width * GENESIS_LOAD_HOLD_HEIGHT / GENESIS_LOAD_HOLD_WIDTH;
+    SDL_Rect dst = {(w - width) / 2, h - height - 8, width, height};
+    SDL_RenderCopy(renderer, s_load_hold_texture, NULL, &dst);
+}
 
 /* =========================================================================
  * Path helper: resolve filenames relative to the exe directory.
@@ -1271,6 +1330,8 @@ int runner_save_state_file(const char *path)
 
 int runner_load_state_file(const char *path)
 {
+    /* A scripted/debug load abandons any unfinished physical shortcut. */
+    if (!s_load_hold.fired) cancel_load_hold();
     const char *reason=g_game_spec.state_unavailable_reason?g_game_spec.state_unavailable_reason():NULL;
     if (reason) { fprintf(stderr,"[LOAD] unavailable: %s\n",reason); return 0; }
     char full_path[512];
@@ -2291,6 +2352,7 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
 static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
                                int *running, int turbo)
 {
+    cancel_load_hold();
     SDL_Texture *panel = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                                            SDL_TEXTUREACCESS_STREAMING, 640, 448);
     if (!panel) { genesis_local_states_cancel(); return; }
@@ -3005,6 +3067,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         return 1;
     }
+    cancel_load_hold();
+    s_load_hold_focused = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
     fprintf(stderr, "[VIDEO] window %dx%d (%s)\n", win_w, win_h,
             (custom_video_on || ws_armed()) ? "16:9 widescreen" : "4:3");
 
@@ -3506,9 +3570,12 @@ session_begin:;
             && !genesis_netplay_active()   /* no pause online: it is refused at the server */
 #endif
             ) {
+            cancel_load_hold();
             SDL_Event pev;
             while (window_poll_event(&pev)) {
                 gamepad_handle_event(&pev);
+                load_hold_event(&pev, window);
+                (void)gamepad_consume_quickload();
                 if (pev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
             }
             if (!running) break;
@@ -3523,10 +3590,15 @@ session_begin:;
         while (window_poll_event(&ev)) {
             if(ev.type==SDL_RENDER_TARGETS_RESET||ev.type==SDL_RENDER_DEVICE_RESET) {
                 genesis_hd_gpu_destroy(hd_gpu);hd_gpu=NULL;hd_checked=0;
+                SDL_DestroyTexture(s_load_hold_texture);s_load_hold_texture=NULL;
             }
             gamepad_handle_event(&ev);
+            load_hold_event(&ev, window);
 #if RECOMP_LAUNCHER
+            if (recomp_runtime_ui_is_open(s_runtime_ui.ui))
+                (void)gamepad_consume_quickload();
             if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
+                cancel_load_hold();
                 recomp_runtime_ui_open(s_runtime_ui.ui); continue;
             }
             if (recomp_runtime_ui_is_open(s_runtime_ui.ui) && (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)) {
@@ -3574,7 +3646,8 @@ session_begin:;
                     }
                 }
 
-                /* Save states: Shift+F1-F9 = save, F1-F9 = load */
+                /* Shift+F1-F9 saves; hold F1-F9 for 1.5 seconds to load.
+                 * Unmodified F7/F8 above retain their browser shortcuts. */
                 {
                     int slot = -1;
                     if (ev.key.keysym.sym >= SDLK_F1 && ev.key.keysym.sym <= SDLK_F9)
@@ -3589,10 +3662,19 @@ session_begin:;
                         } else
 #endif
                         if (is_save) {
+                            cancel_load_hold();
                             if (runner_save_state_file(slot_name) && !g_game_spec.state_size)
                                 genesis_local_states_slot_saved(slot);
                         }
-                        else runner_load_state_file(slot_name);
+                        else if (!ev.key.repeat && !s_load_hold.source &&
+                                 s_load_hold_focused &&
+                                 !input_gameplay_blocked() &&
+                                 (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS)) {
+                            genesis_load_hold_begin(&s_load_hold, GENESIS_LOAD_HOLD_KEYBOARD,
+                                                    slot, SDL_GetTicks64());
+                            s_load_key = ev.key.keysym.sym;
+                            s_load_key_held = 1;
+                        }
                     }
                 }
                 /* [SND-TRACE] F12 = dump the sound-command lifecycle ring AND
@@ -3637,9 +3719,8 @@ session_begin:;
         input_set_gameplay_blocked(recomp_runtime_ui_is_open(s_runtime_ui.ui));
 #endif
 
-        /* Controller shoulder taps: LB = quicksave slot 1, RB = quickload
-         * slot 1. Edge-triggered inside gamepad_handle_event so a single
-         * press fires once even at 60 Hz polling. */
+        /* LB saves immediately. RB starts a continuous hold to load slot 1;
+         * only a new press starts it, never a menu exit or a key repeat. */
         {
             int save_slot = gamepad_consume_quicksave();
             int load_slot = gamepad_consume_quickload();
@@ -3653,10 +3734,31 @@ session_begin:;
                 else
 #endif
                 if (save_slot) {
+                    cancel_load_hold();
                     if (runner_save_state_file(slot_name) && !g_game_spec.state_size)
                         genesis_local_states_slot_saved(slot);
                 }
-                else runner_load_state_file(slot_name);
+                else if (s_load_hold_focused &&
+                         (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS))
+                    genesis_load_hold_begin(&s_load_hold, GENESIS_LOAD_HOLD_PAD,
+                                            slot, SDL_GetTicks64());
+            }
+        }
+
+        if (s_load_hold.source) {
+            int allowed = s_load_hold_focused && !input_gameplay_blocked() &&
+                          (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS);
+#if GENESIS_HAS_RECOMP_NET
+            if (genesis_netplay_active()) allowed = 0;
+#endif
+            int held = s_load_hold.source == GENESIS_LOAD_HOLD_PAD
+                ? gamepad_quickload_held()
+                : s_load_key_held && !(SDL_GetModState() & KMOD_SHIFT);
+            int slot = genesis_load_hold_update(&s_load_hold, SDL_GetTicks64(), held, allowed);
+            if (slot) {
+                char slot_name[48];
+                snprintf(slot_name, sizeof(slot_name), "native_save_%d.bin", slot);
+                runner_load_state_file(slot_name);
             }
         }
 
@@ -4220,6 +4322,7 @@ session_begin:;
                 SDL_RenderClear(renderer);SDL_RenderCopy(renderer,texture,&src,NULL);
                 now=SDL_GetPerformanceCounter();
                 if(now<at)genesis_host_wait_until(at,perf_frequency);
+                draw_load_hold(renderer);
                 SDL_RenderPresent(renderer);
                 ++presentation_count;interpolation_count+=interpolated!=0;
                 if(presentation_trace) {
@@ -4239,6 +4342,7 @@ session_begin:;
             Uint64 now=SDL_GetPerformanceCounter();
             if(!turbo && !runtime_uncapped && now<guest_deadline)
                 genesis_host_wait_until(guest_deadline,perf_frequency);
+            draw_load_hold(renderer);
             SDL_RenderPresent(renderer);++presentation_count;
         }
         FRAME_PHASE(8);
@@ -4486,6 +4590,8 @@ session_begin:;
     audio_close();
     shadow_worker_cleanup();
     genesis_hd_gpu_destroy(hd_gpu);
+    cancel_load_hold();
+    SDL_DestroyTexture(s_load_hold_texture);s_load_hold_texture=NULL;
     SDL_DestroyTexture(peer_view_texture);
     SDL_DestroyTexture(texture);
     if (s_framebuf != s_native_storage) free(s_framebuf);
