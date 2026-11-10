@@ -6,7 +6,8 @@
  * initial PC, interrupt vector table, and ROM metadata strings.
  *
  * No bank switching: the entire ROM is flat in the 68K address space
- * starting at $000000, up to 4MB for standard cartridges.
+ * starting at $000000. Generation images may append software in the
+ * runtime's explicit $400000-$7FFFFF expansion-ROM window.
  */
 #include "rom_parser.h"
 #include <stdio.h>

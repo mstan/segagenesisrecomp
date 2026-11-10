@@ -17,6 +17,34 @@ extern uint8_t *g_rom_ext;        /* opt-in expansion ROM at $400000 */
 extern uint32_t g_rom_ext_size;   /* bytes; 0 = none (default) */
 extern uint8_t g_ram[0x010000];
 
+static uint8_t *expansion_ram;
+static uint32_t expansion_ram_base, expansion_ram_size;
+
+int gbus_map_expansion_ram(uint32_t base, uint8_t *data, uint32_t size)
+{
+    if (!data && !size) {
+        expansion_ram = NULL;
+        expansion_ram_base = expansion_ram_size = 0;
+        return 1;
+    }
+    if (!data || !size || ((base | size) & 1u) || base < 0x800000u ||
+        base >= 0xA00000u || size > 0xA00000u - base)
+        return 0;
+    expansion_ram = data;
+    expansion_ram_base = base;
+    expansion_ram_size = size;
+    return 1;
+}
+
+static uint8_t *expansion_ram_at(uint32_t address, uint32_t size)
+{
+    if (!expansion_ram || address < expansion_ram_base) return NULL;
+    uint32_t offset = address - expansion_ram_base;
+    if (offset >= expansion_ram_size || size > expansion_ram_size - offset)
+        return NULL;
+    return expansion_ram + offset;
+}
+
 /* Audio write stamps (master cycles since wall-frame start; see
  * genesis_machine.c "Audio write stamping"). 68K-origin writes use the
  * generated code's per-instruction cycle counter (68K cycles -> x7 master);
@@ -304,6 +332,8 @@ uint16_t gbus_read16(GenesisBus *b, uint32_t a)
         return (uint16_t)((g_rom[a] << 8) | g_rom[a + 1]);          /* ROM     */
     uint16_t expansion;
     if (gbus_expansion_word(a, &expansion)) return expansion;
+    uint8_t *extra_ram = expansion_ram_at(a, 2);
+    if (extra_ram) return (uint16_t)((extra_ram[0] << 8) | extra_ram[1]);
     if (a >= 0xFF0000u) {                                            /* RAM     */
         uint16_t o = (uint16_t)(a & 0xFFFFu);
         return (uint16_t)((g_ram[o] << 8) | g_ram[(uint16_t)(o + 1)]);
@@ -354,6 +384,8 @@ uint16_t gbus_peek16(const GenesisBus *b, uint32_t a)
         return (uint16_t)((g_rom[a] << 8) | g_rom[a + 1]);
     uint16_t expansion;
     if (gbus_expansion_word(a, &expansion)) return expansion;
+    uint8_t *extra_ram = expansion_ram_at(a, 2);
+    if (extra_ram) return (uint16_t)((extra_ram[0] << 8) | extra_ram[1]);
     if (a >= 0xFF0000u) {
         uint16_t o = (uint16_t)(a & 0xFFFFu);
         return (uint16_t)((g_ram[o] << 8) | g_ram[(uint16_t)(o + 1)]);
@@ -405,6 +437,11 @@ void gbus_write16(GenesisBus *b, uint32_t a, uint16_t v)
     }
     if (a == 0xA130F0u) { b->sram_enabled = (uint8_t)(v & 1); return; } /* SRAM overlay reg (word) */
     if (a < 0x400000u) return;                   /* ROM: ignore writes         */
+    uint8_t *extra_ram = expansion_ram_at(a, 2);
+    if (extra_ram) {
+        extra_ram[0] = (uint8_t)(v >> 8); extra_ram[1] = (uint8_t)v;
+        return;
+    }
     if (a >= 0xC00000u && a < 0xC00010u) {                          /* VDP      */
         if (a < 0xC00004u)      gvdp_write_data(b->vdp, v);
         else if (a < 0xC00008u) gvdp_write_control(b->vdp, v);
@@ -463,6 +500,8 @@ uint8_t gbus_read8(GenesisBus *b, uint32_t a)
 void gbus_write8(GenesisBus *b, uint32_t a, uint8_t v)
 {
     a &= 0xFFFFFFu;
+    uint8_t *extra_ram = expansion_ram_at(a, 1);
+    if (extra_ram) { *extra_ram = v; return; }
     /* Byte writes to RAM / Z80 RAM / PSG / FM need exact targeting. */
     if (a >= 0xFF0000u) { g_ram[a & 0xFFFFu] = v; return; }
     if (a >= 0xA00000u && a < 0xA10000u) {

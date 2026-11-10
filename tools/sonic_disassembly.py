@@ -32,9 +32,9 @@ COMPOSITES: dict[str, dict] = {}
 # Include-file depth is not a CPU indicator: much of Sonic 1's 68000 code lives
 # in (1)/(2) records. Require a known 68000 mnemonic and matching ROM bytes.
 ROW = re.compile(r"^(?:\(\d+\))?\s*\d+/\s*([\da-fA-F]+)\s*:\s?(.*)$")
-EMIT = re.compile(r"^\s*([\da-fA-F]{2,8}(?: +[\da-fA-F]{2,8})*)\s+(\S+)")
+EMIT = re.compile(r"^\s*((?:[\da-fA-F]{2}){1,4}(?: +(?:[\da-fA-F]{2}){1,4})*)\s+(\S+)")
 LABEL = re.compile(r"^\s*(?:\(MACRO\)\s*)?([A-Za-z_][\w.]*):")
-INLINE_LABELS = re.compile(r"^(?:\.?[A-Za-z_][\w.]*:\s*)+")
+INLINE_LABELS = re.compile(r"^(?:(?:\.?[A-Za-z_][\w.]*:|[+-]+(?=\s))\s*)+")
 M68K = re.compile(r"^!?(?:abcd|add[aqix]?|and[i]?|asl|asr|b(?:cc|cs|eq|ge|gt|hi|le|ls|lt|mi|ne|pl|ra|sr|vc|vs)|bchg|bclr|bset|btst|chk|clr|cmp[aim]?|db\w+|div[su]|eor[i]?|exg|ext|illegal|jmp|jsr|lea|link|lsl|lsr|move[amq]?|movem|movep|muls|mulu|nbcd|negx?|nop|not|or[i]?|pea|reset|rol|ror|roxl|roxr|rte|rtr|rts|sbcd|s(?:cc|cs|eq|f|ge|gt|hi|le|ls|lt|mi|ne|pl|t|vc|vs)|stop|sub[aqix]?|swap|tas|trapv?|tst|unlk)(?:\.[bwls])?$", re.I)
 
 

@@ -118,6 +118,15 @@ static inline int gbus_sram_mapped_at(const GenesisBus *b, uint32_t addr)
 
 void gbus_init(GenesisBus *b, GVDP *vdp);
 
+/* Optional cartridge work RAM in the otherwise unmapped $800000-$9FFFFF
+ * window. Like g_rom_ext, this is a single game-owned cartridge mapping.
+ * Base and size must be even and the complete range must fit that window.
+ * Invalid requests leave the existing mapping intact. NULL/zero unmaps it.
+ * The caller keeps the buffer alive and includes its bytes in the game's
+ * file/rewind/rollback state; mapping pointers are process configuration.
+ * Hardware ports, battery SRAM, original ROM and work RAM cannot be replaced. */
+int gbus_map_expansion_ram(uint32_t base, uint8_t *data, uint32_t size);
+
 /* Parse battery-SRAM geometry from the ROM header. Must run AFTER g_rom is
  * populated (glue_init) — gbus_init runs before the ROM copy exists.
  * rom_size is the actual loaded cartridge image size. */

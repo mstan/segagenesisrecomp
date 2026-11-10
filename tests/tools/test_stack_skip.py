@@ -14,7 +14,7 @@ import tempfile
 CONFIG = """[game]
 output_prefix = "skip"
 [functions]
-extra = [0x200, 0x240, 0x280, 0x2C0, 0x2E0, 0x2F0]
+extra = [0x200, 0x240, 0x280, 0x2C0, 0x2E0, 0x320]
 [ram_layout]
 game_mode = 0
 vint_runcount = 0
@@ -126,7 +126,7 @@ int main(int argc,char **argv) {
     }
     g_cpu.A[7]=0xFFFE00; g_cpu.SR=0x2700;
     recomp_call_addr(0x200);
-    if (g_cpu.D[0]!=42 || g_cpu.D[1]!=(skip<2 ? 1u:0u) ||
+    if (g_cpu.D[0]!=(skip<3 ? 42u:0u) || g_cpu.D[1]!=(skip<2 ? 1u:0u) ||
         g_cpu.D[2]!=(skip<1 ? 2u:0u) || g_cpu.D[3]!=(mixed?0x56781234u:0u) ||
         g_cpu.A[7]!=0xFFFE00 || pending) {
         fprintf(stderr,"skip=%d D0=%u D1=%u D2=%u A7=%x pending=%d\n",skip,
@@ -160,7 +160,9 @@ def main():
         td = Path(temp)
         (td/"game.toml").write_text(CONFIG)
         (td/"harness.c").write_text(HARNESS)
-        for slots in (0,1,2):
+        for slots,form in ((0,'quick'),(1,'quick'),(2,'quick'),
+                           (3,'adda-word'),(3,'adda-long'),(3,'suba-negative'),
+                           (3,'balanced-adda-suba')):
             for split,mixed in ((False,False),(True,False),(False,True),(True,True)):
                 rom = bytearray(b"\xff"*0x400)
                 rom[0:8] = bytes.fromhex("00fffe00 00000200")
@@ -169,21 +171,27 @@ def main():
                 for addr,target,reg,value in ((0x200,0x240,0,42),(0x240,0x280,1,1),(0x280,0x2C0,2,2)):
                     code = bytes.fromhex("4eb9") + target.to_bytes(4,"big") + bytes([0x70+reg*2,value,0x4e,0x75])
                     rom[addr:addr+len(code)] = code
-                adjust = bytes.fromhex({0:"4e71",1:"584f",2:"504f"}[slots])
+                adjust = bytes.fromhex({
+                    'quick':{0:"4e71",1:"584f",2:"504f"}.get(slots,''),
+                    'adda-word':'defc000c',
+                    'adda-long':'dffc0000000c',
+                    'suba-negative':'9efcfff4',
+                    'balanced-adda-suba':'defcfff8 9ffcfffffff8 defc000c',
+                }[form])
                 # IceCap column: save two word velocities, restore one long.
                 # The data must not be mistaken for a consumed return slot.
                 push = bytes.fromhex("3f3c1234 3f3c5678") if mixed else b""
                 pop = bytes.fromhex("261f") if mixed else b""
                 if split:
                     head = push + bytes.fromhex("4ef9 000002e0")
-                    tail = pop + adjust + bytes.fromhex("4ef9 000002f0")
+                    tail = pop + adjust + bytes.fromhex("4ef9 00000320")
                     rom[0x2C0:0x2C0+len(head)] = head
                     rom[0x2E0:0x2E0+len(tail)] = tail
-                    rom[0x2F0:0x2F2] = bytes.fromhex("4e75")
+                    rom[0x320:0x322] = bytes.fromhex("4e75")
                 else:
                     body = push + pop + adjust + bytes.fromhex("4e75")
                     rom[0x2C0:0x2C0+len(body)] = body
-                    rom[0x2E0:0x2E2] = rom[0x2F0:0x2F2] = bytes.fromhex("4e75")
+                    rom[0x2E0:0x2E2] = rom[0x320:0x322] = bytes.fromhex("4e75")
                 (td/"test.bin").write_bytes(rom)
                 run([args.recompiler.resolve(),"test.bin","--game","game.toml","--output-dir","generated"],td)
                 exe = td/"test.exe"
@@ -201,7 +209,7 @@ def main():
                     flags=["-DGENESIS_DISABLE_NATIVE_CALL_FRAME=1"] if args.disable_native_frame else []
                     run([args.cc.resolve(),"-std=c11","-O1",*flags,"-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
                 run([exe,str(slots),str(int(mixed))],td)
-                print(f"PASS skip {slots} return slots, split={split}, mixed-width-data={mixed}")
+                print(f"PASS skip {slots} return slots, form={form}, split={split}, mixed-width-data={mixed}")
                 if not slots and not split and not mixed:
                     run([exe,"0","0","1"],td)
                     stalled=subprocess.run([str(exe),"0","0","2"],cwd=td,capture_output=True)
