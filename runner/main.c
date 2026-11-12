@@ -1418,6 +1418,21 @@ int runner_load_state_file(const char *path)
     ok = ok && fgetc(sf) == EOF && !ferror(sf);
     fclose(sf);
 
+    uint32_t resume_pc = 0;
+    if (ok) {
+        uint8_t mode = g_game_layout.game_mode_addr
+            ? glue_peek8(g_game_layout.game_mode_addr)
+            : 0u;
+        if (!game_spec_resolve_save_resume_pc(
+                &g_game_spec, g_game_layout.game_mode_addr != 0, mode,
+                &resume_pc)) {
+            fprintf(stderr,
+                    "[LOAD] unsupported restored game mode $%02X; state cannot resume safely\n",
+                    mode);
+            ok = 0;
+        }
+    }
+
     if (!ok && !genesis_rb_load(backup, backup_len)) {
         fprintf(stderr, "[LOAD] fatal: could not restore pre-load state\n");
         abort();
@@ -1428,19 +1443,8 @@ int runner_load_state_file(const char *path)
      * restored chips already contain their effect. */
     if (ok) audio_event_queue_reset();
 
-    if (ok) {
-        /* Mode-aware resume: re-enter at the restored Game_Mode's per-frame
-         * loop top (moment-in-time) when the game maps one; otherwise fall
-         * back to the outer dispatcher (mode-handler re-entry / reload). */
-        uint32_t resume_pc = g_game_spec.resume_main_loop_pc;
-        if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
-            uint32_t pc = g_game_spec.save_resume_pc(
-                glue_peek8(g_game_layout.game_mode_addr));
-            if (pc) resume_pc = pc;
-        }
-        if (resume_pc)
-            glue_restart_game_fiber(resume_pc);
-    }
+    if (ok && resume_pc)
+        glue_restart_game_fiber(resume_pc);
 
     if (ok)
         fprintf(stderr, "[LOAD] loaded %s\n", resolved);
