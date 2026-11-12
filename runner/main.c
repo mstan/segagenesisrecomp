@@ -1596,7 +1596,7 @@ static void runner_sram_init_and_load(const char *rom_path)
         long fsz = ftell(f);
         fseek(f, 0, SEEK_SET);
         if (fsz != (long)n) {
-            fprintf(stderr, "[SRAM] IGNORING %s â€” file %ld B != cart SRAM %zu B "
+            fprintf(stderr, "[SRAM] IGNORING %s - file %ld B != cart SRAM %zu B "
                     "(truncated/oversized/foreign); starting fresh\n",
                     s_sram_path, fsz, n);
         } else {
@@ -1606,7 +1606,7 @@ static void runner_sram_init_and_load(const char *rom_path)
         }
         fclose(f);
     } else {
-        fprintf(stderr, "[SRAM] no save file yet (%s) â€” starting fresh\n", s_sram_path);
+        fprintf(stderr, "[SRAM] no save file yet (%s) - starting fresh\n", s_sram_path);
     }
     if(s_replay_boot_path && !genesis_replay_boot_sram(s_replay_boot_path,sram_buf(),sram_size(),&loaded)) {
         fprintf(stderr,"[feedback-replay] invalid startup SRAM attachment\n");exit(2);
