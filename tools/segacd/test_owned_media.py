@@ -55,7 +55,11 @@ class OwnedMediaTests(unittest.TestCase):
             convert(cue, image)
             a, b = OwnedMedia(cue), OwnedMedia(image)
             self.assertEqual(a.tracks, b.tracks)
-            self.assertEqual(a.input_paths, {cue, root / 'data.bin', root / 'music.bin'})
+            self.assertEqual(a.input_paths, {
+                cue.resolve(),
+                (root / 'data.bin').resolve(),
+                (root / 'music.bin').resolve(),
+            })
             for index in range(2):
                 ta, tb = a.tracks[index], b.tracks[index]
                 length = ta['end'] - ta['start']
