@@ -1,0 +1,84 @@
+def g = project.ext.genesisGame
+def engine = file(g.engineRoot)
+def ui = file(g.uiRoot)
+def sdl = file(providers.gradleProperty('SDL2_SOURCE_DIR').get())
+def host = file(providers.gradleProperty('genesisHostTools').get())
+def posix = { File f -> f.absolutePath.replace('\\','/') }
+def suffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '.exe' : ''
+def abis = providers.gradleProperty('genesisAbis').orElse('arm64-v8a,armeabi-v7a').get().split(',').toList()
+if (!abis.every { it in ['arm64-v8a','armeabi-v7a','x86_64'] }) throw new GradleException('Unsupported genesisAbis')
+def qa = providers.gradleProperty('genesisQa').orElse('false').get().toBoolean()
+def payload = layout.buildDirectory.dir('generated/publicAssets')
+tasks.register('stagePublicAssets', Sync) {
+    into payload
+    from(new File(ui,'assets/common/fonts')) { into 'payload/assets/fonts' }
+    from(new File(ui,'assets/common/img')) { into 'payload/assets/img' }
+    from(new File(ui,'assets/consoles/genesis/img')) { into 'payload/assets/img' }
+    from(new File(g.gameRoot,g.boxart)) { into 'payload/assets/img' }
+    from(new File(engine,'LICENSE.md')) { into 'payload/notices'; rename { 'GENESIS-LICENSE.md' } }
+    from(new File(engine,'THIRD-PARTY-LICENSES.md')) { into 'payload/notices' }
+    from(new File(sdl,'LICENSE.txt')) { into 'payload/notices'; rename { 'SDL2-LICENSE.txt' } }
+    [
+        'runner/external/ymfm/LICENSE', 'runner/external/superzazu/LICENSE',
+        'runner/external/clowncommon/LICENCE.txt', 'runner/external/minicoro/LICENSE',
+        'runner/external/minicoro/minicoro.h', // includes the LuaCoco assembly notice
+        'external/recomp-net/LICENSE', 'external/rbengine/LICENSE',
+        'external/m68k-recomp-core/LICENSE', 'external/z80-recomp-core/LICENSE'
+    ].each { name -> from(new File(engine,name)) { into 'payload/notices/'+name.substring(0,name.lastIndexOf('/')) } }
+    from(new File(ui,'LICENSE')) { into 'payload/notices/recomp-ui' }
+    from(new File(ui,'src/third_party/imgui/LICENSE.txt')) { into 'payload/notices/imgui' }
+    // These single-header distributions carry their full license in the source.
+    from(new File(ui,'src/third_party')) {
+        include 'stb_image.h','stb_image_write.h','stb_truetype.h','tinyfiledialogs.h'
+        into 'payload/notices/ui-components'
+    }
+    from(new File(g.gameRoot,'docs/CLONE_DRIVER_NOTICES.txt')) { into 'payload/notices' }
+}
+android {
+    namespace 'org.genesisrecompiled'
+    compileSdk 35
+    ndkVersion '27.1.12297006'
+    defaultConfig {
+        applicationId g.applicationId + (qa ? '.qa' : '')
+        minSdk 24
+        targetSdk 35
+        versionCode g.versionCode
+        versionName g.version
+        manifestPlaceholders = [gameTitle:g.title]
+        buildConfigField 'String','GAME_TITLE','"'+g.title+'"'
+        buildConfigField 'String','ROM_CRC','"'+g.romCrc+'"'
+        buildConfigField 'int','ROM_SIZE',g.romSize.toString()
+        buildConfigField 'String','ROM_CONFIG','"'+g.romConfig+'"'
+        buildConfigField 'String','NATIVE_LIBRARY','"'+g.target+'"'
+        externalNativeBuild.cmake {
+            arguments '-DANDROID_STL=c++_shared', '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON',
+                "-DSDL2_SOURCE_DIR=${posix(sdl)}",
+                "-DGENESIS_RECOMP_ROOT=${posix(engine)}", "-DRECOMP_UI_ROOT=${posix(ui)}",
+                "-DGENESIS_RECOMPILER_EXE=${posix(new File(host,'GenesisRecomp'+suffix))}",
+                "-DGENESIS_M68K_STEP_RECOMPILER_EXE=${posix(new File(host,'M68kStepRecomp'+suffix))}",
+                "-DGENESIS_M68K_SPAN_RECOMPILER_EXE=${posix(new File(host,'M68kSpanRecomp'+suffix))}",
+                '-DBUILD_TESTING=OFF', '-DSONIC_REVERSE_DEBUG=OFF',
+                '-DGEN_ENABLE_TRACE='+ (qa ? 'ON' : 'OFF'), '-DGENESIS_NATIVE_IPO=OFF',
+                '-DCMAKE_BUILD_TYPE=MinSizeRel'
+            abiFilters(*abis)
+            targets g.target
+            if (providers.gradleProperty('genesisPython').isPresent()) {
+                arguments "-DPython3_EXECUTABLE=${posix(file(providers.gradleProperty('genesisPython').get()))}"
+            }
+        }
+    }
+    buildFeatures.buildConfig true
+    buildTypes.release { minifyEnabled false }
+    externalNativeBuild.cmake {
+        path new File(g.gameRoot,'CMakeLists.txt'); version '3.22.1'
+        if (providers.gradleProperty('genesisNativeBuildRoot').isPresent()) {
+            buildStagingDirectory file(providers.gradleProperty('genesisNativeBuildRoot').get())
+        }
+    }
+    sourceSets.main {
+        manifest.srcFile new File(engine,'platform/android/AndroidManifest.xml')
+        java.srcDirs = [new File(engine,'platform/android/java'),new File(sdl,'android-project/app/src/main/java')]
+        assets.srcDirs = [payload]
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'stagePublicAssets' }

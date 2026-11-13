@@ -121,7 +121,10 @@ int rb_probe_armed(void)
 
 /* ---- carrier finders ------------------------------------------------------- */
 
-#if defined(__linux__) && defined(__GNUC__)
+/* These executable linker symbols are not exported by Android SDL shared
+ * libraries. The optional image-carrier diagnostic uses the same no-image
+ * fallback as other hosts there; normal rollback/state probing is unchanged. */
+#if defined(__linux__) && defined(__GNUC__) && !defined(__ANDROID__)
 #define RB_PROBE_HAVE_IMAGE 1
 extern char __data_start[], _edata[], __bss_start[], _end[];
 static uint8_t *s_img;

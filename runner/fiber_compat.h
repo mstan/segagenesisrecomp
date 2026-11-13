@@ -8,7 +8,7 @@
  * any yield point. Both needs are met by one backend on every platform:
  *
  *   - vendored minicoro (runner/external/minicoro, Unlicense/MIT-0) in its
- *     assembly mode (Win64, SysV x86-64, aarch64). On Windows its switch
+ *     assembly mode (Win64, SysV x86-64, aarch64, ARM EABI). On Windows its switch
  *     also swaps the TIB stack fields (StackBase/StackLimit/
  *     DeallocationStack), so __chkstk and SEH unwinding see the fiber stack.
  *   - the ENGINE owns the stack memory: one VirtualAlloc/mmap mapping per
