@@ -41,7 +41,10 @@ public final class GameActivity extends SDLActivity {
     @Override protected void onCreate(Bundle saved) {
         try {
             Os.setenv("GENESIS_USER_DIR",getFilesDir().getAbsolutePath(),true);
-            if(BuildConfig.DEBUG && getIntent().getBooleanExtra("qaMute",false))Os.setenv("SDL_AUDIODRIVER","dummy",true);
+            if(BuildConfig.DEBUG && getIntent().hasExtra("qaMute")) {
+                if(getIntent().getBooleanExtra("qaMute",false))Os.setenv("SDL_AUDIODRIVER","dummy",true);
+                else Os.unsetenv("SDL_AUDIODRIVER");
+            }
             if(BuildConfig.DEBUG) {
                 String probe=getIntent().getStringExtra("qaRbProbe");
                 if(probe!=null && probe.matches("[0-9]+:[0-9]+"))Os.setenv("GENESIS_RB_PROBE",probe,true);

@@ -2514,6 +2514,9 @@ int main(int argc, char *argv[])
 #endif
     }
 #if defined(__ANDROID__)
+    /* A new Activity can reuse this loaded library after the last game exits.
+     * Reset the cached ownership before gameplay enables its new touch pad. */
+    genesis_android_set_gameplay(0);
     /* SDL's resizable-window default otherwise overrides the manifest with
      * full-user orientation, allowing a phone's portrait default to win. */
     SDL_SetHint(SDL_HINT_ORIENTATIONS,"LandscapeLeft LandscapeRight");
