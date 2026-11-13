@@ -1360,6 +1360,7 @@ int runner_load_state_file(const char *path)
             if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
             audio_discard_playback();
             genesis_replay_file_loaded(resolved);
+            rb_probe_external_state_loaded();
         }
         return ok;
     }
@@ -1434,6 +1435,7 @@ int runner_load_state_file(const char *path)
             if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
         audio_discard_playback();
         genesis_replay_file_loaded(resolved);
+        rb_probe_external_state_loaded();
     }
     return ok;
 }
@@ -4066,7 +4068,14 @@ session_begin:;
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
                   GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
-                  if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
+                  /* Debugger ticks are live simulation too. Omitting them
+                   * while a probe window is recording compares a replay of
+                   * fewer ticks with the advanced live machine. */
+                  int probing = rb_probe_armed();
+                  if (probing) rb_probe_pre_tick();
+                  int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
+                  if (completed && probing) rb_probe_post_tick();
+                  if (!completed) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);

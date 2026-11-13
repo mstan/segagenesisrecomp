@@ -87,6 +87,7 @@ static int      s_recording;        /* ticks recorded in the current pass */
 static GenesisSimInput s_rec_in[RB_PROBE_MAX_DEPTH];
 static GenesisRbDigest s_rec_dig[RB_PROBE_MAX_DEPTH];
 static unsigned s_passes, s_fails, s_sym_fails;
+static unsigned s_discarded;
 static uint32_t s_ticks_seen;
 
 void rb_probe_set_resim_hooks(const GenesisSimHooks *hooks) { s_resim_hooks = hooks; }
@@ -310,6 +311,15 @@ void rb_probe_post_tick(void)
     else fprintf(stderr, "rb_probe: pass=%u tick=%u depth=%d OK\n", pass, at, s_depth);
 }
 
+void rb_probe_external_state_loaded(void)
+{
+    if (!s_recording) return;
+    fprintf(stderr, "rb_probe: discarded partial window tick=%u recorded=%d/%d reason=external state load\n",
+            s_ticks_seen, s_recording - 1, s_depth);
+    s_recording = 0;
+    s_discarded++;
+}
+
 void rb_probe_summary(void)
 {
     if (s_period <= 0) return;
@@ -318,6 +328,6 @@ void rb_probe_summary(void)
     tset_print("digest", &s_t_digest);
     tset_print("resim", &s_t_tick);
     if (s_bytes_max) fprintf(stderr, "rb_probe: snapshot bytes min=%zu max=%zu\n", s_bytes_min, s_bytes_max);
-    fprintf(stderr, "rb_probe: summary passes=%u divergences=%u asymmetric=%u period=%d depth=%d\n",
-            s_passes, s_fails, s_sym_fails, s_period, s_depth);
+    fprintf(stderr, "rb_probe: summary passes=%u divergences=%u asymmetric=%u period=%d depth=%d discarded=%u\n",
+            s_passes, s_fails, s_sym_fails, s_period, s_depth, s_discarded);
 }

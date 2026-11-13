@@ -1,0 +1,12 @@
+# Normal cold menu input; no state import or guest-memory writes.
+WAIT 30
+PRESS START 2
+WAIT 180
+PRESS START 2
+WAIT 180
+PRESS START 2
+WAIT 180
+PRESS START 2
+WAIT 180
+PRESS START 2
+WAIT 400

@@ -1,0 +1,4 @@
+# Requires a completed same-build rb_probe_prepare_current.input run.
+WAIT 31
+LOAD_STATE rb-probe-current.state
+WAIT 190
