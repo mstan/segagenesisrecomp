@@ -293,6 +293,9 @@ typedef struct GameSpec {
      * use this to swap interpreter execution for native execution
      * one function at a time during divergence hunting. NULL+0 is
      * legal and means "no overrides". */
+    /* Optional scene-specific override of state_boundary_at_frame_end.
+     * Appended so existing positional source initializers retain their fields. */
+    int (*state_boundary_needs_frame_end)(void);
 } GameSpec;
 
 /*

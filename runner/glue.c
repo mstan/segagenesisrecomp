@@ -657,13 +657,18 @@ static uint32_t s_main_cpu_stalls;
 static int s_irq_in_progress = 0; /* also excludes interleaved IRQs from acceleration */
 static int     s_game_yielded_vblank = 0;
 static int s_state_requested,s_state_parked;
+static int state_boundary_frame_end(void)
+{
+    return g_game_spec.state_boundary_needs_frame_end ?
+        g_game_spec.state_boundary_needs_frame_end() : g_game_spec.state_boundary_at_frame_end;
+}
 void glue_state_boundary_request(int requested)
 { s_state_requested=requested; if (!requested) s_state_parked=0; }
 int glue_state_boundary_ready(void)
 {
     /* Interrupts can change the resumable phase after the last CPU yield.
      * Validate the adapter's boundary against the completed wall frame. */
-    return s_state_parked && (!g_game_spec.state_boundary_at_frame_end ||
+    return s_state_parked && (!state_boundary_frame_end() ||
         !g_game_spec.state_at_boundary || g_game_spec.state_at_boundary());
 }
 /* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
@@ -699,7 +704,7 @@ void glue_run_game_chunk(uint32_t cycles)
 {
     /* Existing adapters qualify their first CPU yield while held. An adapter
      * with a completed-raster contract must instead keep doing native work. */
-    if (s_state_parked && !g_game_spec.state_boundary_at_frame_end) return;
+    if (s_state_parked && !state_boundary_frame_end()) return;
     if (!s_game_running || !s_game_fiber)
         return;
     if (s_game_yielded_vblank)
