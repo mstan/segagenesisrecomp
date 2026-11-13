@@ -34,7 +34,7 @@ public final class SetupActivity extends Activity {
         play=new Button(this);play.setText("Open launcher");layout.addView(play);play.setOnClickListener(v -> launch());
         setContentView(layout);refresh();
         // The isolated debug package can be exercised without a document picker.
-        if(BuildConfig.DEBUG && getIntent().getBooleanExtra("qaLaunch",false) && validImport())launch();
+        if(saved==null && BuildConfig.DEBUG && getIntent().getBooleanExtra("qaLaunch",false) && validImport())launch();
     }
     private static byte[] read(InputStream input,int maximum) throws IOException {
         try(InputStream in=input;ByteArrayOutputStream out=new ByteArrayOutputStream()) {
