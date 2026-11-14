@@ -12,6 +12,8 @@
 #include <stddef.h>
 
 void   psg_init(void);
+/* Presentation audition: bits0..2 tones, bit3 noise; counters keep clocking. */
+void   psg_set_output_mask(unsigned mask);
 void   psg_advance(uint32_t cycles_master);
 void   psg_write(uint8_t value);
 size_t psg_render(int16_t *out, size_t sample_count);

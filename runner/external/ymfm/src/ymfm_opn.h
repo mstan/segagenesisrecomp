@@ -759,7 +759,7 @@ public:
 	void write(uint32_t offset, uint8_t data);
 
 	// generate one sample of sound
-	void generate(output_data *output, uint32_t numsamples = 1);
+	void generate(output_data *output, uint32_t numsamples = 1, uint32_t output_mask = 0x7f);
 
 protected:
 	// simulate the DAC discontinuity

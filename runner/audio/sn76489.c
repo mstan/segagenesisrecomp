@@ -22,6 +22,8 @@
 #define PSG_SAMPLE_DIVISOR_MASTER   240u   /* Z80_CLOCK_DIVIDER * PSG_SAMPLE_RATE_DIVIDER */
 
 static int        s_inited = 0;
+static unsigned s_output_mask=15;
+void psg_set_output_mask(unsigned mask) { s_output_mask=mask&15; }
 static uint32_t   s_leftover_master_cycles = 0;  /* in master-cycle units */
 
 #define PSG_SCRATCH_SAMPLES  8192
@@ -110,7 +112,7 @@ static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
             p->tone_counter[i] = p->tone_period[i] ? p->tone_period[i] : 1;
             p->tone_out[i] ^= 1;
         }
-        mix += p->tone_out[i] ? SN_VOL[p->vol[i]] : -SN_VOL[p->vol[i]];
+        if(s_output_mask&(1u<<i)) mix += p->tone_out[i] ? SN_VOL[p->vol[i]] : -SN_VOL[p->vol[i]];
     }
 
     if (--p->noise_counter <= 0) {
@@ -130,7 +132,7 @@ static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
             p->noise_out = (uint8_t)(p->lfsr & 1);
         }
     }
-    mix += p->noise_out ? SN_VOL[p->vol[3]] : -SN_VOL[p->vol[3]];
+    if(s_output_mask&8) mix += p->noise_out ? SN_VOL[p->vol[3]] : -SN_VOL[p->vol[3]];
     *unfiltered=(int16_t)mix; /* Four channels sum to at most32764. */
 
     /* First-order low-pass matching the reference (see magics above). */
@@ -212,6 +214,7 @@ static int sn_silent_span(SN76489 *p,int16_t *out,size_t samples)
 
 void psg_init(void)
 {
+    s_output_mask=15;
     sn_reset(&s_sn);
     s_scratch_write = s_scratch_read = 0;
     s_leftover_master_cycles = 0;

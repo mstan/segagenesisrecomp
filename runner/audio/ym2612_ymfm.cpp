@@ -61,6 +61,7 @@ struct YmfmIface : public ymfm::ymfm_interface {};
 YmfmIface       s_iface;
 ymfm::ym2612   *s_chip = nullptr;
 int             s_inited = 0;
+uint32_t s_output_mask = 0x7f;
 
 /* Output scratch ring, mirroring ym2612.c's so ym2612_render semantics match. */
 constexpr size_t FM_SCRATCH_STEREO_SAMPLES = 8192;
@@ -106,7 +107,7 @@ void emit_one_sample() {
         return;
     }
     ymfm::ym2612::output_data out;
-    s_chip->generate(&out, 1);
+    s_chip->generate(&out, 1, s_output_mask);
     int32_t l = out.data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
     int32_t r = out.data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
     s_scratch[s_scratch_write * 2 + 0] = (int16_t)fm_lpf(0, l);   /* hardware FM output LPF (matches reference; tames ymfm's excess highs) */
@@ -124,7 +125,7 @@ void emit_samples(uint32_t count) {
     ymfm::ym2612::output_data block[64];
     while (count) {
         uint32_t chunk = count < 64 ? count : 64;
-        s_chip->generate(block, chunk);
+        s_chip->generate(block, chunk, s_output_mask);
         for (uint32_t i = 0; i < chunk; ++i) {
             int32_t l = block[i].data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
             int32_t r = block[i].data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
@@ -141,7 +142,10 @@ void emit_samples(uint32_t count) {
 
 } /* namespace */
 
+extern "C" void ym2612_set_output_mask(unsigned mask) { s_output_mask=mask&0x7f; }
+
 extern "C" void ym2612_init(void) {
+    s_output_mask=0x7f;
     if (!s_chip)
         s_chip = new ymfm::ym2612(s_iface);
     s_chip->reset();

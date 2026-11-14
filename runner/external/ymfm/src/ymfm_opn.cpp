@@ -2380,8 +2380,11 @@ void ym2612::write(uint32_t offset, uint8_t data)
 //  generate - generate one sample of sound
 //-------------------------------------------------
 
-void ym2612::generate(output_data *output, uint32_t numsamples)
+void ym2612::generate(output_data *output, uint32_t numsamples, uint32_t output_mask)
 {
+	// Audition excludes the idle DAC bias, otherwise FM6/DAC ownership changes
+	// leak clicks into an unselected voice. The normal hardware mix is exact.
+	int const idle_bias = output_mask == 0x7f ? 0 : dac_discontinuity(0);
 	for (uint32_t samp = 0; samp < numsamples; samp++, output++)
 	{
 		// clock the system
@@ -2396,17 +2399,17 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
 		for (int chan = 0; chan < last_fm_channel; chan++)
 		{
 			m_fm.output(temp.clear(), 5, 256, 1 << chan);
-			output->data[0] += dac_discontinuity(temp.data[0]);
-			output->data[1] += dac_discontinuity(temp.data[1]);
+			if (output_mask & (1u << chan)) output->data[0] += dac_discontinuity(temp.data[0]) - idle_bias;
+			if (output_mask & (1u << chan)) output->data[1] += dac_discontinuity(temp.data[1]) - idle_bias;
 		}
 
 		// add in DAC
-		if (m_dac_enable)
+		if (m_dac_enable && (output_mask & 0x40))
 		{
 			// DAC enabled: start with DAC value then add the first 5 channels only
 			int32_t dacval = dac_discontinuity(int16_t(m_dac_data << 7) >> 7);
-			output->data[0] += m_fm.regs().ch_output_0(0x102) ? dacval : dac_discontinuity(0);
-			output->data[1] += m_fm.regs().ch_output_1(0x102) ? dacval : dac_discontinuity(0);
+			output->data[0] += (m_fm.regs().ch_output_0(0x102) ? dacval : dac_discontinuity(0)) - idle_bias;
+			output->data[1] += (m_fm.regs().ch_output_1(0x102) ? dacval : dac_discontinuity(0)) - idle_bias;
 		}
 
 		// output is technically multiplexed rather than mixed, but that requires

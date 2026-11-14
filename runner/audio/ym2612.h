@@ -17,6 +17,8 @@
 
 /* Lifecycle */
 void ym2612_init(void);
+/* Presentation audition: bits0..5 FM1..6, bit6 DAC. All voices keep clocking. */
+void ym2612_set_output_mask(unsigned mask);
 
 /* Advance internal state by `cycles_68k` 68K cycles without any register
  * writes. Ticks envelope/phase/LFO for each operator. */
