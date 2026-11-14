@@ -14,6 +14,10 @@ int  rb_probe_armed(void);
 /* Around every live tick, on the scheduler fiber. */
 void rb_probe_pre_tick(void);
 void rb_probe_post_tick(void);
+/* A successful external file load starts another timeline. An unfinished
+ * sealed-input window cannot compare across that operation; report it as
+ * discarded rather than as a passed or divergent replay. */
+void rb_probe_external_state_loaded(void);
 void rb_probe_summary(void);
 
 #ifdef __cplusplus

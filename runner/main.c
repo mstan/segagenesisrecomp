@@ -1,4 +1,5 @@
 #include "video/genesis_frame_pixels.h"
+#include "android_host.h"
 #include "video/genesis_hd_gpu.h"
 #include "video/genesis_raster_jobs.h"
 /*
@@ -417,7 +418,8 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         app_config_apply_video(g_game_spec.video);s_ws_user_on=0;
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_FULLSCREEN)) {
         g_app_config.fullscreen = v;
-        SDL_SetWindowFullscreen(c->window, v == 2 ? SDL_WINDOW_FULLSCREEN : v == 1 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        SDL_SetWindowFullscreen(c->window, genesis_android_fullscreen_flags(
+            v == 2 ? SDL_WINDOW_FULLSCREEN : v == 1 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_WINDOW_SCALE)) {
         g_app_config.window_scale = v;
         if (!(SDL_GetWindowFlags(c->window) & SDL_WINDOW_FULLSCREEN)) SDL_SetWindowSize(c->window, 320*v, 224*v);
@@ -1358,6 +1360,7 @@ int runner_load_state_file(const char *path)
             if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
             audio_discard_playback();
             genesis_replay_file_loaded(resolved);
+            rb_probe_external_state_loaded();
         }
         return ok;
     }
@@ -1432,6 +1435,7 @@ int runner_load_state_file(const char *path)
             if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
         audio_discard_playback();
         genesis_replay_file_loaded(resolved);
+        rb_probe_external_state_loaded();
     }
     return ok;
 }
@@ -2482,7 +2486,13 @@ static void replay_view(GenesisReplayView *v,int apply)
     }
 }
 
+/* recomp-ui uses SDL_MAIN_HANDLED for desktop entry points. Android's Java
+ * activity loads this shared library and explicitly resolves SDL_main. */
+#if defined(__ANDROID__)
+DECLSPEC int SDLCALL SDL_main(int argc, char *argv[])
+#else
 int main(int argc, char *argv[])
+#endif
 {
     init_exe_dir(argv[0]);
     const char *user_dir=getenv("GENESIS_USER_DIR");
@@ -2491,7 +2501,28 @@ int main(int argc, char *argv[])
             fprintf(stderr,"GENESIS_USER_DIR must be an absolute directory path\n");return 1;
         }
         snprintf(s_data_dir,sizeof s_data_dir,"%s/",user_dir);
+#if defined(__ANDROID__)
+        if (chdir(user_dir) != 0) {
+            fprintf(stderr,"Cannot use Android app storage directory\n");return 1;
+        }
+        /* Android otherwise discards stdio from native libraries. Keep the
+         * normal startup/failure diagnostics inside this app's private data. */
+        FILE *log=freopen("android-runtime.log","w",stderr);
+        if (log) {
+            setvbuf(stderr,NULL,_IONBF,0);
+            dup2(fileno(stderr),fileno(stdout));
+            setvbuf(stdout,NULL,_IONBF,0);
+        }
+#endif
     }
+#if defined(__ANDROID__)
+    /* A new Activity can reuse this loaded library after the last game exits.
+     * Reset the cached ownership before gameplay enables its new touch pad. */
+    genesis_android_set_gameplay(0);
+    /* SDL's resizable-window default otherwise overrides the manifest with
+     * full-user orientation, allowing a phone's portrait default to win. */
+    SDL_SetHint(SDL_HINT_ORIENTATIONS,"LandscapeLeft LandscapeRight");
+#endif
     input_map_init_defaults();   /* today's mapping; app_config_load may override */
 #if GENESIS_HAS_RECOMP_NET
     GenesisNetplayConfig netplay_config;
@@ -3071,6 +3102,7 @@ int main(int argc, char *argv[])
     if (!benchmark_frames) {
         if (g_app_config.fullscreen == 2)      win_flags |= SDL_WINDOW_FULLSCREEN;
         else if (g_app_config.fullscreen == 1) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        win_flags |= genesis_android_fullscreen_flags(0);
     }
     SDL_Window *window = SDL_CreateWindow(
         window_title,
@@ -3658,7 +3690,7 @@ session_begin:;
                         Uint32 want = (g_app_config.fullscreen == 2)
                                           ? SDL_WINDOW_FULLSCREEN
                                           : SDL_WINDOW_FULLSCREEN_DESKTOP;
-                        SDL_SetWindowFullscreen(window, is_fs ? 0 : want);
+                        SDL_SetWindowFullscreen(window, genesis_android_fullscreen_flags(is_fs ? 0 : want));
                         update_render_logical_size(renderer);
                         continue;   /* don't also treat Enter/F-key as a save slot */
                     }
@@ -3734,6 +3766,8 @@ session_begin:;
 
 #if RECOMP_LAUNCHER
         input_set_gameplay_blocked(recomp_runtime_ui_is_open(s_runtime_ui.ui));
+        genesis_android_set_gameplay(!recomp_runtime_ui_is_open(s_runtime_ui.ui) &&
+                                    !genesis_local_states_is_open());
 #endif
 
         /* LB saves immediately. RB starts a continuous hold to load slot 1;
@@ -4034,7 +4068,14 @@ session_begin:;
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
                   GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
-                  if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
+                  /* Debugger ticks are live simulation too. Omitting them
+                   * while a probe window is recording compares a replay of
+                   * fewer ticks with the advanced live machine. */
+                  int probing = rb_probe_armed();
+                  if (probing) rb_probe_pre_tick();
+                  int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
+                  if (completed && probing) rb_probe_post_tick();
+                  if (!completed) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);
