@@ -175,6 +175,16 @@ static void test_audition()
     setup(0);audio_mixer_set_audition(0,0x7ff);configure_fm();
     psg_write(0xc7);psg_write(3);psg_write(0xd2);psg_write(0xe7);psg_write(0xf4);
     State initial=save();Pair full=reference(1008*512);uint64_t hash=full_chip_hash();
+    /* Full-channel audition reuses completed canonical spans. A selection
+     * change must preserve the already queued prefix and its raw pairing. */
+    load(initial);audio_mixer_set_audition(1,1u<<5);
+    ym2612_advance(1008*37);Pair prefix=peek();
+    audio_mixer_set_audition(1,0x7ff);ym2612_advance(1008*91);
+    Pair joined=peek(),canonical_joined=reference(0);
+    CHECK(std::equal(prefix.fm.begin(),prefix.fm.end(),joined.fm.begin()));
+    CHECK(std::equal(prefix.raw_fm.begin(),prefix.raw_fm.end(),joined.raw_fm.begin()));
+    CHECK(std::equal(joined.fm.begin()+prefix.fm.size(),joined.fm.end(),canonical_joined.fm.begin()+prefix.fm.size()));
+    CHECK(std::equal(joined.raw_fm.begin()+prefix.raw_fm.size(),joined.raw_fm.end(),canonical_joined.raw_fm.begin()+prefix.raw_fm.size()));
     for(unsigned mask=0;mask<12;++mask) {
         load(initial);unsigned selected=mask?1u<<(mask-1):0;
         audio_mixer_set_audition(1,selected);

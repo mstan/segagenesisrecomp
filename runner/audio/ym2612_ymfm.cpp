@@ -119,6 +119,17 @@ inline void audition_sample(size_t index,int32_t left,int32_t right) {
     }
 }
 
+/* With every channel selected, audition is the canonical output. Mirror a
+ * completed span once, including its final filter history, rather than
+ * scaling and visiting each sample a second time. Queued samples retain
+ * their original selection when the player changes channels. */
+inline void audition_full_span(size_t first,size_t count) {
+    std::memcpy(s_aud_scratch+first*2,s_scratch+first*2,count*2*sizeof *s_scratch);
+    std::memcpy(s_aud_raw+first*2,s_raw_scratch+first*2,count*2*sizeof *s_raw_scratch);
+    std::memcpy(s_aud.previous,s_fm_lpf_prev,sizeof s_aud.previous);
+    std::memcpy(s_aud.output,s_fm_lpf_out,sizeof s_aud.output);
+}
+
 #if !GENESIS_FM_BLOCK_SAMPLES
 void emit_one_sample() {
     if (s_scratch_write >= FM_SCRATCH_STEREO_SAMPLES) {
@@ -127,7 +138,7 @@ void emit_one_sample() {
         return;
     }
     ymfm::ym2612::output_data out,audition;
-    if(s_aud.mask==127){s_chip->generate(&out,1);audition=out;}
+    if(s_aud.mask==127)s_chip->generate(&out,1);
     else s_chip->generate_audition(&out,&audition,1,s_aud.mask);
     int32_t l = out.data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
     int32_t r = out.data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
@@ -135,8 +146,9 @@ void emit_one_sample() {
     s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
     s_raw_scratch[s_scratch_write * 2 + 0] = clamp16(l);
     s_raw_scratch[s_scratch_write * 2 + 1] = clamp16(r);
-    audition_sample(s_scratch_write,audition.data[0]*YM_GAIN_NUM/YM_GAIN_DEN,
-                    audition.data[1]*YM_GAIN_NUM/YM_GAIN_DEN);
+    if(s_aud.mask==127)audition_full_span(s_scratch_write,1);
+    else audition_sample(s_scratch_write,audition.data[0]*YM_GAIN_NUM/YM_GAIN_DEN,
+                         audition.data[1]*YM_GAIN_NUM/YM_GAIN_DEN);
     s_scratch_write++;
 }
 #else
@@ -148,9 +160,22 @@ void emit_samples(uint32_t count) {
     ymfm::ym2612::output_data block[64],audition[64];
     while (count) {
         uint32_t chunk = count < 64 ? count : 64;
-        if(s_aud.mask==127){s_chip->generate(block,chunk);std::memcpy(audition,block,chunk*sizeof *block);}
-        else s_chip->generate_audition(block,audition,chunk,s_aud.mask);
-        for (uint32_t i = 0; i < chunk; ++i) {
+        const size_t first=s_scratch_write;
+        if(s_aud.mask==127) {
+            s_chip->generate(block,chunk);
+            for(uint32_t i=0;i<chunk;++i) {
+                int32_t l=block[i].data[0]*YM_GAIN_NUM/YM_GAIN_DEN;
+                int32_t r=block[i].data[1]*YM_GAIN_NUM/YM_GAIN_DEN;
+                s_scratch[s_scratch_write*2]=(int16_t)fm_lpf(0,l);
+                s_scratch[s_scratch_write*2+1]=(int16_t)fm_lpf(1,r);
+                s_raw_scratch[s_scratch_write*2]=clamp16(l);
+                s_raw_scratch[s_scratch_write*2+1]=clamp16(r);
+                ++s_scratch_write;
+            }
+            audition_full_span(first,chunk);
+        } else {
+          s_chip->generate_audition(block,audition,chunk,s_aud.mask);
+          for (uint32_t i = 0; i < chunk; ++i) {
             int32_t l = block[i].data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
             int32_t r = block[i].data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
             s_scratch[s_scratch_write * 2] = (int16_t)fm_lpf(0, l);
@@ -160,6 +185,7 @@ void emit_samples(uint32_t count) {
             audition_sample(s_scratch_write,audition[i].data[0]*YM_GAIN_NUM/YM_GAIN_DEN,
                             audition[i].data[1]*YM_GAIN_NUM/YM_GAIN_DEN);
             ++s_scratch_write;
+          }
         }
         count -= chunk;
     }
