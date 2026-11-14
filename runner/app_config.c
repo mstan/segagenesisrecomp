@@ -328,6 +328,9 @@ static const char *const shortcut_options[]={"save-button","load-button","rewind
 static const char *const shortcut_option_labels[]={"Save state shortcut","Load state shortcut","Rewind shortcut","Save / load action"};
 static int *shortcut_option_value(int i)
 {return i==0?&g_input_map.shortcuts.save_button:i==1?&g_input_map.shortcuts.load_button:&g_input_map.shortcuts.rewind_button;}
+/* SDL standard shoulder IDs also used by the persisted input map. */
+static int shortcut_effective_button(int action,int code)
+{return code==INPUT_SHORTCUT_ORIGINAL?(action==0?9:action==1?10:-1):code;}
 #define MOD_COPY(dst,src) snprintf(dst,sizeof(dst),"%s",src)
 static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
 {
@@ -455,7 +458,8 @@ static int video_mod_set(void *ctx,const char *package,const char *feature,const
         if(n==4||!value)return 0;
         if(n==3){if(strcmp(value,"direct")&&strcmp(value,"selector"))return 0;g_input_map.shortcuts.selector=!strcmp(value,"selector");return 1;}
         int code=input_shortcut_button_code(value);if(code<INPUT_SHORTCUT_ORIGINAL)return 0;
-        for(int i=0;code>=0&&i<3;++i)if(i!=n&&*shortcut_option_value(i)==code){MOD_COPY(s_mod_error,"That button already has a state shortcut. Unbind it there first.");return 0;}
+        int button=shortcut_effective_button(n,code);
+        for(int i=0;button>=0&&i<3;++i)if(i!=n&&shortcut_effective_button(i,*shortcut_option_value(i))==button){MOD_COPY(s_mod_error,"That button already has a state shortcut. Unbind it there first.");return 0;}
         *shortcut_option_value(n)=code;return 1;
     }
     if(s_mod_interp_available && interpolation_identity(package,feature) && option && !strcmp(option,"rate") && value) {

@@ -183,6 +183,15 @@ int main(int argc,char **argv)
     CHECK(p->feature_get(p->ctx,1,&feature) && !strcmp(feature.id,"unfiltered"));
     CHECK(p->feature_get(p->ctx,2,&feature)&&!strcmp(feature.id,"state-actions"));
     CHECK(!p->feature_get(p->ctx,3,&feature)); /* no viewport/widescreen feature */
+    g_input_map.shortcuts.save_button=INPUT_SHORTCUT_ORIGINAL;
+    g_input_map.shortcuts.load_button=INPUT_SHORTCUT_ORIGINAL;
+    g_input_map.shortcuts.rewind_button=INPUT_SHORTCUT_ORIGINAL;
+    CHECK(!p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","save-button","right-shoulder"));
+    CHECK(g_input_map.shortcuts.save_button==INPUT_SHORTCUT_ORIGINAL);
+    CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","load-button","none"));
+    CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","save-button","right-shoulder"));
+    CHECK(!p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","load-button","original"));
+    CHECK(g_input_map.shortcuts.load_button==INPUT_SHORTCUT_NONE);
     CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","save-button","none"));
     CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","load-button","right-stick"));
     CHECK(!p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","save-button","right-stick"));
