@@ -8,6 +8,23 @@ def suffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '
 def abis = providers.gradleProperty('genesisAbis').orElse('arm64-v8a,armeabi-v7a').get().split(',').toList()
 if (!abis.every { it in ['arm64-v8a','armeabi-v7a','x86_64'] }) throw new GradleException('Unsupported genesisAbis')
 def qa = providers.gradleProperty('genesisQa').orElse('false').get().toBoolean()
+def signingPath = providers.gradleProperty('genesisSigningProperties')
+    .orElse(providers.environmentVariable('GENESIS_SIGNING_PROPERTIES'))
+def signing = null
+def signingStore = null
+if (signingPath.isPresent()) {
+    if (qa) throw new GradleException('Production signing requires genesisQa=false')
+    def propertiesFile = file(signingPath.get())
+    if (!propertiesFile.isFile()) throw new GradleException('Signing properties file is missing')
+    signing = new Properties()
+    propertiesFile.withInputStream { signing.load(it) }
+    if (!['storeFile','storePassword','keyAlias','keyPassword'].every { signing.getProperty(it) }) {
+        throw new GradleException('Signing properties require storeFile, storePassword, keyAlias and keyPassword')
+    }
+    signingStore = new File(signing.getProperty('storeFile'))
+    if (!signingStore.isAbsolute()) signingStore = new File(propertiesFile.parentFile, signing.getProperty('storeFile'))
+    if (!signingStore.isFile()) throw new GradleException('Signing keystore is missing')
+}
 def payload = layout.buildDirectory.dir('generated/publicAssets')
 tasks.register('stagePublicAssets', Sync) {
     into payload
@@ -17,6 +34,9 @@ tasks.register('stagePublicAssets', Sync) {
     from(new File(g.gameRoot,g.boxart)) { into 'payload/assets/img' }
     from(new File(engine,'LICENSE.md')) { into 'payload/notices'; rename { 'GENESIS-LICENSE.md' } }
     from(new File(engine,'THIRD-PARTY-LICENSES.md')) { into 'payload/notices' }
+    from(new File(g.gameRoot,'LICENSE.md')) { into 'payload/notices'; rename { 'GAME-LICENSE.md' } }
+    from(new File(engine,'platform/android/SOURCES.md')) { into 'payload/notices' }
+    from(new File(engine,'platform/android/licenses')) { into 'payload/notices/fonts' }
     from(new File(sdl,'LICENSE.txt')) { into 'payload/notices'; rename { 'SDL2-LICENSE.txt' } }
     [
         'runner/external/ymfm/LICENSE', 'runner/external/superzazu/LICENSE',
@@ -68,7 +88,20 @@ android {
         }
     }
     buildFeatures.buildConfig true
-    buildTypes.release { minifyEnabled false }
+    signingConfigs {
+        if (signing != null) {
+            production {
+                storeFile signingStore
+                storePassword signing.getProperty('storePassword')
+                keyAlias signing.getProperty('keyAlias')
+                keyPassword signing.getProperty('keyPassword')
+            }
+        }
+    }
+    buildTypes.release {
+        minifyEnabled false
+        if (signing != null) signingConfig signingConfigs.production
+    }
     externalNativeBuild.cmake {
         path new File(g.gameRoot,'CMakeLists.txt'); version '3.22.1'
         if (providers.gradleProperty('genesisNativeBuildRoot').isPresent()) {
