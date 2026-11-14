@@ -19,7 +19,7 @@ static int raw_differs;
 static uint32_t rnd(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}
 static void check(void)
 {
-    uint8_t a[34000],b[34000];size_t n=psg_rb_save(NULL,0);
+    uint8_t a[66000],b[66000];size_t n=psg_rb_save(NULL,0);
     CHECK(n<=sizeof a&&n==ref_psg_rb_save(NULL,0));
     CHECK(psg_rb_save(a,sizeof a)==n&&ref_psg_rb_save(b,sizeof b)==n);
     CHECK(!memcmp(a,b,n)&&psg_cosim_hash()==ref_psg_cosim_hash());
@@ -56,7 +56,7 @@ int main(void)
         else write_byte((uint8_t)rnd());
         advance(rnd()%2100000u);drain(rnd()%8193u);
         if(i%29u==0) {
-            uint8_t state[34000];size_t n=psg_rb_save(state,sizeof state);
+            uint8_t state[66000];size_t n=psg_rb_save(state,sizeof state);
             advance(rnd());CHECK(psg_rb_load(state,n)&&ref_psg_rb_load(state,n));check();
             advance(rnd()%30000u);drain(8192);
         }
@@ -65,7 +65,7 @@ int main(void)
     /* Full scratch retains the established drop and remainder behavior. */
     advance(UINT32_MAX);advance(UINT32_MAX);drain(8192);advance(239);drain(8192);
     CHECK(raw_differs);
-    advance(240*64);uint8_t state[34000];size_t n=psg_rb_save(state,sizeof state);
+    advance(240*64);uint8_t state[66000];size_t n=psg_rb_save(state,sizeof state);
     int16_t filtered[64],raw[64],legacy[64];
     CHECK(psg_render_pair(filtered,raw,64)==64);CHECK(psg_rb_load(state,n));
     CHECK(psg_render(legacy,64)==64&&!memcmp(filtered,legacy,sizeof filtered));

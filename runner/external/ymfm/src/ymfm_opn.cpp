@@ -2419,6 +2419,38 @@ void ym2612::generate(output_data *output, uint32_t numsamples)
 }
 
 
+// Local extension: preserve the canonical generator's operation order and
+// feedback while accumulating the selected channels in a parallel output.
+void ym2612::generate_audition(output_data *full,output_data *audition,uint32_t count,unsigned mask)
+{
+    for(uint32_t n=0;n<count;++n) {
+        m_fm.clock(fm_engine::ALL_CHANNELS);
+        full[n].clear();audition[n].clear();output_data temp;
+        int channels=m_dac_enable?5:6;
+        for(int channel=0;channel<channels;++channel) {
+            m_fm.output(temp.clear(),5,256,1u<<channel);
+            for(unsigned side=0;side<2;++side) {
+                int32_t value=dac_discontinuity(temp.data[side]);
+                full[n].data[side]+=value;
+                audition[n].data[side]+=(mask&(1u<<channel))?value:dac_discontinuity(0);
+            }
+        }
+        if(m_dac_enable) {
+            int32_t value=dac_discontinuity(int16_t(m_dac_data<<7)>>7);
+            int32_t left=m_fm.regs().ch_output_0(0x102)?value:dac_discontinuity(0);
+            int32_t right=m_fm.regs().ch_output_1(0x102)?value:dac_discontinuity(0);
+            full[n].data[0]+=left;full[n].data[1]+=right;
+            audition[n].data[0]+=(mask&64u)?left:dac_discontinuity(0);
+            audition[n].data[1]+=(mask&64u)?right:dac_discontinuity(0);
+        }
+        for(unsigned side=0;side<2;++side) {
+            full[n].data[side]=(full[n].data[side]*128)*64/(6*65);
+            audition[n].data[side]=(audition[n].data[side]*128)*64/(6*65);
+        }
+    }
+}
+
+
 //-------------------------------------------------
 //  generate - generate one sample of sound
 //-------------------------------------------------

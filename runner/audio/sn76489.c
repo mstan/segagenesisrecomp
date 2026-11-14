@@ -27,6 +27,8 @@ static uint32_t   s_leftover_master_cycles = 0;  /* in master-cycle units */
 #define PSG_SCRATCH_SAMPLES  8192
 static int16_t s_scratch[PSG_SCRATCH_SAMPLES];
 static int16_t s_raw_scratch[PSG_SCRATCH_SAMPLES];
+static int16_t s_aud_scratch[PSG_SCRATCH_SAMPLES],s_aud_raw[PSG_SCRATCH_SAMPLES];
+static struct {unsigned mask;int32_t previous,output;} s_aud={15,0,0};
 static size_t  s_scratch_write = 0;
 static size_t  s_scratch_read  = 0;
 
@@ -101,7 +103,7 @@ static int sn_noise_reload(const SN76489 *p)
     }
 }
 
-static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
+static int32_t sn_step_mix(SN76489 *p,int32_t *channels)
 {
     int32_t mix = 0;
 
@@ -110,7 +112,8 @@ static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
             p->tone_counter[i] = p->tone_period[i] ? p->tone_period[i] : 1;
             p->tone_out[i] ^= 1;
         }
-        mix += p->tone_out[i] ? SN_VOL[p->vol[i]] : -SN_VOL[p->vol[i]];
+        int32_t value=p->tone_out[i]?SN_VOL[p->vol[i]]:-SN_VOL[p->vol[i]];
+        mix+=value;if(channels)channels[i]=value;
     }
 
     if (--p->noise_counter <= 0) {
@@ -130,18 +133,30 @@ static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
             p->noise_out = (uint8_t)(p->lfsr & 1);
         }
     }
-    mix += p->noise_out ? SN_VOL[p->vol[3]] : -SN_VOL[p->vol[3]];
-    *unfiltered=(int16_t)mix; /* Four channels sum to at most32764. */
-
-    /* First-order low-pass matching the reference (see magics above). */
-    int64_t lp = ((int64_t)(mix + p->lpf_prev) * SN_LPF_SAMPLE_MAGIC
-                + (int64_t)p->lpf_y * SN_LPF_OUTPUT_MAGIC) / 65536;
-    p->lpf_prev = mix;
-    int32_t out = (int32_t)lp;
-    if (out >  32767) out =  32767;
-    if (out < -32768) out = -32768;
-    p->lpf_y = out;
-    return (int16_t)out;
+    int32_t noise=p->noise_out?SN_VOL[p->vol[3]]:-SN_VOL[p->vol[3]];
+    if(channels)channels[3]=noise;
+    return mix+noise;
+}
+static int16_t sn_filter_sample(int32_t mix,int32_t *previous,int32_t *output)
+{
+    int64_t lp=((int64_t)(mix+*previous)*SN_LPF_SAMPLE_MAGIC+
+        (int64_t)*output*SN_LPF_OUTPUT_MAGIC)/65536;
+    *previous=mix;int32_t out=(int32_t)lp;
+    if(out>32767)out=32767;if(out< -32768)out= -32768;
+    *output=out;return (int16_t)out;
+}
+static int16_t sn_render_sample(SN76489 *p,int16_t *unfiltered)
+{
+    int32_t mix=sn_step_mix(p,NULL);*unfiltered=(int16_t)mix;
+    return sn_filter_sample(mix,&p->lpf_prev,&p->lpf_y);
+}
+static int16_t sn_render_audition(SN76489 *p,int16_t *raw,int16_t *audition,int16_t *aud_raw)
+{
+    int32_t channels[4],mix=sn_step_mix(p,channels),selected=0;
+    for(unsigned n=0;n<4;n++)if(s_aud.mask&(1u<<n))selected+=channels[n];
+    *raw=(int16_t)mix;*aud_raw=(int16_t)selected;
+    *audition=sn_filter_sample(selected,&s_aud.previous,&s_aud.output);
+    return sn_filter_sample(mix,&p->lpf_prev,&p->lpf_y);
 }
 
 #ifndef GENESIS_PSG_SILENT_SPANS
@@ -214,7 +229,7 @@ void psg_init(void)
 {
     sn_reset(&s_sn);
     s_scratch_write = s_scratch_read = 0;
-    s_leftover_master_cycles = 0;
+    s_leftover_master_cycles = 0;s_aud.previous=s_aud.output=0;
     s_inited = 1;
 }
 
@@ -231,13 +246,24 @@ void psg_advance(uint32_t cycles_master)
         size_t avail = PSG_SCRATCH_SAMPLES - s_scratch_write;
         if (avail == 0) return;  /* scratch full; drop */
         size_t chunk = samples_to_emit < avail ? samples_to_emit : avail;
+        int silent=0;
 #if GENESIS_PSG_SILENT_SPANS
-        if(sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk))
-            memset(s_raw_scratch+s_scratch_write,0,chunk*sizeof *s_raw_scratch);
-        else
+        if((s_aud.mask==15 || (!s_aud.previous && !s_aud.output)) &&
+           sn_silent_span(&s_sn,s_scratch+s_scratch_write,chunk))silent=1;
 #endif
-            for (size_t i = 0; i < chunk; i++)
-                s_scratch[s_scratch_write + i] = sn_render_sample(&s_sn,s_raw_scratch+s_scratch_write+i);
+        if(silent) {
+            memset(s_raw_scratch+s_scratch_write,0,chunk*sizeof *s_raw_scratch);
+            memset(s_aud_scratch+s_scratch_write,0,chunk*sizeof *s_aud_scratch);
+            memset(s_aud_raw+s_scratch_write,0,chunk*sizeof *s_aud_raw);
+        } else if(s_aud.mask==15) {
+            for(size_t i=0;i<chunk;i++)
+                s_scratch[s_scratch_write+i]=sn_render_sample(&s_sn,s_raw_scratch+s_scratch_write+i);
+            memcpy(s_aud_scratch+s_scratch_write,s_scratch+s_scratch_write,chunk*sizeof *s_scratch);
+            memcpy(s_aud_raw+s_scratch_write,s_raw_scratch+s_scratch_write,chunk*sizeof *s_raw_scratch);
+        } else for(size_t i=0;i<chunk;i++)
+            s_scratch[s_scratch_write+i]=sn_render_audition(&s_sn,s_raw_scratch+s_scratch_write+i,
+                s_aud_scratch+s_scratch_write+i,s_aud_raw+s_scratch_write+i);
+        if(s_aud.mask==15){s_aud.previous=s_sn.lpf_prev;s_aud.output=s_sn.lpf_y;}
         s_scratch_write  += chunk;
         samples_to_emit  -= chunk;
     }
@@ -270,6 +296,13 @@ size_t psg_render_pair(int16_t *filtered,int16_t *unfiltered,size_t sample_count
     return copy;
 }
 
+void psg_set_audition_channels(unsigned mask){s_aud.mask=mask&15u;}
+size_t psg_peek_audition(int16_t *filtered,int16_t *raw,size_t count)
+{
+    size_t available=s_scratch_write-s_scratch_read;if(count>available)count=available;
+    if(filtered)memcpy(filtered,s_aud_scratch+s_scratch_read,count*sizeof *filtered);
+    if(raw)memcpy(raw,s_aud_raw+s_scratch_read,count*sizeof *raw);return count;
+}
 size_t psg_samples_available(void)
 {
     return s_scratch_write - s_scratch_read;
@@ -294,6 +327,7 @@ int psg_save_state(FILE *f)
     if (!s_inited) psg_init();
     if (fwrite(&s_sn, sizeof s_sn, 1, f) != 1) return 0;
     if (fwrite(&s_leftover_master_cycles, sizeof s_leftover_master_cycles, 1, f) != 1) return 0;
+    if(fwrite(&s_aud,sizeof s_aud,1,f)!=1)return 0;
     return 1;
 }
 
@@ -343,19 +377,21 @@ size_t psg_rb_save(void *dst, size_t cap)
 {
     if (!s_inited) psg_init();
     uint32_t pend = (uint32_t)(s_scratch_write - s_scratch_read);
-    size_t need = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof pend +
-                  (size_t)pend * 2u * sizeof(int16_t);
+    size_t need = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof s_aud + sizeof pend +
+                  (size_t)pend * 4u * sizeof(int16_t);
     if (!dst) return need;
     if (cap < need) return 0;
     uint8_t *o = (uint8_t *)dst;
     memcpy(o, &s_sn, sizeof s_sn); o += sizeof s_sn;
     memcpy(o, &s_leftover_master_cycles, sizeof s_leftover_master_cycles);
     o += sizeof s_leftover_master_cycles;
+    memcpy(o,&s_aud,sizeof s_aud);o+=sizeof s_aud;
     memcpy(o, &pend, sizeof pend); o += sizeof pend;
     memcpy(o, &s_scratch[s_scratch_read], (size_t)pend * sizeof(int16_t));
     o += (size_t)pend * sizeof(int16_t);
-    memcpy(o, &s_raw_scratch[s_scratch_read], (size_t)pend * sizeof(int16_t));
-    return need;
+    memcpy(o, &s_raw_scratch[s_scratch_read], (size_t)pend * sizeof(int16_t));o+=(size_t)pend*sizeof(int16_t);
+    memcpy(o,s_aud_scratch+s_scratch_read,(size_t)pend*sizeof(int16_t));o+=(size_t)pend*sizeof(int16_t);
+    memcpy(o,s_aud_raw+s_scratch_read,(size_t)pend*sizeof(int16_t));return need;
 }
 
 int psg_rb_load(const void *src, size_t len)
@@ -363,16 +399,19 @@ int psg_rb_load(const void *src, size_t len)
     if (!s_inited) psg_init();
     const uint8_t *i = (const uint8_t *)src;
     uint32_t pend = 0;
-    size_t fixed = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof pend;
+    size_t fixed = sizeof s_sn + sizeof s_leftover_master_cycles + sizeof s_aud + sizeof pend;
     if (!src || len < fixed) return 0;
-    memcpy(&pend, i + sizeof s_sn + sizeof s_leftover_master_cycles, sizeof pend);
-    if (pend > PSG_SCRATCH_SAMPLES || len != fixed + (size_t)pend * 2u * sizeof(int16_t)) return 0;
+    memcpy(&pend,i+fixed-sizeof pend,sizeof pend);
+    unsigned mask=0;memcpy(&mask,i+sizeof s_sn+sizeof s_leftover_master_cycles,sizeof mask);if(mask>15)return 0;
+    if (pend > PSG_SCRATCH_SAMPLES || len != fixed + (size_t)pend * 4u * sizeof(int16_t)) return 0;
     memcpy(&s_sn, i, sizeof s_sn); i += sizeof s_sn;
     memcpy(&s_leftover_master_cycles, i, sizeof s_leftover_master_cycles);
-    i += sizeof s_leftover_master_cycles + sizeof pend;
+    i+=sizeof s_leftover_master_cycles;memcpy(&s_aud,i,sizeof s_aud);i+=sizeof s_aud+sizeof pend;
     memcpy(s_scratch, i, (size_t)pend * sizeof(int16_t));
     i += (size_t)pend * sizeof(int16_t);
-    memcpy(s_raw_scratch, i, (size_t)pend * sizeof(int16_t));
+    memcpy(s_raw_scratch,i,(size_t)pend*sizeof(int16_t));i+=(size_t)pend*sizeof(int16_t);
+    memcpy(s_aud_scratch,i,(size_t)pend*sizeof(int16_t));i+=(size_t)pend*sizeof(int16_t);
+    memcpy(s_aud_raw,i,(size_t)pend*sizeof(int16_t));
     s_scratch_read = 0;
     s_scratch_write = pend;
     return 1;
@@ -380,9 +419,11 @@ int psg_rb_load(const void *src, size_t len)
 
 int psg_load_state(FILE *f)
 {
-    if (!s_inited) psg_init();
-    if (fread(&s_sn, sizeof s_sn, 1, f) != 1) return 0;
-    if (fread(&s_leftover_master_cycles, sizeof s_leftover_master_cycles, 1, f) != 1) return 0;
-    s_scratch_read = s_scratch_write = 0;
-    return 1;
+    if(!s_inited)psg_init();SN76489 state;uint32_t leftover;
+    unsigned mask;int32_t previous,output;
+    if(fread(&state,sizeof state,1,f)!=1 || fread(&leftover,sizeof leftover,1,f)!=1 ||
+       leftover>=PSG_SAMPLE_DIVISOR_MASTER || fread(&mask,sizeof mask,1,f)!=1 || mask>15 ||
+       fread(&previous,sizeof previous,1,f)!=1 || fread(&output,sizeof output,1,f)!=1)return 0;
+    s_sn=state;s_leftover_master_cycles=leftover;s_aud.mask=mask;
+    s_aud.previous=previous;s_aud.output=output;s_scratch_read=s_scratch_write=0;return 1;
 }
