@@ -31,10 +31,11 @@ static const GameVideo interpolated_video={.configure=configure,.enabled=enabled
 int main(int argc,char **argv)
 {
     CHECK(argc==2);
+    g_input_map.shortcuts=(InputShortcuts){1,INPUT_SHORTCUT_ORIGINAL,INPUT_SHORTCUT_ORIGINAL,INPUT_SHORTCUT_ORIGINAL,0};
     app_config_defaults();app_config_apply_video(&video);
     CHECK(!g_app_config.custom_widescreen && !strcmp(mode,"off"));
     const RecompLauncherCModProvider *p=app_config_video_mods(&video,argv[1]);
-    CHECK(p && p->package_count(p->ctx)==3 && p->feature_count(p->ctx)==3);
+    CHECK(p && p->package_count(p->ctx)==4 && p->feature_count(p->ctx)==4);
     CHECK(g_app_config.replay_diagnostics);
     RecompLauncherCModFeature diagnostics;
     CHECK(p->feature_get(p->ctx,1,&diagnostics));
@@ -78,7 +79,7 @@ int main(int argc,char **argv)
     CHECK(p->feature_enable(p->ctx,"playtest-diagnostics","replay",0));
     CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]));
     CHECK(!g_app_config.replay_diagnostics);
-    p=app_config_video_mods(NULL,argv[1]);CHECK(p && p->feature_count(p->ctx)==2);
+    p=app_config_video_mods(NULL,argv[1]);CHECK(p && p->feature_count(p->ctx)==3);
     CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
     /* Old installations without a Diagnostics setting inherit default-on. */
     FILE *legacy=fopen(argv[1],"wb");CHECK(legacy);fputs("[video]\nwindow_scale=2\n[mods.widescreen]\nenabled=0\n",legacy);fclose(legacy);
@@ -142,7 +143,7 @@ int main(int argc,char **argv)
     app_config_defaults();CHECK(!g_app_config.custom_widescreen && g_app_config.custom_aspect==0);
 
     p=app_config_video_mods(&interpolated_video,argv[1]);
-    CHECK(p->feature_count(p->ctx)==4);
+    CHECK(p->feature_count(p->ctx)==5);
     CHECK(!g_app_config.presentation_rate && !g_app_config.audio_filter_bypass);
     CHECK(p->feature_get(p->ctx,2,&feature) && !strcmp(feature.id,"interpolation") && !feature.enabled);
     for(int n=0;n<4;++n) {
@@ -177,10 +178,20 @@ int main(int argc,char **argv)
     const GameVideo renderer_only={.renderer_enabled=enabled};
     CHECK(!game_video_has_viewport(&renderer_only));
     p=app_config_video_mods(&renderer_only,argv[1]);
-    CHECK(p && p->package_count(p->ctx)==2 && p->feature_count(p->ctx)==2);
+    CHECK(p && p->package_count(p->ctx)==3 && p->feature_count(p->ctx)==3);
     CHECK(p->feature_get(p->ctx,0,&diagnostics) && !strcmp(diagnostics.id,"replay"));
     CHECK(p->feature_get(p->ctx,1,&feature) && !strcmp(feature.id,"unfiltered"));
-    CHECK(!p->feature_get(p->ctx,2,&feature)); /* no viewport/widescreen feature */
+    CHECK(p->feature_get(p->ctx,2,&feature)&&!strcmp(feature.id,"state-actions"));
+    CHECK(!p->feature_get(p->ctx,3,&feature)); /* no viewport/widescreen feature */
+    CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","save-button","none"));
+    CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","load-button","right-stick"));
+    CHECK(!p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","save-button","right-stick"));
+    CHECK(g_input_map.shortcuts.save_button==INPUT_SHORTCUT_NONE);
+    CHECK(p->feature_set_option(p->ctx,"controller-shortcuts","state-actions","activation","selector"));
+    CHECK(p->feature_enable(p->ctx,"controller-shortcuts","state-actions",0));
+    CHECK(p->commit(p->ctx,NULL));
+    memset(&g_input_map.shortcuts,0,sizeof g_input_map.shortcuts);CHECK(app_config_load(argv[1]));
+    CHECK(!g_input_map.shortcuts.enabled&&g_input_map.shortcuts.selector&&g_input_map.shortcuts.load_button==8&&g_input_map.shortcuts.save_button==INPUT_SHORTCUT_NONE);
     app_config_apply_video(&renderer_only); /* no configure callback */
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
     puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");

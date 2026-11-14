@@ -10,6 +10,14 @@
 #include <string.h>
 
 AppConfig g_app_config;
+static const char *const shortcut_ids[]={"original","none","south","east","west","north","back","guide","start","left-stick","right-stick","left-shoulder","right-shoulder","up","down","left","right"};
+static const char *const shortcut_labels[]={"Original shortcut","Unbound","South button (A / Cross)","East button (B / Circle)","West button (X / Square)","North button (Y / Triangle)","Back / View / Select","Guide / Home","Start / Menu","Left stick press","Right stick press","Left shoulder (LB / L1)","Right shoulder (RB / R1)","D-pad Up","D-pad Down","D-pad Left","D-pad Right"};
+const char *input_shortcut_button_id(int code)
+{return code>=-2&&code<15?shortcut_ids[code+2]:"none";}
+const char *input_shortcut_button_label(int code)
+{return code>=-2&&code<15?shortcut_labels[code+2]:"Unbound";}
+int input_shortcut_button_code(const char *id)
+{if(id)for(int i=0;i<17;++i)if(!strcmp(id,shortcut_ids[i]))return i-2;return -3;}
 static int s_default_custom_widescreen, s_default_custom_aspect;
 
 int app_config_set_video_default(const char *mode)
@@ -116,6 +124,7 @@ int app_config_load(const char *path)
             else if (!strcmp(name, "mods.widescreen")) section = 3;
             else if (!strcmp(name, "rewind"))   section = 4;
             else if (!strcmp(name, "mods.diagnostics")) section = 5;
+            else if (!strcmp(name,"controller.states")) section=6;
             else if (!strcmp(name, "input.p1")) section = 10;
             else if (!strcmp(name, "input.p2")) section = 11;
             else if (!strcmp(name, "input.p3")) section = 12;
@@ -171,6 +180,16 @@ int app_config_load(const char *path)
             else if (!strcmp(key, "interval")) g_app_config.rewind_interval = atoi(val);
         } else if (section == 5) {
             if (!strcmp(key,"enabled")) g_app_config.replay_diagnostics=atoi(val)!=0;
+        } else if(section==6) {
+            InputShortcuts *s=&g_input_map.shortcuts;
+            int button=input_shortcut_button_code(val);
+            if(!strcmp(key,"enabled"))s->enabled=atoi(val)==1;
+            else if(!strcmp(key,"activation"))s->selector=!strcmp(val,"selector");
+            else if(button>=-2) {
+                if(!strcmp(key,"save"))s->save_button=button;
+                else if(!strcmp(key,"load"))s->load_button=button;
+                else if(!strcmp(key,"rewind"))s->rewind_button=button;
+            }
         } else if (section >= 10 && section < 10 + INPUT_MAX_PLAYERS) {
             PlayerInput *pi = &g_input_map.p[section - 10];
             if      (!strcmp(key, "device"))   pi->device       = atoi(val);
@@ -212,10 +231,12 @@ void app_config_reload_preserving_mods(const char *path)
 {
     int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect,diagnostics=g_app_config.replay_diagnostics;
     int rate=g_app_config.presentation_rate,bypass=g_app_config.audio_filter_bypass;
+    InputShortcuts shortcuts=g_input_map.shortcuts;
     app_config_load(path);
     g_app_config.presentation_rate=rate;g_app_config.audio_filter_bypass=bypass;
     g_app_config.custom_widescreen=on;g_app_config.custom_aspect=aspect;
     g_app_config.replay_diagnostics=diagnostics;
+    g_input_map.shortcuts=shortcuts;
 }
 int app_config_save(const char *path)
 {
@@ -244,6 +265,10 @@ int app_config_save(const char *path)
     fprintf(f, "[mods.widescreen]\nenabled = %d\naspect = %s\n\n",
             g_app_config.custom_widescreen, app_config_aspect_mode(g_app_config.custom_aspect));
     fprintf(f,"[mods.diagnostics]\nenabled = %d\n\n",g_app_config.replay_diagnostics);
+    const InputShortcuts *s=&g_input_map.shortcuts;
+    fprintf(f,"[controller.states]\nenabled = %d\nsave = %s\nload = %s\nrewind = %s\nactivation = %s\n\n",
+        s->enabled,input_shortcut_button_id(s->save_button),input_shortcut_button_id(s->load_button),
+        input_shortcut_button_id(s->rewind_button),s->selector?"selector":"direct");
 
     for (int p = 0; p < INPUT_MAX_PLAYERS; ++p) write_player(f, p);
 
@@ -296,12 +321,23 @@ static int video_mod_identity(const char *package,const char *feature)
 {
     return package && feature && !strcmp(package,"custom-widescreen") && !strcmp(feature,"widescreen");
 }
-static int video_mod_count(void *ctx) { (void)ctx;return 2+s_mod_video_available+s_mod_interp_available; }
+static int video_mod_count(void *ctx) { (void)ctx;return 3+s_mod_video_available+s_mod_interp_available; }
+static int shortcut_identity(const char *p,const char *f)
+{return p&&f&&!strcmp(p,"controller-shortcuts")&&!strcmp(f,"state-actions");}
+static const char *const shortcut_options[]={"save-button","load-button","rewind-button","activation"};
+static const char *const shortcut_option_labels[]={"Save state shortcut","Load state shortcut","Rewind shortcut","Save / load action"};
+static int *shortcut_option_value(int i)
+{return i==0?&g_input_map.shortcuts.save_button:i==1?&g_input_map.shortcuts.load_button:&g_input_map.shortcuts.rewind_button;}
 #define MOD_COPY(dst,src) snprintf(dst,sizeof(dst),"%s",src)
 static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
 {
     (void)ctx;if(!out || i<0 || i>=video_mod_count(ctx))return 0;
     memset(out,0,sizeof(*out));
+    if(i==2+s_mod_video_available+s_mod_interp_available) {
+        MOD_COPY(out->id,"controller-shortcuts");MOD_COPY(out->name,"Controller Shortcuts");MOD_COPY(out->version,"1");
+        MOD_COPY(out->description,"Choose, unbind or disable Player 1's controller state shortcuts. Keyboard state controls remain available.");
+        out->enabled=g_input_map.shortcuts.enabled;return 1;
+    }
     if(i==1+s_mod_video_available+s_mod_interp_available) {
         MOD_COPY(out->id,"audio-output");MOD_COPY(out->name,"Audio");MOD_COPY(out->version,"1");
         MOD_COPY(out->description,"Native sound output options.");out->enabled=g_app_config.audio_filter_bypass;return 1;
@@ -327,6 +363,12 @@ static int video_mod_feature(void *ctx,int i,RecompLauncherCModFeature *out)
 {
     (void)ctx;if(!out || i<0 || i>=video_mod_count(ctx))return 0;
     memset(out,0,sizeof(*out));
+    if(i==2+s_mod_video_available+s_mod_interp_available) {
+        MOD_COPY(out->id,"state-actions");MOD_COPY(out->package_id,"controller-shortcuts");MOD_COPY(out->package_name,"Controller Shortcuts");
+        MOD_COPY(out->name,"Controller State Shortcuts");MOD_COPY(out->group,"Input");
+        MOD_COPY(out->description,"Use Player 1's assigned gamepad. Original retains LB save, hold RB load and Back + right stick rewind; three-button gameplay keeps its original shoulder rules. Choose a button or Unbound for each action. Custom shortcut buttons are reserved for that action. Keyboard F7/F8 remain available when disabled.");
+        out->enabled=g_input_map.shortcuts.enabled;out->option_count=4;return 1;
+    }
     if(i==1+s_mod_video_available+s_mod_interp_available) {
         MOD_COPY(out->id,"unfiltered");MOD_COPY(out->package_id,"audio-output");MOD_COPY(out->package_name,"Audio");
         MOD_COPY(out->name,"Unfiltered audio");MOD_COPY(out->group,"Audio");
@@ -359,6 +401,13 @@ static int video_mod_feature(void *ctx,int i,RecompLauncherCModFeature *out)
 static int video_mod_option(void *ctx,const char *package,const char *feature,int i,RecompLauncherCModOption *out)
 {
     (void)ctx;
+    if(shortcut_identity(package,feature)) {
+        if(!out||i<0||i>=4)return 0;memset(out,0,sizeof *out);out->type=RECOMP_MOD_OPTION_CHOICE;
+        MOD_COPY(out->id,shortcut_options[i]);MOD_COPY(out->label,shortcut_option_labels[i]);
+        MOD_COPY(out->description,i==3?"Open the full state selector, or save directly and hold to load.":"Original keeps the existing shortcut. Unbound removes it.");
+        MOD_COPY(out->value,i==3?(g_input_map.shortcuts.selector?"selector":"direct"):input_shortcut_button_id(*shortcut_option_value(i)));
+        MOD_COPY(out->default_value,i==3?"direct":"original");out->choice_count=i==3?2:17;return 1;
+    }
     if(out && i==0 && s_mod_interp_available && interpolation_identity(package,feature)) {
         memset(out,0,sizeof(*out));out->type=RECOMP_MOD_OPTION_CHOICE;out->step=1;out->choice_count=4;
         MOD_COPY(out->id,"rate");MOD_COPY(out->label,"Presentation rate");
@@ -374,6 +423,12 @@ static int video_mod_option(void *ctx,const char *package,const char *feature,in
 static int video_mod_choice(void *ctx,const char *package,const char *feature,const char *option,int i,RecompLauncherCModChoice *out)
 {
     (void)ctx;
+    if(shortcut_identity(package,feature)) {
+        int n=0;while(n<4&&(!option||strcmp(option,shortcut_options[n])))++n;
+        if(!out||n==4||i<0||i>=(n==3?2:17))return 0;memset(out,0,sizeof *out);
+        MOD_COPY(out->value,n==3?(i?"selector":"direct"):input_shortcut_button_id(i-2));
+        MOD_COPY(out->label,n==3?(i?"Open state menu":"Save / hold to load"):input_shortcut_button_label(i-2));return 1;
+    }
     if(out && option && !strcmp(option,"rate") && i>=0 && i<4 && s_mod_interp_available && interpolation_identity(package,feature)) {
         memset(out,0,sizeof(*out));MOD_COPY(out->value,presentation_choices[i]);MOD_COPY(out->label,presentation_labels[i]);return 1;
     }
@@ -383,6 +438,7 @@ static int video_mod_choice(void *ctx,const char *package,const char *feature,co
 }
 static int video_mod_enable(void *ctx,const char *package,const char *feature,int on)
 {
+    if(shortcut_identity(package,feature)){g_input_map.shortcuts.enabled=on!=0;return 1;}
     if(audio_identity(package,feature)) {g_app_config.audio_filter_bypass=on!=0;return 1;}
     if(s_mod_interp_available && interpolation_identity(package,feature)) {
         g_app_config.presentation_rate=on?(g_app_config.presentation_rate?g_app_config.presentation_rate:120):0;return 1;
@@ -394,6 +450,14 @@ static int video_mod_enable(void *ctx,const char *package,const char *feature,in
 static int video_mod_set(void *ctx,const char *package,const char *feature,const char *option,const char *value)
 {
     (void)ctx;
+    if(shortcut_identity(package,feature)) {
+        s_mod_error[0]=0;int n=0;while(n<4&&(!option||strcmp(option,shortcut_options[n])))++n;
+        if(n==4||!value)return 0;
+        if(n==3){if(strcmp(value,"direct")&&strcmp(value,"selector"))return 0;g_input_map.shortcuts.selector=!strcmp(value,"selector");return 1;}
+        int code=input_shortcut_button_code(value);if(code<INPUT_SHORTCUT_ORIGINAL)return 0;
+        for(int i=0;code>=0&&i<3;++i)if(i!=n&&*shortcut_option_value(i)==code){MOD_COPY(s_mod_error,"That button already has a state shortcut. Unbind it there first.");return 0;}
+        *shortcut_option_value(n)=code;return 1;
+    }
     if(s_mod_interp_available && interpolation_identity(package,feature) && option && !strcmp(option,"rate") && value) {
         for(int n=0;n<4;++n)if(!strcmp(value,presentation_choices[n])) {g_app_config.presentation_rate=app_config_presentation_rate(n);return 1;}
         return 0;

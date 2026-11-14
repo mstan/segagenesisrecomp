@@ -36,6 +36,8 @@ int main(int argc,char **argv)
     input_map_init_defaults(); app_config_defaults();
     CHECK(g_input_map.p[0].device==INPUT_DEV_BOTH && g_input_map.p[1].device==INPUT_DEV_NONE);
     CHECK(g_input_map.p[2].device==INPUT_DEV_GAMEPAD && g_input_map.p[3].device==INPUT_DEV_GAMEPAD);
+    CHECK(g_input_map.shortcuts.enabled&&g_input_map.shortcuts.load_button==INPUT_SHORTCUT_ORIGINAL);
+    g_input_map.shortcuts=(InputShortcuts){0,INPUT_SHORTCUT_NONE,SDL_CONTROLLER_BUTTON_RIGHTSTICK,SDL_CONTROLLER_BUTTON_LEFTSTICK,1};
     CHECK(app_config_save(path));
     rui_genesis_binds_init(path);
     const int ui_players=RUI_GEN_MAX_PLAYERS<INPUT_MAX_PLAYERS?RUI_GEN_MAX_PLAYERS:INPUT_MAX_PLAYERS;
@@ -53,6 +55,8 @@ int main(int argc,char **argv)
     CHECK(app_config_load(path));
     CHECK(g_input_map.p[ui_a].key[GB_B]==SDL_SCANCODE_Q && g_input_map.p[ui_b].key[GB_B]==SDL_SCANCODE_W);
     CHECK(g_input_map.p[ui_b].pad[GB_A].kind==GP_BIND_AXIS);
+    CHECK(!g_input_map.shortcuts.enabled&&g_input_map.shortcuts.selector);
+    CHECK(g_input_map.shortcuts.save_button==INPUT_SHORTCUT_NONE&&g_input_map.shortcuts.load_button==SDL_CONTROLLER_BUTTON_RIGHTSTICK&&g_input_map.shortcuts.rewind_button==SDL_CONTROLLER_BUTTON_LEFTSTICK);
     /* Keep attached owner hardware out of this synthetic six-pad fixture.
      * SDL_JoystickAttachVirtual uses VID/PID 0000/0000. Test-local only. */
     SDL_SetHint(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,"0x0000/0x0000");

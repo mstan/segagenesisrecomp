@@ -3689,11 +3689,24 @@ session_begin:;
             uint32_t pad = gamepad_overlay_mask();
             uint32_t menu = GP_OVERLAY_BACK | GP_OVERLAY_RB;
             uint32_t rewind = GP_OVERLAY_BACK | GP_OVERLAY_R3;
-            if ((pad & rewind) == rewind && (prev_overlay_pad & rewind) != rewind)
+            int shortcuts=g_input_map.shortcuts.enabled&&(g_input_map.p[0].device&INPUT_DEV_GAMEPAD);
+            if (shortcuts && g_input_map.shortcuts.rewind_button==INPUT_SHORTCUT_ORIGINAL &&
+                (pad & rewind) == rewind && (prev_overlay_pad & rewind) != rewind)
                 overlay_request = 1;
-            else if ((pad & menu) == menu && (prev_overlay_pad & menu) != menu)
+            else if (shortcuts && g_input_map.shortcuts.load_button==INPUT_SHORTCUT_ORIGINAL &&
+                     (pad & menu) == menu && (prev_overlay_pad & menu) != menu)
                 overlay_request = 2;
             prev_overlay_pad = pad;
+            int rewind_press=gamepad_consume_rewind(),state_press=0;
+            if(g_input_map.shortcuts.selector) {
+                int save=gamepad_consume_quicksave(),load=gamepad_consume_quickload();
+                state_press=save||load;
+            }
+            if(!overlay_request && !input_gameplay_blocked() && s_load_hold_focused &&
+               (SDL_GetWindowFlags(window)&SDL_WINDOW_INPUT_FOCUS)) {
+                if(rewind_press)overlay_request=1;
+                else if(state_press)overlay_request=2;
+            }
         }
         if (overlay_request) {
 #if GENESIS_HAS_RECOMP_NET

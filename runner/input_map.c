@@ -44,6 +44,7 @@ static void set_btn(PlayerInput *pi, GenesisButton b, int scancode, int pad_butt
 void input_map_init_defaults(void)
 {
     memset(&g_input_map, 0, sizeof(g_input_map));
+    g_input_map.shortcuts=(InputShortcuts){1,INPUT_SHORTCUT_ORIGINAL,INPUT_SHORTCUT_ORIGINAL,INPUT_SHORTCUT_ORIGINAL,0};
     s_gameplay_blocked = 0;
 
     PlayerInput *p1 = &g_input_map.p[0];
