@@ -761,6 +761,10 @@ public:
 	// generate one sample of sound
 	void generate(output_data *output, uint32_t numsamples = 1);
 
+	// Local extension: full canonical output plus an audible-channel mix.
+	// Bits 0..5 select FM1..6, bit 6 selects DAC; every channel still executes.
+	void generate_audition(output_data *full, output_data *audition, uint32_t count, unsigned mask);
+
 protected:
 	// simulate the DAC discontinuity
 	constexpr int32_t dac_discontinuity(int32_t value) const { return (value < 0) ? (value - 3) : (value + 4); }

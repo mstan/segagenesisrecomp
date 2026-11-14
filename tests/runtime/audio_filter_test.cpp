@@ -13,6 +13,8 @@ extern "C" {
 #include "audio/event_queue.h"
 #include "audio/fm_shadow.h"
 unsigned long g_snd_frame;
+uint64_t ym2612_cosim_hash(void);
+uint64_t psg_cosim_hash(void);
 int audio_event_pop(AudioEvent *) { return 0; }
 void audio_event_requeue(const AudioEvent *,size_t) {}
 }
@@ -141,10 +143,93 @@ static void test_filter_history_and_restore()
     CHECK(replay.psg==next.psg && replay.raw_psg==next.raw_psg);
     std::fclose(fm);std::fclose(psg);
 }
+
+static uint64_t full_chip_hash()
+{ return ym2612_cosim_hash() ^ (psg_cosim_hash()*1099511628211ull); }
+static Pair peek()
+{
+    Pair p;size_t f=ym2612_samples_available(),n=psg_samples_available();
+    p.fm.resize(f*2);p.raw_fm.resize(f*2);p.psg.resize(n);p.raw_psg.resize(n);
+    CHECK(ym2612_peek_audition(p.fm.data(),p.raw_fm.data(),f)==f);
+    CHECK(psg_peek_audition(p.psg.data(),p.raw_psg.data(),n)==n);return p;
+}
+static bool ac(const std::vector<int16_t> &p)
+{ return !p.empty() && *std::min_element(p.begin(),p.end())!=*std::max_element(p.begin(),p.end()); }
+static void configure_fm()
+{
+    reg(0x22,0x0f); /* shared LFO must still clock with any output mask */
+    reg(0x2b,0);
+    for(unsigned channel=0;channel<6;++channel) {
+        unsigned part=channel<3?0:2,ch=channel%3;
+        auto wr=[part](unsigned a,unsigned d){ym2612_write((uint8_t)part,(uint8_t)a);ym2612_write((uint8_t)(part+1),(uint8_t)d);};
+        wr(0xb0+ch,7);wr(0xb4+ch,0xc0);
+        for(unsigned op=0;op<4;++op) {
+            wr(0x30+op*4+ch,1);wr(0x40+op*4+ch,0x30);wr(0x50+op*4+ch,0x1f);
+            wr(0x60+op*4+ch,8);wr(0x80+op*4+ch,0x0f);
+        }
+        wr(0xa4+ch,0x22);wr(0xa0+ch,0x40+ch*11);reg(0x28,0xf0|ch|(part?4:0));
+    }
+}
+static void test_audition()
+{
+    setup(0);audio_mixer_set_audition(0,0x7ff);configure_fm();
+    psg_write(0xc7);psg_write(3);psg_write(0xd2);psg_write(0xe7);psg_write(0xf4);
+    State initial=save();Pair full=reference(1008*512);uint64_t hash=full_chip_hash();
+    for(unsigned mask=0;mask<12;++mask) {
+        load(initial);unsigned selected=mask?1u<<(mask-1):0;
+        audio_mixer_set_audition(1,selected);
+        ym2612_advance(1008*512);psg_advance(1008*512);psg_reset_leftover();
+        Pair audition=peek(),canonical=reference(0);
+        CHECK(canonical.fm==full.fm && canonical.raw_fm==full.raw_fm && canonical.psg==full.psg && canonical.raw_psg==full.raw_psg);
+        CHECK(full_chip_hash()==hash); /* includes feedback, envelopes, LFO, tone3/noise counters */
+        if(mask>=1 && mask<=6)CHECK(ac(audition.raw_fm));
+        if(mask==0 || mask==7)CHECK(!ac(audition.raw_fm)); /* no DAC enabled */
+        if(mask==11)CHECK(ac(audition.raw_psg)); /* noise still driven by inaudible tone3 */
+        if(!mask)CHECK(!ac(audition.raw_psg));
+    }
+    /* Keep a varying DAC audible while excluding the mutually exclusive FM6. */
+    setup(0);audio_mixer_set_audition(1,64);Pair dac;
+    for(unsigned i=0;i<24;++i){reg(0x2a,i&1?0x50:0xd0);ym2612_advance(1008*16);}
+    dac=peek();CHECK(ac(dac.raw_fm));
+    setup(0);audio_mixer_set_audition(1,32);
+    for(unsigned i=0;i<24;++i){reg(0x2a,i&1?0x50:0xd0);ym2612_advance(1008*16);}
+    CHECK(!ac(peek().raw_fm));
+    /* Pending PCM and independent audition filter histories survive rollback. */
+    setup(0);configure_fm();audio_mixer_set_audition(1,1u<<5);
+    ym2612_advance(1008*90);psg_advance(240*500);State pending=save();Pair expected=peek();
+    reference(1008*20);load(pending);Pair replay=peek();
+    CHECK(replay.fm==expected.fm && replay.raw_fm==expected.raw_fm && replay.psg==expected.psg);
+    CHECK(equal(save(),pending));
+    State invalid=pending;uint32_t chip_size=0,bad_mask=128;
+    std::memcpy(&chip_size,invalid.fm.data(),4);std::memcpy(invalid.fm.data()+4+chip_size+20,&bad_mask,4);
+    CHECK(!ym2612_rb_load(invalid.fm.data(),invalid.fm.size()) && equal(save(),pending));
+    bad_mask=16;std::memcpy(invalid.psg.data()+invalid.psg.size()-500*8-16,&bad_mask,4);
+    CHECK(!psg_rb_load(invalid.psg.data(),invalid.psg.size()) && equal(save(),pending));
+    FILE *fm=std::tmpfile(),*psg=std::tmpfile();CHECK(fm&&psg);
+    CHECK(ym2612_save_state(fm)&&psg_save_state(psg));reference(0);
+    ym2612_advance(1008*300);psg_advance(1008*300);expected=peek();reference(0);
+    std::rewind(fm);std::rewind(psg);CHECK(ym2612_load_state(fm)&&psg_load_state(psg));
+    ym2612_advance(1008*300);psg_advance(1008*300);replay=peek();
+    CHECK(replay.fm==expected.fm && replay.raw_fm==expected.raw_fm && replay.psg==expected.psg);
+    std::fclose(fm);std::fclose(psg);
+    /* Both mixer paths give the verifier full canonical PCM before muting. */
+    for(int bypass:{0,1}) {
+        setup(bypass);audio_mixer_set_audition(0,0x7ff);configure_fm();initial=save();
+        Pair normal=drain(1008*512);uint64_t oracle=shadow_input;hash=full_chip_hash();
+        setup(bypass);load(initial);audio_mixer_set_audition(1,1u<<5);shadow_active=true;
+        ym2612_advance(1008*512);psg_advance(1008*512);psg_reset_leftover();expected=peek();
+        load(initial);audio_mixer_set_audition(1,1u<<5);Pair actual=drain(1008*512);
+        CHECK(oracle==shadow_input && full_chip_hash()==hash);
+        CHECK(actual.fm==(bypass?expected.raw_fm:expected.fm));
+        CHECK(actual.psg==(bypass?expected.raw_psg:expected.psg));
+        CHECK(actual.fm!=normal.fm);
+    }
+    audio_mixer_set_audition(0,0x7ff);
+}
 int main()
 {
-    test_selection_and_fade();test_filter_history_and_restore();
-    worker_enabled=true;test_selection_and_fade();test_filter_history_and_restore();
+    test_selection_and_fade();test_filter_history_and_restore();test_audition();
+    worker_enabled=true;test_selection_and_fade();test_filter_history_and_restore();test_audition();
     CHECK(worker_jobs>0);
-    std::puts("Hardware filter: default PCM, raw pairing, equal clocks/state,5ms live fades, shadow oracle and current-build restore PASS");
+    std::puts("Hardware filter: default PCM, raw pairing, equal clocks/state,5ms live fades, output-only channel audition, shadow oracle and current-build restore PASS");
 }

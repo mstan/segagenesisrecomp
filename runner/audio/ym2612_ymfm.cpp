@@ -59,13 +59,17 @@ constexpr int32_t YM_GAIN_DEN = 256;
 struct YmfmIface : public ymfm::ymfm_interface {};
 
 YmfmIface       s_iface;
-ymfm::ym2612   *s_chip = nullptr;
+ymfm::ym2612  *s_chip = nullptr;
 int             s_inited = 0;
 
 /* Output scratch ring, mirroring ym2612.c's so ym2612_render semantics match. */
 constexpr size_t FM_SCRATCH_STEREO_SAMPLES = 8192;
 int16_t s_scratch[FM_SCRATCH_STEREO_SAMPLES * 2];
 int16_t s_raw_scratch[FM_SCRATCH_STEREO_SAMPLES * 2];
+int16_t s_aud_scratch[FM_SCRATCH_STEREO_SAMPLES * 2];
+int16_t s_aud_raw[FM_SCRATCH_STEREO_SAMPLES * 2];
+struct AuditionState { unsigned mask;int32_t previous[2],output[2]; };
+AuditionState s_aud={127,{0,0},{0,0}};
 size_t  s_scratch_write = 0; /* next free stereo-sample index */
 size_t  s_scratch_read  = 0; /* next unread stereo-sample index */
 
@@ -98,6 +102,23 @@ inline int32_t fm_lpf(int ch, int32_t in) {
     return out;
 }
 
+inline void audition_sample(size_t index,int32_t left,int32_t right) {
+    int32_t input[2]={left,right};
+    for(unsigned side=0;side<2;++side) {
+        int32_t value=input[side];
+        s_aud_raw[index*2+side]=clamp16(value);
+        if(s_aud.mask==127) {
+            s_aud.previous[side]=s_fm_lpf_prev[side];s_aud.output[side]=s_fm_lpf_out[side];
+            s_aud_scratch[index*2+side]=s_scratch[index*2+side];
+        } else {
+            int64_t filtered=((int64_t)(value+s_aud.previous[side])*FM_LPF_SAMPLE_MAGIC+
+                (int64_t)s_aud.output[side]*FM_LPF_OUTPUT_MAGIC)/65536;
+            s_aud.previous[side]=value;s_aud.output[side]=clamp16((int32_t)filtered);
+            s_aud_scratch[index*2+side]=(int16_t)s_aud.output[side];
+        }
+    }
+}
+
 #if !GENESIS_FM_BLOCK_SAMPLES
 void emit_one_sample() {
     if (s_scratch_write >= FM_SCRATCH_STEREO_SAMPLES) {
@@ -105,14 +126,17 @@ void emit_one_sample() {
          * ~888 samples/frame into an 8192 buffer; drop to stay safe. */
         return;
     }
-    ymfm::ym2612::output_data out;
-    s_chip->generate(&out, 1);
+    ymfm::ym2612::output_data out,audition;
+    if(s_aud.mask==127){s_chip->generate(&out,1);audition=out;}
+    else s_chip->generate_audition(&out,&audition,1,s_aud.mask);
     int32_t l = out.data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
     int32_t r = out.data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
     s_scratch[s_scratch_write * 2 + 0] = (int16_t)fm_lpf(0, l);   /* hardware FM output LPF (matches reference; tames ymfm's excess highs) */
     s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
     s_raw_scratch[s_scratch_write * 2 + 0] = clamp16(l);
     s_raw_scratch[s_scratch_write * 2 + 1] = clamp16(r);
+    audition_sample(s_scratch_write,audition.data[0]*YM_GAIN_NUM/YM_GAIN_DEN,
+                    audition.data[1]*YM_GAIN_NUM/YM_GAIN_DEN);
     s_scratch_write++;
 }
 #else
@@ -121,10 +145,11 @@ void emit_samples(uint32_t count) {
     if (count > available) count = (uint32_t)available;
     /* No register write can occur within this advance interval. Keep ymfm's
      * exact sample sequence and the serial LPF, amortizing the outer calls. */
-    ymfm::ym2612::output_data block[64];
+    ymfm::ym2612::output_data block[64],audition[64];
     while (count) {
         uint32_t chunk = count < 64 ? count : 64;
-        s_chip->generate(block, chunk);
+        if(s_aud.mask==127){s_chip->generate(block,chunk);std::memcpy(audition,block,chunk*sizeof *block);}
+        else s_chip->generate_audition(block,audition,chunk,s_aud.mask);
         for (uint32_t i = 0; i < chunk; ++i) {
             int32_t l = block[i].data[0] * YM_GAIN_NUM / YM_GAIN_DEN;
             int32_t r = block[i].data[1] * YM_GAIN_NUM / YM_GAIN_DEN;
@@ -132,6 +157,8 @@ void emit_samples(uint32_t count) {
             s_scratch[s_scratch_write * 2 + 1] = (int16_t)fm_lpf(1, r);
             s_raw_scratch[s_scratch_write * 2] = clamp16(l);
             s_raw_scratch[s_scratch_write * 2 + 1] = clamp16(r);
+            audition_sample(s_scratch_write,audition[i].data[0]*YM_GAIN_NUM/YM_GAIN_DEN,
+                            audition[i].data[1]*YM_GAIN_NUM/YM_GAIN_DEN);
             ++s_scratch_write;
         }
         count -= chunk;
@@ -149,6 +176,8 @@ extern "C" void ym2612_init(void) {
     s_master_accum = 0;
     s_fm_lpf_prev[0] = s_fm_lpf_prev[1] = 0;
     s_fm_lpf_out[0]  = s_fm_lpf_out[1]  = 0;
+    std::memset(s_aud.previous,0,sizeof s_aud.previous);
+    std::memset(s_aud.output,0,sizeof s_aud.output);
     s_inited = 1;
 }
 
@@ -180,6 +209,14 @@ extern "C" void ym2612_write(uint8_t port, uint8_t value) {
 
 extern "C" size_t ym2612_render(int16_t *out, size_t sample_count) {
     return ym2612_render_pair(out, nullptr, sample_count);
+}
+
+extern "C" void ym2612_set_audition_channels(unsigned mask) { s_aud.mask=mask&127u; }
+extern "C" size_t ym2612_peek_audition(int16_t *filtered,int16_t *unfiltered,size_t count) {
+    size_t available=s_scratch_write-s_scratch_read;if(count>available)count=available;
+    if(filtered)std::memcpy(filtered,s_aud_scratch+s_scratch_read*2,count*2*sizeof *filtered);
+    if(unfiltered)std::memcpy(unfiltered,s_aud_raw+s_scratch_read*2,count*2*sizeof *unfiltered);
+    return count;
 }
 
 extern "C" size_t ym2612_render_pair(int16_t *filtered, int16_t *unfiltered, size_t sample_count) {
@@ -223,6 +260,7 @@ extern "C" int ym2612_save_state(FILE *f) {
     if (fwrite(&s_master_accum, sizeof s_master_accum, 1, f) != 1) return 0;
     if (fwrite(s_fm_lpf_prev, sizeof s_fm_lpf_prev, 1, f) != 1) return 0;
     if (fwrite(s_fm_lpf_out,  sizeof s_fm_lpf_out,  1, f) != 1) return 0;
+    if (fwrite(&s_aud,sizeof s_aud,1,f)!=1)return 0;
     return 1;
 }
 
@@ -252,7 +290,7 @@ extern "C" size_t ym2612_rb_save(void *dst, size_t cap) {
     uint32_t n = (uint32_t)buf.size();
     uint32_t pend = (uint32_t)(s_scratch_write - s_scratch_read);
     size_t need = sizeof n + n + sizeof s_master_accum + sizeof s_fm_lpf_prev +
-                  sizeof s_fm_lpf_out + sizeof pend + (size_t)pend * 4u * sizeof(int16_t);
+                  sizeof s_fm_lpf_out + sizeof s_aud + sizeof pend + (size_t)pend * 8u * sizeof(int16_t);
     if (!dst) return need;
     if (cap < need) return 0;
     uint8_t *o = (uint8_t *)dst;
@@ -261,10 +299,14 @@ extern "C" size_t ym2612_rb_save(void *dst, size_t cap) {
     std::memcpy(o, &s_master_accum, sizeof s_master_accum); o += sizeof s_master_accum;
     std::memcpy(o, s_fm_lpf_prev, sizeof s_fm_lpf_prev); o += sizeof s_fm_lpf_prev;
     std::memcpy(o, s_fm_lpf_out, sizeof s_fm_lpf_out); o += sizeof s_fm_lpf_out;
+    std::memcpy(o,&s_aud,sizeof s_aud);o+=sizeof s_aud;
     std::memcpy(o, &pend, sizeof pend); o += sizeof pend;
     std::memcpy(o, &s_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
     o += (size_t)pend * 2u * sizeof(int16_t);
     std::memcpy(o, &s_raw_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
+    o+=(size_t)pend*2u*sizeof(int16_t);
+    std::memcpy(o,s_aud_scratch+s_scratch_read*2,(size_t)pend*2u*sizeof(int16_t));o+=(size_t)pend*2u*sizeof(int16_t);
+    std::memcpy(o,s_aud_raw+s_scratch_read*2,(size_t)pend*2u*sizeof(int16_t));
     return need;
 }
 
@@ -275,21 +317,27 @@ extern "C" int ym2612_rb_load(const void *src, size_t len) {
     uint32_t n = 0, pend = 0;
     if (!src || len < sizeof n) return 0;
     std::memcpy(&n, i, sizeof n); i += sizeof n;
-    size_t fixed = sizeof s_master_accum + sizeof s_fm_lpf_prev + sizeof s_fm_lpf_out + sizeof pend;
+    size_t fixed = sizeof s_master_accum + sizeof s_fm_lpf_prev + sizeof s_fm_lpf_out + sizeof s_aud + sizeof pend;
     if (n > (1u << 20) || (size_t)(end - i) < (size_t)n + fixed) return 0;
     std::memcpy(&pend, i + n + fixed - sizeof pend, sizeof pend);
     if (pend > FM_SCRATCH_STEREO_SAMPLES ||
-        (size_t)(end - i) != (size_t)n + fixed + (size_t)pend * 4u * sizeof(int16_t)) return 0;
+        (size_t)(end - i) != (size_t)n + fixed + (size_t)pend * 8u * sizeof(int16_t)) return 0;
+    AuditionState audition;
+    std::memcpy(&audition,i+n+sizeof s_master_accum+sizeof s_fm_lpf_prev+sizeof s_fm_lpf_out,sizeof audition);
+    if(audition.mask>127)return 0;
     std::vector<uint8_t> buf(i, i + n); i += n;
     ymfm::ymfm_saved_state st(buf, false);
     s_chip->save_restore(st);
     std::memcpy(&s_master_accum, i, sizeof s_master_accum); i += sizeof s_master_accum;
     std::memcpy(s_fm_lpf_prev, i, sizeof s_fm_lpf_prev); i += sizeof s_fm_lpf_prev;
     std::memcpy(s_fm_lpf_out, i, sizeof s_fm_lpf_out); i += sizeof s_fm_lpf_out;
+    std::memcpy(&s_aud,i,sizeof s_aud);i+=sizeof s_aud;
     i += sizeof pend;
     std::memcpy(s_scratch, i, (size_t)pend * 2u * sizeof(int16_t));
     i += (size_t)pend * 2u * sizeof(int16_t);
-    std::memcpy(s_raw_scratch, i, (size_t)pend * 2u * sizeof(int16_t));
+    std::memcpy(s_raw_scratch, i, (size_t)pend * 2u * sizeof(int16_t));i+=(size_t)pend*2u*sizeof(int16_t);
+    std::memcpy(s_aud_scratch,i,(size_t)pend*2u*sizeof(int16_t));i+=(size_t)pend*2u*sizeof(int16_t);
+    std::memcpy(s_aud_raw,i,(size_t)pend*2u*sizeof(int16_t));
     s_scratch_read = 0;
     s_scratch_write = pend;
     return 1;
@@ -297,15 +345,15 @@ extern "C" int ym2612_rb_load(const void *src, size_t len) {
 
 extern "C" int ym2612_load_state(FILE *f) {
     if (!s_inited) ym2612_init();
-    uint32_t n = 0;
-    if (fread(&n, sizeof n, 1, f) != 1 || n > (1u << 20)) return 0;
+    uint32_t n=0,master=0;int32_t previous[2],output[2];AuditionState audition;
+    if(fread(&n,sizeof n,1,f)!=1 || n>(1u<<20))return 0;
     std::vector<uint8_t> buf(n);
-    if (n && fread(buf.data(), 1, n, f) != n) return 0;
-    ymfm::ymfm_saved_state st(buf, false);
-    s_chip->save_restore(st);
-    if (fread(&s_master_accum, sizeof s_master_accum, 1, f) != 1) return 0;
-    if (fread(s_fm_lpf_prev, sizeof s_fm_lpf_prev, 1, f) != 1) return 0;
-    if (fread(s_fm_lpf_out,  sizeof s_fm_lpf_out,  1, f) != 1) return 0;
-    s_scratch_read = s_scratch_write = 0;
-    return 1;
+    if(n && fread(buf.data(),1,n,f)!=n)return 0;
+    if(fread(&master,sizeof master,1,f)!=1 || master>=MASTER_PER_SAMPLE ||
+       fread(previous,sizeof previous,1,f)!=1 || fread(output,sizeof output,1,f)!=1 ||
+       fread(&audition,sizeof audition,1,f)!=1 || audition.mask>127)return 0;
+    ymfm::ymfm_saved_state st(buf,false);s_chip->save_restore(st);
+    s_master_accum=master;std::memcpy(s_fm_lpf_prev,previous,sizeof previous);
+    std::memcpy(s_fm_lpf_out,output,sizeof output);s_aud=audition;
+    s_scratch_read=s_scratch_write=0;return 1;
 }
