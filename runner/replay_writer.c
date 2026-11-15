@@ -2,6 +2,7 @@
  * Stanley, PolyForm Noncommercial 1.0.0). One bounded producer and disk worker.
  */
 #include "replay_writer.h"
+#include "replay_hash.h"
 #include <SDL2/SDL.h>
 #include <errno.h>
 #include <stdio.h>
@@ -85,18 +86,29 @@ static bool one(GenesisReplayWriter *w, unsigned op, const void *data,
   return enqueue(w, c, &data, 1);
 }
 static uint32_t digest(GenesisReplayWriter *w, unsigned at, size_t n) {
-  uint32_t h = 2166136261u;
+  GenesisReplayHash state;
+  XXH64_reset(&state,0);
   while (n) {
     size_t count = QUEUE_BYTES - at;
     if (count > n)
       count = n;
-    const unsigned char *p = w->bytes + at;
-    for (size_t i = 0; i < count; ++i)
-      h = (h ^ p[i]) * 16777619u;
+    XXH64_update(&state,w->bytes+at,count);
     n -= count;
     at = 0;
   }
-  return h;
+  return genesis_replay_hash_fold(XXH64_digest(&state));
+}
+/* State attachments retain the offline inspector's existing checksum. Only
+ * per-frame hashes use the faster build-specific checksum above. */
+static uint32_t snapshot_digest(GenesisReplayWriter *w,unsigned at,size_t n) {
+  uint32_t hash=2166136261u;
+  while(n) {
+    size_t count=QUEUE_BYTES-at;
+    if(count>n)count=n;
+    for(size_t i=0;i<count;++i)hash=(hash^w->bytes[at+i])*16777619u;
+    n-=count;at=0;
+  }
+  return hash;
 }
 static bool write_ring(GenesisReplayWriter *w, FILE *f, unsigned at, size_t n) {
   size_t first = QUEUE_BYTES - at;
@@ -239,7 +251,7 @@ static int SDLCALL worker(void *opaque) {
         ok = write_ring(w, states, at, c.size);
         if (ok)
           ok = text && fprintf(text, "S %zu %u %08x\n", offset, c.size,
-                               digest(w, at, c.size)) >= 0;
+                               snapshot_digest(w, at, c.size)) >= 0;
         offset += c.size;
         break;
       case LINE:

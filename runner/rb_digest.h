@@ -11,7 +11,6 @@
 #if GENESIS_FAST_RB_DIGEST
 #define XXH_INLINE_ALL
 #define XXH_NO_XXH3
-#define XXH_NO_STREAM
 #include "external/xxhash/xxhash.h"
 #define GENESIS_RB_DIGEST_IMPL "XXH64-v0.8.3"
 #else

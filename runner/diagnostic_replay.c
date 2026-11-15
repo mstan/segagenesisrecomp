@@ -6,6 +6,7 @@
 #include "game_spec.h"
 #include "rb_state.h"
 #include "replay_writer.h"
+#include "replay_hash.h"
 #include "runtime_evidence.h"
 #include <errno.h>
 #include <stdio.h>
@@ -695,7 +696,7 @@ void genesis_replay_end(void) {
     static const char *names[] = {"cpu/scheduler", "work RAM",
                                   "machine/audio/input", "game/mod state"};
     for (int i = 0; i < 4; ++i) {
-      uint32_t got = hash(parts[i], sizes[i]);
+      uint32_t got = genesis_replay_hash(parts[i], sizes[i]);
       if (got != want[i]) {
         fprintf(stderr,
                 "[feedback-replay] FIRST DIVERGENCE execution=%u %s "

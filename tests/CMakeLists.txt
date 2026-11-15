@@ -138,6 +138,11 @@ target_include_directories(audio_filter_test PRIVATE "${_ymfm}"
 add_test(NAME audio_filter COMMAND audio_filter_test)
 
 if(TARGET SDL2::SDL2)
+    add_executable(replay_hash_test runtime/replay_hash_test.c)
+    target_compile_features(replay_hash_test PRIVATE c_std_11)
+    target_compile_definitions(replay_hash_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_link_libraries(replay_hash_test PRIVATE SDL2::SDL2)
+    add_test(NAME replay_hash COMMAND replay_hash_test)
     foreach(_writer_threads 1 0)
         foreach(_fixture host_writers evidence_ownership persist_callbacks)
             set(_target ${_fixture}_${_writer_threads}_test)
