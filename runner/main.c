@@ -461,8 +461,54 @@ static int runtime_ui_action(void *p, const RecompRuntimeUiItem *i) {
 static int runtime_ui_key(SDL_Keycode k) {
     switch (k) { case SDLK_UP:return RECOMP_RUNTIME_UI_INPUT_UP; case SDLK_DOWN:return RECOMP_RUNTIME_UI_INPUT_DOWN;
     case SDLK_LEFT:return RECOMP_RUNTIME_UI_INPUT_LEFT; case SDLK_RIGHT:return RECOMP_RUNTIME_UI_INPUT_RIGHT;
-    case SDLK_RETURN:case SDLK_SPACE:return RECOMP_RUNTIME_UI_INPUT_ACCEPT; case SDLK_ESCAPE:return RECOMP_RUNTIME_UI_INPUT_BACK; default:return -1; }
+    case SDLK_RETURN:case SDLK_SPACE:return RECOMP_RUNTIME_UI_INPUT_ACCEPT;
+    case SDLK_ESCAPE:case SDLK_AC_BACK:return RECOMP_RUNTIME_UI_INPUT_BACK; default:return -1; }
 }
+#if defined(RECOMP_RUNTIME_UI_HAS_POINTER)
+static int runtime_ui_pointer_event(SDL_Renderer *renderer,const SDL_Event *ev) {
+    static int owner; /* 1: primary finger, 2: physical left mouse button. */
+    static SDL_TouchID touch;
+    static SDL_FingerID finger;
+    RecompRuntimeUi *ui=s_runtime_ui.ui;
+    const int width=s_screen_width==256?320:s_screen_width,height=s_screen_height;
+    if(!recomp_runtime_ui_is_open(ui) ||
+       (ev->type==SDL_WINDOWEVENT && (ev->window.event==SDL_WINDOWEVENT_FOCUS_LOST ||
+        ev->window.event==SDL_WINDOWEVENT_SIZE_CHANGED)) || ev->type==SDL_APP_WILLENTERBACKGROUND) {
+        owner=0;recomp_runtime_ui_handle_pointer(ui,width,height,0,0,-1);
+        return 0;
+    }
+    /* SDL2's renderer event watch already removes the letterbox: finger x/y
+     * are normalized to the rendered viewport; mouse x/y are logical units.
+     * Convert those once into the ARGB frame used by the software menu. */
+    if(ev->type==SDL_FINGERDOWN || ev->type==SDL_FINGERUP || ev->type==SDL_FINGERMOTION) {
+        if(ev->tfinger.touchId==SDL_MOUSE_TOUCHID)return 1;
+        if(ev->type==SDL_FINGERDOWN) {
+            if(owner)return 1;
+            owner=1;touch=ev->tfinger.touchId;finger=ev->tfinger.fingerId;
+        } else if(owner!=1 || touch!=ev->tfinger.touchId || finger!=ev->tfinger.fingerId)return 1;
+        if(ev->type!=SDL_FINGERMOTION) {
+            if(ev->type==SDL_FINGERUP)owner=0;
+            recomp_runtime_ui_handle_pointer(ui,width,height,(int)(ev->tfinger.x*width),
+                (int)(ev->tfinger.y*height),ev->type==SDL_FINGERDOWN);
+        }
+        return 1;
+    }
+    if(ev->type==SDL_MOUSEBUTTONDOWN || ev->type==SDL_MOUSEBUTTONUP || ev->type==SDL_MOUSEMOTION) {
+        /* One Android tap can generate both streams. Only its finger owns it. */
+        Uint32 which=ev->type==SDL_MOUSEMOTION?ev->motion.which:ev->button.which;
+        if(which==SDL_TOUCH_MOUSEID || ev->type==SDL_MOUSEMOTION || ev->button.button!=SDL_BUTTON_LEFT)return 1;
+        if(ev->type==SDL_MOUSEBUTTONDOWN) {if(owner)return 1;owner=2;}
+        else {if(owner!=2)return 1;owner=0;}
+        int logical_w=0,logical_h=0;SDL_RenderGetLogicalSize(renderer,&logical_w,&logical_h);
+        if(logical_w<=0)logical_w=width;if(logical_h<=0)logical_h=height;
+        recomp_runtime_ui_handle_pointer(ui,width,height,
+            (int)((double)ev->button.x*width/logical_w),(int)((double)ev->button.y*height/logical_h),
+            ev->type==SDL_MOUSEBUTTONDOWN);
+        return 1;
+    }
+    return 0;
+}
+#endif
 #endif
 
 static void widescreen_setup(void)
@@ -3212,6 +3258,9 @@ int main(int argc, char *argv[])
         cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
         cfg.menu.callbacks.save = runtime_ui_save;
         cfg.menu.callbacks.visibility_changed = input_gameplay_capture_changed;
+#if defined(__ANDROID__) && defined(RECOMP_RUNTIME_UI_HAS_POINTER)
+        cfg.menu.presentation_flags |= RECOMP_RUNTIME_UI_PRESENTATION_TOUCH_FRIENDLY;
+#endif
         cfg.features = RECOMP_RUNTIME_UI_STANDARD_FULLSCREEN | RECOMP_RUNTIME_UI_STANDARD_WINDOW_SCALE |
             RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE | RECOMP_RUNTIME_UI_STANDARD_LINEAR_FILTER |
             RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;
@@ -3645,9 +3694,12 @@ session_begin:;
             }
             load_hold_event(&ev, window);
 #if RECOMP_LAUNCHER
+    #if defined(RECOMP_RUNTIME_UI_HAS_POINTER)
+            if(runtime_ui_pointer_event(renderer,&ev))continue;
+    #endif
             if (recomp_runtime_ui_is_open(s_runtime_ui.ui))
                 (void)gamepad_consume_quickload();
-            if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
+            if (ev.type == SDL_KEYDOWN && (ev.key.keysym.sym == SDLK_ESCAPE || ev.key.keysym.sym == SDLK_AC_BACK) && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
                 cancel_load_hold();
                 recomp_runtime_ui_open(s_runtime_ui.ui); continue;
             }
