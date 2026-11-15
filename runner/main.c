@@ -1,4 +1,5 @@
 #include "video/genesis_frame_pixels.h"
+#include "android_host.h"
 #include "video/genesis_hd_gpu.h"
 #include "video/genesis_raster_jobs.h"
 /*
@@ -417,7 +418,8 @@ static int runtime_ui_set(void *p, const RecompRuntimeUiItem *i, int v) {
         app_config_apply_video(g_game_spec.video);s_ws_user_on=0;
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_FULLSCREEN)) {
         g_app_config.fullscreen = v;
-        SDL_SetWindowFullscreen(c->window, v == 2 ? SDL_WINDOW_FULLSCREEN : v == 1 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        SDL_SetWindowFullscreen(c->window, genesis_android_fullscreen_flags(
+            v == 2 ? SDL_WINDOW_FULLSCREEN : v == 1 ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
     } else if (!strcmp(i->key, RECOMP_RUNTIME_UI_KEY_WINDOW_SCALE)) {
         g_app_config.window_scale = v;
         if (!(SDL_GetWindowFlags(c->window) & SDL_WINDOW_FULLSCREEN)) SDL_SetWindowSize(c->window, 320*v, 224*v);
@@ -459,8 +461,53 @@ static int runtime_ui_action(void *p, const RecompRuntimeUiItem *i) {
 static int runtime_ui_key(SDL_Keycode k) {
     switch (k) { case SDLK_UP:return RECOMP_RUNTIME_UI_INPUT_UP; case SDLK_DOWN:return RECOMP_RUNTIME_UI_INPUT_DOWN;
     case SDLK_LEFT:return RECOMP_RUNTIME_UI_INPUT_LEFT; case SDLK_RIGHT:return RECOMP_RUNTIME_UI_INPUT_RIGHT;
-    case SDLK_RETURN:case SDLK_SPACE:return RECOMP_RUNTIME_UI_INPUT_ACCEPT; case SDLK_ESCAPE:return RECOMP_RUNTIME_UI_INPUT_BACK; default:return -1; }
+    case SDLK_RETURN:case SDLK_SPACE:return RECOMP_RUNTIME_UI_INPUT_ACCEPT;
+    case SDLK_ESCAPE:case SDLK_AC_BACK:return RECOMP_RUNTIME_UI_INPUT_BACK; default:return -1; }
 }
+#if defined(RECOMP_RUNTIME_UI_HAS_POINTER)
+static int runtime_ui_pointer_event(SDL_Renderer *renderer,const SDL_Event *ev,int width,int height) {
+    static int owner; /* 1: primary finger, 2: physical left mouse button. */
+    static SDL_TouchID touch;
+    static SDL_FingerID finger;
+    RecompRuntimeUi *ui=s_runtime_ui.ui;
+    if(!recomp_runtime_ui_is_open(ui) ||
+       (ev->type==SDL_WINDOWEVENT && (ev->window.event==SDL_WINDOWEVENT_FOCUS_LOST ||
+        ev->window.event==SDL_WINDOWEVENT_SIZE_CHANGED)) || ev->type==SDL_APP_WILLENTERBACKGROUND) {
+        owner=0;recomp_runtime_ui_handle_pointer(ui,width,height,0,0,-1);
+        return 0;
+    }
+    /* SDL2's renderer event watch already removes the letterbox: finger x/y
+     * are normalized to the rendered viewport; mouse x/y are logical units.
+     * Convert those once into the ARGB frame used by the software menu. */
+    if(ev->type==SDL_FINGERDOWN || ev->type==SDL_FINGERUP || ev->type==SDL_FINGERMOTION) {
+        if(ev->tfinger.touchId==SDL_MOUSE_TOUCHID)return 1;
+        if(ev->type==SDL_FINGERDOWN) {
+            if(owner)return 1;
+            owner=1;touch=ev->tfinger.touchId;finger=ev->tfinger.fingerId;
+        } else if(owner!=1 || touch!=ev->tfinger.touchId || finger!=ev->tfinger.fingerId)return 1;
+        if(ev->type!=SDL_FINGERMOTION) {
+            if(ev->type==SDL_FINGERUP)owner=0;
+            recomp_runtime_ui_handle_pointer(ui,width,height,(int)(ev->tfinger.x*width),
+                (int)(ev->tfinger.y*height),ev->type==SDL_FINGERDOWN);
+        }
+        return 1;
+    }
+    if(ev->type==SDL_MOUSEBUTTONDOWN || ev->type==SDL_MOUSEBUTTONUP || ev->type==SDL_MOUSEMOTION) {
+        /* One Android tap can generate both streams. Only its finger owns it. */
+        Uint32 which=ev->type==SDL_MOUSEMOTION?ev->motion.which:ev->button.which;
+        if(which==SDL_TOUCH_MOUSEID || ev->type==SDL_MOUSEMOTION || ev->button.button!=SDL_BUTTON_LEFT)return 1;
+        if(ev->type==SDL_MOUSEBUTTONDOWN) {if(owner)return 1;owner=2;}
+        else {if(owner!=2)return 1;owner=0;}
+        int logical_w=0,logical_h=0;SDL_RenderGetLogicalSize(renderer,&logical_w,&logical_h);
+        if(logical_w<=0)logical_w=width;if(logical_h<=0)logical_h=height;
+        recomp_runtime_ui_handle_pointer(ui,width,height,
+            (int)((double)ev->button.x*width/logical_w),(int)((double)ev->button.y*height/logical_h),
+            ev->type==SDL_MOUSEBUTTONDOWN);
+        return 1;
+    }
+    return 0;
+}
+#endif
 #endif
 
 static void widescreen_setup(void)
@@ -1358,6 +1405,7 @@ int runner_load_state_file(const char *path)
             if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
             audio_discard_playback();
             genesis_replay_file_loaded(resolved);
+            rb_probe_external_state_loaded();
         }
         return ok;
     }
@@ -1432,6 +1480,7 @@ int runner_load_state_file(const char *path)
             if(g_game_spec.video && g_game_spec.video->presentation_reset)g_game_spec.video->presentation_reset();
         audio_discard_playback();
         genesis_replay_file_loaded(resolved);
+        rb_probe_external_state_loaded();
     }
     return ok;
 }
@@ -2482,7 +2531,13 @@ static void replay_view(GenesisReplayView *v,int apply)
     }
 }
 
+/* recomp-ui uses SDL_MAIN_HANDLED for desktop entry points. Android's Java
+ * activity loads this shared library and explicitly resolves SDL_main. */
+#if defined(__ANDROID__)
+DECLSPEC int SDLCALL SDL_main(int argc, char *argv[])
+#else
 int main(int argc, char *argv[])
+#endif
 {
     init_exe_dir(argv[0]);
     const char *user_dir=getenv("GENESIS_USER_DIR");
@@ -2491,7 +2546,28 @@ int main(int argc, char *argv[])
             fprintf(stderr,"GENESIS_USER_DIR must be an absolute directory path\n");return 1;
         }
         snprintf(s_data_dir,sizeof s_data_dir,"%s/",user_dir);
+#if defined(__ANDROID__)
+        if (chdir(user_dir) != 0) {
+            fprintf(stderr,"Cannot use Android app storage directory\n");return 1;
+        }
+        /* Android otherwise discards stdio from native libraries. Keep the
+         * normal startup/failure diagnostics inside this app's private data. */
+        FILE *log=freopen("android-runtime.log","w",stderr);
+        if (log) {
+            setvbuf(stderr,NULL,_IONBF,0);
+            dup2(fileno(stderr),fileno(stdout));
+            setvbuf(stdout,NULL,_IONBF,0);
+        }
+#endif
     }
+#if defined(__ANDROID__)
+    /* A new Activity can reuse this loaded library after the last game exits.
+     * Reset the cached ownership before gameplay enables its new touch pad. */
+    genesis_android_set_gameplay(0);
+    /* SDL's resizable-window default otherwise overrides the manifest with
+     * full-user orientation, allowing a phone's portrait default to win. */
+    SDL_SetHint(SDL_HINT_ORIENTATIONS,"LandscapeLeft LandscapeRight");
+#endif
     input_map_init_defaults();   /* today's mapping; app_config_load may override */
 #if GENESIS_HAS_RECOMP_NET
     GenesisNetplayConfig netplay_config;
@@ -3071,6 +3147,7 @@ int main(int argc, char *argv[])
     if (!benchmark_frames) {
         if (g_app_config.fullscreen == 2)      win_flags |= SDL_WINDOW_FULLSCREEN;
         else if (g_app_config.fullscreen == 1) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        win_flags |= genesis_android_fullscreen_flags(0);
     }
     SDL_Window *window = SDL_CreateWindow(
         window_title,
@@ -3180,6 +3257,9 @@ int main(int argc, char *argv[])
         cfg.menu.callbacks.set_value = runtime_ui_set; cfg.menu.callbacks.run_action = runtime_ui_action;
         cfg.menu.callbacks.save = runtime_ui_save;
         cfg.menu.callbacks.visibility_changed = input_gameplay_capture_changed;
+#if defined(__ANDROID__) && defined(RECOMP_RUNTIME_UI_HAS_POINTER)
+        cfg.menu.presentation_flags |= RECOMP_RUNTIME_UI_PRESENTATION_TOUCH_FRIENDLY;
+#endif
         cfg.features = RECOMP_RUNTIME_UI_STANDARD_FULLSCREEN | RECOMP_RUNTIME_UI_STANDARD_WINDOW_SCALE |
             RECOMP_RUNTIME_UI_STANDARD_VIEW_MODE | RECOMP_RUNTIME_UI_STANDARD_LINEAR_FILTER |
             RECOMP_RUNTIME_UI_STANDARD_VOLUME | RECOMP_RUNTIME_UI_STANDARD_RESUME;
@@ -3613,9 +3693,12 @@ session_begin:;
             }
             load_hold_event(&ev, window);
 #if RECOMP_LAUNCHER
+    #if defined(RECOMP_RUNTIME_UI_HAS_POINTER)
+            if(runtime_ui_pointer_event(renderer,&ev,s_screen_width==256?320:s_screen_width,s_screen_height))continue;
+    #endif
             if (recomp_runtime_ui_is_open(s_runtime_ui.ui))
                 (void)gamepad_consume_quickload();
-            if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
+            if (ev.type == SDL_KEYDOWN && (ev.key.keysym.sym == SDLK_ESCAPE || ev.key.keysym.sym == SDLK_AC_BACK) && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
                 cancel_load_hold();
                 recomp_runtime_ui_open(s_runtime_ui.ui); continue;
             }
@@ -3658,7 +3741,7 @@ session_begin:;
                         Uint32 want = (g_app_config.fullscreen == 2)
                                           ? SDL_WINDOW_FULLSCREEN
                                           : SDL_WINDOW_FULLSCREEN_DESKTOP;
-                        SDL_SetWindowFullscreen(window, is_fs ? 0 : want);
+                        SDL_SetWindowFullscreen(window, genesis_android_fullscreen_flags(is_fs ? 0 : want));
                         update_render_logical_size(renderer);
                         continue;   /* don't also treat Enter/F-key as a save slot */
                     }
@@ -3734,6 +3817,8 @@ session_begin:;
 
 #if RECOMP_LAUNCHER
         input_set_gameplay_blocked(recomp_runtime_ui_is_open(s_runtime_ui.ui));
+        genesis_android_set_gameplay(!recomp_runtime_ui_is_open(s_runtime_ui.ui) &&
+                                    !genesis_local_states_is_open());
 #endif
 
         /* LB saves immediately. RB starts a continuous hold to load slot 1;
@@ -4034,7 +4119,14 @@ session_begin:;
                       (int16_t *)s_psg_accum, PSG_ACCUM_FRAMES, &s_psg_count };
                   GenesisSimHooks sim_hooks = { widescreen_pre_raster, genesis_indexed_sink_adapter, &s_direct_pixels,
                                                 rdb_post_drain, NULL, &s_custom_producer };
-                  if (!genesis_sim_step(&sim_in, &sim_audio, &sim_hooks)) { running = 0; break; } }
+                  /* Debugger ticks are live simulation too. Omitting them
+                   * while a probe window is recording compares a replay of
+                   * fewer ticks with the advanced live machine. */
+                  int probing = rb_probe_armed();
+                  if (probing) rb_probe_pre_tick();
+                  int completed = genesis_sim_step(&sim_in, &sim_audio, &sim_hooks);
+                  if (completed && probing) rb_probe_post_tick();
+                  if (!completed) { running = 0; break; } }
                 if (s_debug_enabled) cmd_server_record_frame(frame_num);
             }
             if (s_debug_enabled) cmd_server_send_frame_result(cmd_cr.run_extra_frames);

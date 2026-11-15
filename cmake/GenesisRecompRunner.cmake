@@ -18,7 +18,8 @@
 # Unmigrated consumers.  Game repositories that still list runner sources by
 # hand keep building when the engine adds a core translation unit: every
 # consumer includes GenesisRecompGenerated.cmake, which includes this file,
-# and a deferred reconciler then visits each executable in that directory
+# and a deferred reconciler then visits each executable (or Android shared
+# runner library) in that directory
 # that compiles runner/glue.c (i.e. links the runner), appends any core
 # source it does not already list, and applies genesisrecomp_runner_target().
 # Reconciliation is idempotent, adds nothing to targets already using this
@@ -50,6 +51,7 @@ endif()
 
 set(GENESIS_RUNNER_CORE_SOURCES
     main.c
+    android_host.c
     host_wait.c
     sim_step.c
     engine_worker.c
@@ -100,6 +102,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
 # and is listed by every consumer; a consumer lacking one of those is a
 # deliberate divergence the reconciler must not paper over.
 set(GENESIS_RUNNER_RECONCILED_SOURCES
+    android_host.c
     rb_capture.c
     host_wait.c
     cosim_state.c
@@ -179,8 +182,15 @@ function(genesisrecomp_runner_target target)
     # tests/runtime/fiber_snapshot_test.c assert it (--overflow-huge).
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND NOT MSVC)
         include(CheckCCompilerFlag)
-        check_c_compiler_flag(-fstack-clash-protection GENESIS_HAVE_STACK_CLASH)
-        if(GENESIS_HAVE_STACK_CLASH)
+        include(CMakePushCheckState)
+        cmake_push_check_state()
+        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+            # A recognized option may still be ignored on this target (ARMv7).
+            string(APPEND CMAKE_REQUIRED_FLAGS " -Werror=unused-command-line-argument")
+        endif()
+        check_c_compiler_flag(-fstack-clash-protection GENESIS_HAVE_TARGET_STACK_CLASH)
+        cmake_pop_check_state()
+        if(GENESIS_HAVE_TARGET_STACK_CLASH)
             target_compile_options(${target} PRIVATE
                 "$<$<COMPILE_LANGUAGE:C,CXX>:-fstack-clash-protection>")
             target_compile_definitions(${target} PRIVATE GENESIS_STACK_CLASH_PROTECTION=1)
@@ -238,7 +248,8 @@ function(_genesisrecomp_reconcile_runner_targets)
     get_property(_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
     foreach(_t IN LISTS _targets)
         get_target_property(_type ${_t} TYPE)
-        if(NOT _type STREQUAL "EXECUTABLE")
+        if(NOT _type STREQUAL "EXECUTABLE" AND
+           NOT (ANDROID AND _type STREQUAL "SHARED_LIBRARY"))
             continue()
         endif()
         get_target_property(_srcs ${_t} SOURCES)
