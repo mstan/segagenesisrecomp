@@ -465,12 +465,11 @@ static int runtime_ui_key(SDL_Keycode k) {
     case SDLK_ESCAPE:case SDLK_AC_BACK:return RECOMP_RUNTIME_UI_INPUT_BACK; default:return -1; }
 }
 #if defined(RECOMP_RUNTIME_UI_HAS_POINTER)
-static int runtime_ui_pointer_event(SDL_Renderer *renderer,const SDL_Event *ev) {
+static int runtime_ui_pointer_event(SDL_Renderer *renderer,const SDL_Event *ev,int width,int height) {
     static int owner; /* 1: primary finger, 2: physical left mouse button. */
     static SDL_TouchID touch;
     static SDL_FingerID finger;
     RecompRuntimeUi *ui=s_runtime_ui.ui;
-    const int width=s_screen_width==256?320:s_screen_width,height=s_screen_height;
     if(!recomp_runtime_ui_is_open(ui) ||
        (ev->type==SDL_WINDOWEVENT && (ev->window.event==SDL_WINDOWEVENT_FOCUS_LOST ||
         ev->window.event==SDL_WINDOWEVENT_SIZE_CHANGED)) || ev->type==SDL_APP_WILLENTERBACKGROUND) {
@@ -3695,7 +3694,7 @@ session_begin:;
             load_hold_event(&ev, window);
 #if RECOMP_LAUNCHER
     #if defined(RECOMP_RUNTIME_UI_HAS_POINTER)
-            if(runtime_ui_pointer_event(renderer,&ev))continue;
+            if(runtime_ui_pointer_event(renderer,&ev,s_screen_width==256?320:s_screen_width,s_screen_height))continue;
     #endif
             if (recomp_runtime_ui_is_open(s_runtime_ui.ui))
                 (void)gamepad_consume_quickload();

@@ -1,6 +1,7 @@
 package org.genesisrecompiled;
 
 import android.os.Bundle;
+import android.os.Build;
 import android.system.Os;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -17,6 +18,29 @@ public final class GameActivity extends SDLActivity {
     private final HashSet<Integer> held=new HashSet<>();
     private FrameLayout touchOverlay;
     private volatile boolean touchControlsAvailable;
+    private Runnable unregisterBack;
+
+    /* Both system Back routes use the same native Escape/menu semantics as
+     * the gameplay Menu control. Release held touch keys before transferring
+     * ownership; this never finishes the Activity behind an open native menu. */
+    private void nativeBack() {
+        release();
+        onNativeKeyDown(KeyEvent.KEYCODE_ESCAPE);
+        onNativeKeyUp(KeyEvent.KEYCODE_ESCAPE);
+    }
+    @Override public void onBackPressed() { nativeBack(); }
+
+    /* Isolate API33 classes so API24-32 only load the legacy path. No AndroidX
+     * dependency is needed for this SDL Activity. */
+    @android.annotation.TargetApi(33)
+    private static final class BackApi33 {
+        static Runnable register(GameActivity activity) {
+            android.window.OnBackInvokedDispatcher dispatcher=activity.getOnBackInvokedDispatcher();
+            android.window.OnBackInvokedCallback callback=activity::nativeBack;
+            dispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,callback);
+            return () -> dispatcher.unregisterOnBackInvokedCallback(callback);
+        }
+    }
     /** Called by the native runner when gameplay owns input, rather than a menu. */
     public void setTouchControlsAvailable(boolean available) {
         touchControlsAvailable=available;
@@ -51,6 +75,7 @@ public final class GameActivity extends SDLActivity {
             }
         } catch(Exception failure) { throw new IllegalStateException(failure); }
         super.onCreate(saved);
+        if(Build.VERSION.SDK_INT>=33)unregisterBack=BackApi33.register(this);
         FrameLayout overlay=new FrameLayout(this);touchOverlay=overlay;
         overlay.setVisibility(touchControlsAvailable?View.VISIBLE:View.GONE);
         FrameLayout pad=new FrameLayout(this);pad.setVisibility(View.GONE);
@@ -86,4 +111,8 @@ public final class GameActivity extends SDLActivity {
     }
     private void release() { for(int code:held)onNativeKeyUp(code);held.clear(); }
     @Override protected void onPause() { release();super.onPause(); }
+    @Override protected void onDestroy() {
+        if(unregisterBack!=null) { unregisterBack.run();unregisterBack=null; }
+        super.onDestroy();
+    }
 }
