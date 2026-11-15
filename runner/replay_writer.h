@@ -21,6 +21,9 @@ bool GenesisReplayWriterBegin(GenesisReplayWriter *, const char *path,
                               const char *mods, const char *effective);
 bool GenesisReplayWriterSnapshot(GenesisReplayWriter *, const void *, size_t);
 bool GenesisReplayWriterLine(GenesisReplayWriter *, const char *);
+/* Completed H partitions; the queue owns the formatted record on return. */
+bool GenesisReplayWriterHashes(GenesisReplayWriter *, unsigned frame,
+                                const uint32_t hashes[4]);
 bool GenesisReplayWriterFrame(GenesisReplayWriter *, unsigned frame,
                               const void *wram, size_t nw, const void *coop,
                               size_t nc, const void *views, size_t nv,

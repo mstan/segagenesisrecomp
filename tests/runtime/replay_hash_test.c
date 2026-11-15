@@ -53,11 +53,26 @@ int main(void)
         const void *parts[]={lengths[i]?bytes:NULL,lengths[i]?coop:NULL,lengths[i]?views:NULL,lengths[i]?vram:NULL};
         uint64_t full=XXH64(parts[0],sizes[0],0);
         CHECK(genesis_replay_hash(parts[0],sizes[0])==((uint32_t)full^(uint32_t)(full>>32)));
+        GenesisReplayHash streamed;genesis_replay_hash_init(&streamed);
+        size_t split=sizes[0]/3;
+        CHECK(genesis_replay_hash_update(&streamed,bytes,split));
+        CHECK(genesis_replay_hash_update(&streamed,NULL,0));
+        CHECK(genesis_replay_hash_update(&streamed,bytes+split,sizes[0]-split));
+        CHECK(genesis_replay_hash_finish(&streamed)==((uint32_t)full^(uint32_t)(full>>32)));
         for(size_t j=0;j<sizeof positions/sizeof *positions;++j) {
             unsigned at=positions[j];char expected[64];
             expected_record(expected,sizeof expected,UINT32_MAX,parts,sizes);
             reset_queue(writer,at);
             CHECK(GenesisReplayWriterFrame(writer,UINT32_MAX,parts[0],sizes[0],parts[1],sizes[1],parts[2],sizes[2],parts[3],sizes[3]));
+            CHECK(!queued_record(writer,at,expected));
+            uint32_t hashes[4];
+            for(unsigned p=0;p<4;++p) {
+                uint64_t digest=XXH64(parts[p],sizes[p],0);
+                hashes[p]=(uint32_t)digest^(uint32_t)(digest>>32);
+            }
+            reset_queue(writer,at);
+            CHECK(GenesisReplayWriterHashes(writer,UINT32_MAX,hashes));
+            hashes[0]^=1;
             CHECK(!queued_record(writer,at,expected));
             /* Every source may change immediately after Frame returns. The
              * queue owns only the prior formatted hashes, never that memory. */
@@ -83,6 +98,9 @@ int main(void)
         }
     }
     CHECK(!GenesisReplayWriterFrame(NULL,0,NULL,0,NULL,0,NULL,0,NULL,0));
+    reset_queue(writer,0);
+    CHECK(!GenesisReplayWriterHashes(writer,0,NULL));
+    CHECK(SDL_AtomicGet(&writer->error)==INVALID && !writer->head);
     for(unsigned part=0;part<4;++part) {
         const void *parts[]={bytes,coop,views,vram};size_t sizes[]={1,1,1,1};parts[part]=NULL;
         reset_queue(writer,QUEUE_BYTES-1);

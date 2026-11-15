@@ -2,6 +2,7 @@
  * See rb_state.h for the contract and the digest domain. */
 #include "rb_state.h"
 #include "rb_digest.h"
+#include "replay_hash.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -305,6 +306,52 @@ int genesis_rb_replay_parts(const void *blob,size_t len,const void *parts[4],siz
     return 1;
 }
 
+/* Preserve the replay partition framing without first concatenating a full
+ * rollback image. Only the largest non-RAM section needs host scratch. EXEC's
+ * size is queried to retain the existing bound, but its host image is never
+ * captured or hashed here. Size queries and serialization remain read-only. */
+static uint8_t *s_replay_buf;
+static size_t s_replay_cap;
+int genesis_rb_replay_hashes(uint32_t hashes[4],size_t limit)
+{
+    size_t sizes[RB_NSEC],largest=0;
+    size_t total=sizeof k_magic+sizeof(uint32_t)+sizeof(uint64_t)+RB_NSEC*sizeof(uint32_t);
+    if(!hashes || limit<total)return 0;
+    for(size_t i=0;i<RB_NSEC;++i) {
+        size_t need=k_sections[i].save(NULL,0);
+        if(need>UINT32_MAX || need>limit-total)return 0;
+        total+=need;sizes[i]=need;
+        if(i!=0 && i!=1 && i!=3 && need>largest)largest=need;
+    }
+    if(largest>s_replay_cap) {
+        uint8_t *next=(uint8_t *)realloc(s_replay_buf,largest);
+        if(!next)return 0;
+        s_replay_buf=next;s_replay_cap=largest;
+    }
+    GenesisReplayHash state[4];uint32_t result[4];
+    for(unsigned p=0;p<4;++p)genesis_replay_hash_init(&state[p]);
+    for(size_t i=1;i<RB_NSEC;++i) {
+        const void *bytes=s_replay_buf;size_t got=sizes[i];
+        if(i==1)bytes=&g_cpu;
+        else if(i==3)bytes=g_ram;
+        else if(got) {
+            got=k_sections[i].save(s_replay_buf,sizes[i]);
+            if(!got || got>sizes[i])return 0;
+        }
+        unsigned part=i<=2?0:i==3?1:i<RB_NSEC-1?2:3;
+        /* No leading length in any partition. Retain the native u32 lengths
+         * between CPU/scheduler and machine/audio/input sections exactly. */
+        if(i==2 || (i>=5 && i<RB_NSEC-1)) {
+            uint32_t length=(uint32_t)got;
+            if(!genesis_replay_hash_update(&state[part],&length,sizeof length))return 0;
+        }
+        if(!genesis_replay_hash_update(&state[part],bytes,got))return 0;
+    }
+    for(unsigned p=0;p<4;++p)result[p]=genesis_replay_hash_finish(&state[p]);
+    memcpy(hashes,result,sizeof result);
+    return 1;
+}
+
 /* ---- digest ----------------------------------------------------------------- */
 
 static uint8_t *s_dig_buf;
@@ -355,6 +402,24 @@ static size_t mutate_offset(size_t sec, size_t len)
     return len / 2;
 }
 
+static int replay_hash_matches_blob(const void *blob,size_t n,size_t limit)
+{
+    const void *parts[4];size_t sizes[4];uint32_t got[4];
+    if(!genesis_rb_replay_parts(blob,n,parts,sizes) ||
+       !genesis_rb_replay_hashes(got,limit))return 0;
+    for(unsigned p=0;p<4;++p) {
+        /* Independent contiguous vendor call over the existing full snapshot
+         * framing, not the new section-streaming path. */
+        uint64_t full=XXH64(parts[p],sizes[p],0);
+        uint32_t want=(uint32_t)full^(uint32_t)(full>>32);
+        if(got[p]!=want) {
+            fprintf(stderr,"[rb_selftest] replay-stream part=%u actual=%08x expected=%08x\n",p,got[p],want);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int genesis_rb_selftest(void)
 {
     int fails = 0;
@@ -369,6 +434,16 @@ int genesis_rb_selftest(void)
         return 1;
     }
     genesis_rb_digest(&d0);
+    int replay_equal=replay_hash_matches_blob(orig,n,cap);
+    uint32_t guard[4]={1,2,3,4},original_guard[4]={1,2,3,4};
+    int bounded=!genesis_rb_replay_hashes(guard,cap-1) &&
+                 !memcmp(guard,original_guard,sizeof guard);
+    genesis_rb_digest(&d1);
+    int replay_unchanged=d1.master==d0.master && !memcmp(d1.part,d0.part,sizeof d0.part);
+    if(!replay_equal || !bounded || !replay_unchanged)++fails;
+    fprintf(stderr,"[rb_selftest] replay-stream partitions=4 equal=%d bounded=%d unchanged=%d %s\n",
+            replay_equal,bounded,replay_unchanged,
+            replay_equal && bounded && replay_unchanged?"OK":"FAIL");
     /* A framing rejection is read-only, including when a game owns disposable
      * presentation history. Exercise the actual loader before valid restores. */
     int rejected=!genesis_rb_load(orig,n-1);
@@ -388,6 +463,12 @@ int genesis_rb_selftest(void)
         mut[off[i] + at] ^= 0x5A;
         int ok_load = genesis_rb_load(mut, n);
         genesis_rb_digest(&d1);
+        /* Loaders may normalize a snapshot representation. Compare against
+         * an independent fresh full serialization of the loaded live state. */
+        size_t oracle_size=ok_load?genesis_rb_save_untracked(mut,cap):0;
+        int stream_equal=oracle_size && replay_hash_matches_blob(mut,oracle_size,cap);
+        genesis_rb_digest(&d2);
+        int stream_unchanged=d2.master==d1.master && !memcmp(d2.part,d1.part,sizeof d1.part);
         int changed = 0, leaked = 0;
         for (int p = 0; p < GENESIS_RB_PART_COUNT; p++) {
             if (d1.part[p] == d0.part[p]) continue;
@@ -400,11 +481,12 @@ int genesis_rb_selftest(void)
         genesis_rb_digest(&d2);
         int back = restored && d2.master == d0.master &&
                    !memcmp(d2.part, d0.part, sizeof d0.part);
-        int ok = ok_load && changed && !leaked && back && d1.master != d0.master;
+        int ok = ok_load && changed && !leaked && back && d1.master != d0.master &&
+                 stream_equal && stream_unchanged;
         if (!ok) fails++;
         fprintf(stderr, "[rb_selftest] %-8s len=%-7zu flip@%-6zu load=%d changed=%d leaked=%d "
-                "restored=%d %s\n", k_sections[i].name, sl[i], at, ok_load, changed, leaked,
-                back, ok ? "OK" : "FAIL");
+                "restored=%d replay=%d readonly=%d %s\n", k_sections[i].name, sl[i], at, ok_load, changed, leaked,
+                back,stream_equal,stream_unchanged,ok ? "OK" : "FAIL");
     }
     free(orig); free(mut);
     fprintf(stderr, "[rb_selftest] %s (%d failure(s))\n", fails ? "FAIL" : "PASS", fails);

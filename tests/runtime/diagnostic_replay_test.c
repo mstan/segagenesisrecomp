@@ -2,6 +2,8 @@
  * The machine fixture makes each pad, state restore and viewport observable. */
 #include "app_config.h"
 #include "diagnostic_replay.h"
+#include "rb_state.h"
+#include "replay_hash.h"
 #include "game_spec.h"
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -167,6 +169,11 @@ int genesis_rb_replay_parts(const void *src, size_t n, const void *p[4],
     p[i] = &s->machine.part[i];
     sizes[i] = sizeof(uint32_t);
   }
+  return 1;
+}
+int genesis_rb_replay_hashes(uint32_t hashes[4],size_t limit) {
+  if(!hashes || limit<sizeof(Snapshot))return 0;
+  for(unsigned i=0;i<4;++i)hashes[i]=genesis_replay_hash(&machine.part[i],sizeof machine.part[i]);
   return 1;
 }
 int runner_load_state_file(const char *path) {

@@ -327,6 +327,14 @@ bool GenesisReplayWriterSnapshot(GenesisReplayWriter *w, const void *p,
 bool GenesisReplayWriterLine(GenesisReplayWriter *w, const char *line) {
   return line && one(w, LINE, line, strlen(line));
 }
+bool GenesisReplayWriterHashes(GenesisReplayWriter *w,unsigned frame,const uint32_t hashes[4]) {
+  if (!w || SDL_AtomicGet(&w->stop) || SDL_AtomicGet(&w->error))return false;
+  if (!hashes) { fail(w,INVALID);return false; }
+  char row[64];
+  int n=snprintf(row,sizeof row,"H %u %08x %08x %08x %08x\n",frame,
+                 hashes[0],hashes[1],hashes[2],hashes[3]);
+  return n>0 && (size_t)n<sizeof row && one(w,LINE,row,(size_t)n);
+}
 bool GenesisReplayWriterFrame(GenesisReplayWriter *w, unsigned frame,
                               const void *a, size_t na, const void *b,
                               size_t nb, const void *c, size_t nc,
@@ -342,11 +350,9 @@ bool GenesisReplayWriterFrame(GenesisReplayWriter *w, unsigned frame,
   /* These bytes already belong to the simulation producer. Hash them once
    * in place and queue only their immutable record, not another full frame
    * for the disk thread to copy and reread. File I/O remains asynchronous. */
-  char row[64];
-  int n = snprintf(row, sizeof row, "H %u %08x %08x %08x %08x\n", frame,
-                   genesis_replay_hash(a, na), genesis_replay_hash(b, nb),
-                   genesis_replay_hash(c, nc), genesis_replay_hash(d, nd));
-  return n > 0 && (size_t)n < sizeof row && one(w, LINE, row, (size_t)n);
+  uint32_t hashes[4]={genesis_replay_hash(a,na),genesis_replay_hash(b,nb),
+                      genesis_replay_hash(c,nc),genesis_replay_hash(d,nd)};
+  return GenesisReplayWriterHashes(w,frame,hashes);
 }
 bool GenesisReplayWriterRemove(GenesisReplayWriter *w, const char *path) {
   if (!path || strlen(path) >= 1400) {
