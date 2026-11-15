@@ -9,11 +9,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { QUEUE_BYTES = 16 * 1024 * 1024, FILE_BUFFER_BYTES = 65536 };
-enum { BEGIN, SNAPSHOT, LINE, FRAME, REMOVE, END };
+enum { QUEUE_BYTES = 16 * 1024 * 1024, FILE_BUFFER_BYTES = 65536,
+       FRAME_BYTES_LIMIT = QUEUE_BYTES - 7 * sizeof(uint32_t) };
+enum { BEGIN, SNAPSHOT, LINE, REMOVE, END };
 enum { OK, FULL, INVALID, IO };
 typedef struct Command {
-  uint32_t op, size, frame, sizes[4];
+  uint32_t op, size;
 } Command;
 typedef struct Begin {
   char path[1280], header[512], config[1200], mods[1200], effective[16384];
@@ -29,6 +30,8 @@ static void fail(GenesisReplayWriter *w, int error) {
 }
 static void put(GenesisReplayWriter *w, unsigned at, const void *data,
                 size_t n) {
+  if (!n)
+    return;
   size_t first = QUEUE_BYTES - at;
   if (first > n)
     first = n;
@@ -46,12 +49,15 @@ static void get(GenesisReplayWriter *w, unsigned at, void *data, size_t n) {
   if (n > first)
     memcpy((char *)data + first, w->bytes, n - first);
 }
-static bool enqueue(GenesisReplayWriter *w, Command c, const void *const *data,
-                    unsigned parts) {
+static bool enqueue(GenesisReplayWriter *w, Command c, const void *data) {
   if (!w || SDL_AtomicGet(&w->stop) || SDL_AtomicGet(&w->error))
     return false;
   unsigned tail = (unsigned)SDL_AtomicGet(&w->read_pos);
   if (sizeof(c) + c.size >= (size_t)QUEUE_BYTES) {
+    fail(w, INVALID);
+    return false;
+  }
+  if (c.size && !data) {
     fail(w, INVALID);
     return false;
   }
@@ -62,14 +68,8 @@ static bool enqueue(GenesisReplayWriter *w, Command c, const void *const *data,
   unsigned at = w->head;
   put(w, at, &c, sizeof(c));
   at = (at + sizeof(c)) % QUEUE_BYTES;
-  for (unsigned i = 0; i < parts; ++i) {
-    if (c.sizes[i] && !data[i]) {
-      fail(w, INVALID);
-      return false;
-    }
-    put(w, at, data[i], c.sizes[i]);
-    at = (at + c.sizes[i]) % QUEUE_BYTES;
-  }
+  put(w, at, data, c.size);
+  at = (at + c.size) % QUEUE_BYTES;
   w->head = at;
   /* SDL atomics publish all payload bytes before the consumer sees the head. */
   SDL_AtomicSet(&w->write_pos, (int)at);
@@ -82,24 +82,11 @@ static bool one(GenesisReplayWriter *w, unsigned op, const void *data,
       fail(w, INVALID);
     return false;
   }
-  Command c = {op, (uint32_t)n, 0, {(uint32_t)n, 0, 0, 0}};
-  return enqueue(w, c, &data, 1);
-}
-static uint32_t digest(GenesisReplayWriter *w, unsigned at, size_t n) {
-  GenesisReplayHash state;
-  XXH64_reset(&state,0);
-  while (n) {
-    size_t count = QUEUE_BYTES - at;
-    if (count > n)
-      count = n;
-    XXH64_update(&state,w->bytes+at,count);
-    n -= count;
-    at = 0;
-  }
-  return genesis_replay_hash_fold(XXH64_digest(&state));
+  Command c = {op, (uint32_t)n};
+  return enqueue(w, c, data);
 }
 /* State attachments retain the offline inspector's existing checksum. Only
- * per-frame hashes use the faster build-specific checksum above. */
+ * per-frame hashes use the faster build-specific checksum on the producer. */
 static uint32_t snapshot_digest(GenesisReplayWriter *w,unsigned at,size_t n) {
   uint32_t hash=2166136261u;
   while(n) {
@@ -257,16 +244,6 @@ static int SDLCALL worker(void *opaque) {
       case LINE:
         ok = write_ring(w, text, at, c.size);
         break;
-      case FRAME: {
-        uint32_t hashes[4];
-        for (unsigned i = 0; i < 4; ++i) {
-          hashes[i] = digest(w, at, c.sizes[i]);
-          at = (at + c.sizes[i]) % QUEUE_BYTES;
-        }
-        ok = text && fprintf(text, "H %u %08x %08x %08x %08x\n", c.frame,
-                             hashes[0], hashes[1], hashes[2], hashes[3]) >= 0;
-        break;
-      }
       case REMOVE: {
         char path[1400];
         get(w, at, path, c.size);
@@ -354,18 +331,22 @@ bool GenesisReplayWriterFrame(GenesisReplayWriter *w, unsigned frame,
                               const void *a, size_t na, const void *b,
                               size_t nb, const void *c, size_t nc,
                               const void *d, size_t nd) {
-  if (na >= QUEUE_BYTES || nb >= QUEUE_BYTES || nc >= QUEUE_BYTES ||
-      nd >= QUEUE_BYTES) {
-    if (w)
-      fail(w, INVALID);
+  if (!w || SDL_AtomicGet(&w->stop) || SDL_AtomicGet(&w->error))
+    return false;
+  if ((na && !a) || (nb && !b) || (nc && !c) || (nd && !d) ||
+      na >= QUEUE_BYTES || nb >= QUEUE_BYTES || nc >= QUEUE_BYTES ||
+      nd >= QUEUE_BYTES || na + nb + nc + nd >= FRAME_BYTES_LIMIT) {
+    fail(w, INVALID);
     return false;
   }
-  Command cmd = {FRAME,
-                 (uint32_t)(na + nb + nc + nd),
-                 frame,
-                 {(uint32_t)na, (uint32_t)nb, (uint32_t)nc, (uint32_t)nd}};
-  const void *parts[] = {a, b, c, d};
-  return enqueue(w, cmd, parts, 4);
+  /* These bytes already belong to the simulation producer. Hash them once
+   * in place and queue only their immutable record, not another full frame
+   * for the disk thread to copy and reread. File I/O remains asynchronous. */
+  char row[64];
+  int n = snprintf(row, sizeof row, "H %u %08x %08x %08x %08x\n", frame,
+                   genesis_replay_hash(a, na), genesis_replay_hash(b, nb),
+                   genesis_replay_hash(c, nc), genesis_replay_hash(d, nd));
+  return n > 0 && (size_t)n < sizeof row && one(w, LINE, row, (size_t)n);
 }
 bool GenesisReplayWriterRemove(GenesisReplayWriter *w, const char *path) {
   if (!path || strlen(path) >= 1400) {
@@ -376,7 +357,7 @@ bool GenesisReplayWriterRemove(GenesisReplayWriter *w, const char *path) {
   return one(w, REMOVE, path, strlen(path) + 1);
 }
 bool GenesisReplayWriterEnd(GenesisReplayWriter *w) {
-  return one(w, END, NULL, 0);
+  return one(w, END, "", 0);
 }
 const char *GenesisReplayWriterError(GenesisReplayWriter *w) {
   switch (w ? SDL_AtomicGet(&w->error) : OK) {

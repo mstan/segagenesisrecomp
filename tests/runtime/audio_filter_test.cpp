@@ -185,6 +185,39 @@ static void test_audition()
     CHECK(std::equal(prefix.raw_fm.begin(),prefix.raw_fm.end(),joined.raw_fm.begin()));
     CHECK(std::equal(joined.fm.begin()+prefix.fm.size(),joined.fm.end(),canonical_joined.fm.begin()+prefix.fm.size()));
     CHECK(std::equal(joined.raw_fm.begin()+prefix.raw_fm.size(),joined.raw_fm.end(),canonical_joined.raw_fm.begin()+prefix.raw_fm.size()));
+    /* Mixed full/partial queues, partial consumption and snapshots must keep
+     * the original selection of every queued sample in both chips. */
+    load(initial);
+    for(unsigned selected:{0x7ffu,1u<<5,0x7ffu,1u<<10,0x7ffu}) {
+        audio_mixer_set_audition(1,selected);
+        ym2612_advance(1008*23);psg_advance(240*97);
+    }
+    State mixed=save();Pair mixed_expected=peek();
+    std::vector<int16_t> consumed_fm(34),consumed_psg(41);
+    CHECK(ym2612_render(consumed_fm.data(),17)==17);
+    CHECK(psg_render(consumed_psg.data(),41)==41);
+    Pair remaining=peek();
+    CHECK(remaining.fm.size()+34==mixed_expected.fm.size());
+    CHECK(remaining.psg.size()+41==mixed_expected.psg.size());
+    CHECK(std::equal(remaining.fm.begin(),remaining.fm.end(),mixed_expected.fm.begin()+34));
+    CHECK(std::equal(remaining.raw_fm.begin(),remaining.raw_fm.end(),mixed_expected.raw_fm.begin()+34));
+    CHECK(std::equal(remaining.psg.begin(),remaining.psg.end(),mixed_expected.psg.begin()+41));
+    CHECK(std::equal(remaining.raw_psg.begin(),remaining.raw_psg.end(),mixed_expected.raw_psg.begin()+41));
+    load(mixed);Pair mixed_replay=peek();
+    CHECK(mixed_replay.fm==mixed_expected.fm && mixed_replay.raw_fm==mixed_expected.raw_fm);
+    CHECK(mixed_replay.psg==mixed_expected.psg && mixed_replay.raw_psg==mixed_expected.raw_psg);
+    CHECK(equal(save(),mixed));
+    load(initial);audio_mixer_set_audition(0,0x7ff);
+    ym2612_advance(1008*512);psg_advance(1008*512);psg_reset_leftover();
+    CHECK(ym2612_render(consumed_fm.data(),17)==17);
+    CHECK(psg_render(consumed_psg.data(),41)==41);
+    State full_remainder=save();remaining=peek();
+    CHECK(remaining.fm.size()+34==full.fm.size() && remaining.psg.size()+41==full.psg.size());
+    CHECK(std::equal(remaining.fm.begin(),remaining.fm.end(),full.fm.begin()+34));
+    CHECK(std::equal(remaining.psg.begin(),remaining.psg.end(),full.psg.begin()+41));
+    load(full_remainder);mixed_replay=peek();
+    CHECK(mixed_replay.fm==remaining.fm && mixed_replay.raw_fm==remaining.raw_fm);
+    CHECK(mixed_replay.psg==remaining.psg && mixed_replay.raw_psg==remaining.raw_psg);
     for(unsigned mask=0;mask<12;++mask) {
         load(initial);unsigned selected=mask?1u<<(mask-1):0;
         audio_mixer_set_audition(1,selected);
@@ -207,6 +240,9 @@ static void test_audition()
     /* Pending PCM and independent audition filter histories survive rollback. */
     setup(0);configure_fm();audio_mixer_set_audition(1,1u<<5);
     ym2612_advance(1008*90);psg_advance(240*500);State pending=save();Pair expected=peek();
+    /* A mask excursion without generated samples cannot change filter history. */
+    audio_mixer_set_audition(1,0x7ff);audio_mixer_set_audition(1,1u<<5);
+    CHECK(equal(save(),pending));
     reference(1008*20);load(pending);Pair replay=peek();
     CHECK(replay.fm==expected.fm && replay.raw_fm==expected.raw_fm && replay.psg==expected.psg);
     CHECK(equal(save(),pending));

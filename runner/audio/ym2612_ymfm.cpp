@@ -72,6 +72,10 @@ struct AuditionState { unsigned mask;int32_t previous[2],output[2]; };
 AuditionState s_aud={127,{0,0},{0,0}};
 size_t  s_scratch_write = 0; /* next free stereo-sample index */
 size_t  s_scratch_read  = 0; /* next unread stereo-sample index */
+/* An all-channel queue is the canonical PCM. Allocate its separate logical
+ * representation only when a partial selection joins queued samples. */
+bool s_aud_separate = false;
+bool s_aud_canonical_history = false;
 
 uint32_t s_master_accum = 0; /* leftover MASTER cycles below one sample */
 
@@ -86,6 +90,22 @@ constexpr int32_t FM_LPF_SAMPLE_MAGIC = 9484;  /* round(1.000 * 65536 / 6.910) *
 constexpr int32_t FM_LPF_OUTPUT_MAGIC = 46568; /* round(4.910 * 65536 / 6.910) */
 int32_t s_fm_lpf_prev[2] = {0, 0};
 int32_t s_fm_lpf_out[2]  = {0, 0};
+
+inline AuditionState audition_state() {
+    AuditionState state=s_aud;
+    if(s_aud_canonical_history) {
+        std::memcpy(state.previous,s_fm_lpf_prev,sizeof state.previous);
+        std::memcpy(state.output,s_fm_lpf_out,sizeof state.output);
+    }
+    return state;
+}
+inline void separate_audition_queue() {
+    if(s_aud_separate)return;
+    const size_t bytes=(s_scratch_write-s_scratch_read)*2*sizeof *s_scratch;
+    std::memcpy(s_aud_scratch+s_scratch_read*2,s_scratch+s_scratch_read*2,bytes);
+    std::memcpy(s_aud_raw+s_scratch_read*2,s_raw_scratch+s_scratch_read*2,bytes);
+    s_aud_separate=true;
+}
 
 inline int16_t clamp16(int32_t v) {
     if (v > 32767)  return 32767;
@@ -119,15 +139,14 @@ inline void audition_sample(size_t index,int32_t left,int32_t right) {
     }
 }
 
-/* With every channel selected, audition is the canonical output. Mirror a
- * completed span once, including its final filter history, rather than
- * scaling and visiting each sample a second time. Queued samples retain
- * their original selection when the player changes channels. */
+/* A mixed queue keeps separate PCM until drained. Normal playback has no
+ * duplicate samples or per-sample audition history to maintain. */
 inline void audition_full_span(size_t first,size_t count) {
-    std::memcpy(s_aud_scratch+first*2,s_scratch+first*2,count*2*sizeof *s_scratch);
-    std::memcpy(s_aud_raw+first*2,s_raw_scratch+first*2,count*2*sizeof *s_raw_scratch);
-    std::memcpy(s_aud.previous,s_fm_lpf_prev,sizeof s_aud.previous);
-    std::memcpy(s_aud.output,s_fm_lpf_out,sizeof s_aud.output);
+    if(s_aud_separate) {
+        std::memcpy(s_aud_scratch+first*2,s_scratch+first*2,count*2*sizeof *s_scratch);
+        std::memcpy(s_aud_raw+first*2,s_raw_scratch+first*2,count*2*sizeof *s_raw_scratch);
+    }
+    s_aud_canonical_history=true;
 }
 
 #if !GENESIS_FM_BLOCK_SAMPLES
@@ -199,6 +218,7 @@ extern "C" void ym2612_init(void) {
         s_chip = new ymfm::ym2612(s_iface);
     s_chip->reset();
     s_scratch_write = s_scratch_read = 0;
+    s_aud_separate=s_aud.mask!=127;s_aud_canonical_history=false;
     s_master_accum = 0;
     s_fm_lpf_prev[0] = s_fm_lpf_prev[1] = 0;
     s_fm_lpf_out[0]  = s_fm_lpf_out[1]  = 0;
@@ -237,11 +257,14 @@ extern "C" size_t ym2612_render(int16_t *out, size_t sample_count) {
     return ym2612_render_pair(out, nullptr, sample_count);
 }
 
-extern "C" void ym2612_set_audition_channels(unsigned mask) { s_aud.mask=mask&127u; }
+extern "C" void ym2612_set_audition_channels(unsigned mask) {
+    s_aud=audition_state();s_aud_canonical_history=false;
+    mask&=127u;if(mask!=127u)separate_audition_queue();s_aud.mask=mask;
+}
 extern "C" size_t ym2612_peek_audition(int16_t *filtered,int16_t *unfiltered,size_t count) {
     size_t available=s_scratch_write-s_scratch_read;if(count>available)count=available;
-    if(filtered)std::memcpy(filtered,s_aud_scratch+s_scratch_read*2,count*2*sizeof *filtered);
-    if(unfiltered)std::memcpy(unfiltered,s_aud_raw+s_scratch_read*2,count*2*sizeof *unfiltered);
+    if(filtered)std::memcpy(filtered,(s_aud_separate?s_aud_scratch:s_scratch)+s_scratch_read*2,count*2*sizeof *filtered);
+    if(unfiltered)std::memcpy(unfiltered,(s_aud_separate?s_aud_raw:s_raw_scratch)+s_scratch_read*2,count*2*sizeof *unfiltered);
     return count;
 }
 
@@ -254,8 +277,10 @@ extern "C" size_t ym2612_render_pair(int16_t *filtered, int16_t *unfiltered, siz
         if (unfiltered) std::memcpy(unfiltered, &s_raw_scratch[s_scratch_read * 2], copy * 2 * sizeof(int16_t));
         s_scratch_read += copy;
     }
-    if (s_scratch_read >= s_scratch_write)
+    if (s_scratch_read >= s_scratch_write) {
         s_scratch_read = s_scratch_write = 0;
+        s_aud_separate=s_aud.mask!=127;
+    }
     return copy;
 }
 
@@ -286,7 +311,8 @@ extern "C" int ym2612_save_state(FILE *f) {
     if (fwrite(&s_master_accum, sizeof s_master_accum, 1, f) != 1) return 0;
     if (fwrite(s_fm_lpf_prev, sizeof s_fm_lpf_prev, 1, f) != 1) return 0;
     if (fwrite(s_fm_lpf_out,  sizeof s_fm_lpf_out,  1, f) != 1) return 0;
-    if (fwrite(&s_aud,sizeof s_aud,1,f)!=1)return 0;
+    AuditionState audition=audition_state();
+    if (fwrite(&audition,sizeof audition,1,f)!=1)return 0;
     return 1;
 }
 
@@ -325,14 +351,15 @@ extern "C" size_t ym2612_rb_save(void *dst, size_t cap) {
     std::memcpy(o, &s_master_accum, sizeof s_master_accum); o += sizeof s_master_accum;
     std::memcpy(o, s_fm_lpf_prev, sizeof s_fm_lpf_prev); o += sizeof s_fm_lpf_prev;
     std::memcpy(o, s_fm_lpf_out, sizeof s_fm_lpf_out); o += sizeof s_fm_lpf_out;
-    std::memcpy(o,&s_aud,sizeof s_aud);o+=sizeof s_aud;
+    AuditionState audition=audition_state();
+    std::memcpy(o,&audition,sizeof audition);o+=sizeof audition;
     std::memcpy(o, &pend, sizeof pend); o += sizeof pend;
     std::memcpy(o, &s_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
     o += (size_t)pend * 2u * sizeof(int16_t);
     std::memcpy(o, &s_raw_scratch[s_scratch_read * 2], (size_t)pend * 2u * sizeof(int16_t));
     o+=(size_t)pend*2u*sizeof(int16_t);
-    std::memcpy(o,s_aud_scratch+s_scratch_read*2,(size_t)pend*2u*sizeof(int16_t));o+=(size_t)pend*2u*sizeof(int16_t);
-    std::memcpy(o,s_aud_raw+s_scratch_read*2,(size_t)pend*2u*sizeof(int16_t));
+    std::memcpy(o,(s_aud_separate?s_aud_scratch:s_scratch)+s_scratch_read*2,(size_t)pend*2u*sizeof(int16_t));o+=(size_t)pend*2u*sizeof(int16_t);
+    std::memcpy(o,(s_aud_separate?s_aud_raw:s_raw_scratch)+s_scratch_read*2,(size_t)pend*2u*sizeof(int16_t));
     return need;
 }
 
@@ -366,6 +393,7 @@ extern "C" int ym2612_rb_load(const void *src, size_t len) {
     std::memcpy(s_aud_raw,i,(size_t)pend*2u*sizeof(int16_t));
     s_scratch_read = 0;
     s_scratch_write = pend;
+    s_aud_separate=pend!=0 || s_aud.mask!=127;s_aud_canonical_history=false;
     return 1;
 }
 
@@ -381,5 +409,6 @@ extern "C" int ym2612_load_state(FILE *f) {
     ymfm::ymfm_saved_state st(buf,false);s_chip->save_restore(st);
     s_master_accum=master;std::memcpy(s_fm_lpf_prev,previous,sizeof previous);
     std::memcpy(s_fm_lpf_out,output,sizeof output);s_aud=audition;
-    s_scratch_read=s_scratch_write=0;return 1;
+    s_scratch_read=s_scratch_write=0;s_aud_separate=s_aud.mask!=127;
+    s_aud_canonical_history=false;return 1;
 }

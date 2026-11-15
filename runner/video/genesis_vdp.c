@@ -543,6 +543,7 @@ void gvdp_set_ext_colors(const uint16_t *top, const uint16_t *bottom, int split_
     s_ext_split = split_row;
 }
 int gvdp_ext_active(void) { return s_ext_tiles != NULL; }
+const uint8_t *gvdp_ext_tiles(void) { return s_ext_tiles; }
 int gvdp_ext_line(unsigned tile) {
     int line = s_ext_tiles ? s_ext_tiles[tile & 0x7FF] : 0;
     return line <= GVDP_EXT_LINES ? line : 0;

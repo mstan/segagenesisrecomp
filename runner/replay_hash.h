@@ -4,12 +4,11 @@
 #include <stdint.h>
 
 /* A build-specific checksum over every checkpoint byte. Use the existing
- * portable XXH64 implementation for both contiguous playback and the writer's
- * wrapped queue, then fold to the recording format's 32-bit field. */
+ * portable XXH64 implementation for recording and playback, then fold to the
+ * recording format's 32-bit field. Only the completed hashes cross the queue. */
 #define XXH_INLINE_ALL
 #define XXH_NO_XXH3
 #include "external/xxhash/xxhash.h"
-typedef XXH64_state_t GenesisReplayHash;
 static inline uint32_t genesis_replay_hash_fold(uint64_t hash)
 { return (uint32_t)(hash ^ (hash >> 32)); }
 static inline uint32_t genesis_replay_hash(const void *data,size_t size)

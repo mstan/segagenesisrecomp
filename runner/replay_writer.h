@@ -9,9 +9,11 @@
 extern "C" {
 #endif
 
-/* One simulation producer, one disk worker. All calls except Destroy only
- * copy into a fixed 16 MiB queue; a slow sink stops capture, never waits.
- * The worker owns files and hashes immutable copies of completed frames. */
+/* One simulation producer, one disk worker. Frame hashes completed state
+ * in place on the caller and queues only its immutable text record. Other
+ * records/attachments copy into the same fixed 16 MiB queue. The worker owns
+ * files; a slow sink stops capture without waiting for disk capacity.
+ * Destroy waits only at shutdown or an explicit playback transition. */
 typedef struct GenesisReplayWriter GenesisReplayWriter;
 GenesisReplayWriter *GenesisReplayWriterCreate(void);
 bool GenesisReplayWriterBegin(GenesisReplayWriter *, const char *path,
