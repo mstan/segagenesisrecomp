@@ -83,6 +83,11 @@ int genesis_rb_load(const void *src, size_t len);
 /* Partitioned digest of the live state (reads only). */
 void genesis_rb_digest(GenesisRbDigest *out);
 const char *genesis_rb_digest_implementation(void);
+/* Replay H partitions, byte-identical to hashing a full snapshot's replay
+ * parts. Reads RAM directly and serializes other sections into one reused
+ * scratch, without capturing EXEC or constructing a rollback blob. The
+ * limit bounds the same complete snapshot size as the recording API. */
+int genesis_rb_replay_hashes(uint32_t hashes[4], size_t limit);
 /* 32-bit folds for the wire (recomp-net RNetRbDigestParts). */
 uint32_t genesis_rb_fold32(uint64_t h);
 

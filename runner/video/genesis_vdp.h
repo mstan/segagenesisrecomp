@@ -148,6 +148,9 @@ void gvdp_set_ext_colors(const uint16_t *top, const uint16_t *bottom, int split_
 int gvdp_ext_line(unsigned tile);                     /* 0 or 1..GVDP_EXT_LINES */
 uint16_t gvdp_ext_color(int row, int line, int nib); /* 9-bit colour for a row */
 int gvdp_ext_active(void);
+/* Borrowed 2048-entry presentation map, or NULL. The caller owns the
+ * storage supplied to gvdp_set_ext_tiles; consumers must not modify it. */
+const uint8_t *gvdp_ext_tiles(void);
 /* Optional immutable sprite-pattern bank. Marked SAT pieces (size byte bit
  * 7, unused by hardware) read these tiles; unmarked sprites and every plane
  * always use guest VRAM. NULL disables it. The caller owns both buffers.

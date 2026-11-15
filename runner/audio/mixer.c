@@ -26,6 +26,15 @@
 static int s_filter_bypass,s_filter_started;
 static unsigned s_fm_filter_mix,s_psg_filter_mix;
 static unsigned s_fm_filter_span=266,s_psg_filter_span=1118;
+static int s_audition_enabled;
+static int16_t s_aud_fm[8192*2],s_aud_fm_raw[8192*2],s_aud_psg[8192],s_aud_psg_raw[8192];
+void audio_mixer_set_audition(int enabled,unsigned channels)
+{
+    s_audition_enabled=enabled!=0;
+    ym2612_set_audition_channels(enabled?channels&127u:127u);
+    psg_set_audition_channels(enabled?(channels>>7)&15u:15u);
+}
+
 
 void audio_mixer_set_filter_bypass(int bypass)
 {
@@ -121,7 +130,10 @@ static void mixer_fm_job(void *context)
     }
     if(job->end>previous)ym2612_advance(job->end-previous);
     size_t available=ym2612_samples_available();job->written=available<job->capacity?available:job->capacity;
-    if(job->output && job->written)ym2612_render_pair(job->output,job->raw_output,job->written);
+    if(job->output && job->written) {
+        if(s_audition_enabled)ym2612_peek_audition(s_aud_fm,s_aud_fm_raw,job->written);
+        ym2612_render_pair(job->output,job->raw_output,job->written);
+    }
 }
 static void mixer_psg_job(void *context)
 {
@@ -135,7 +147,10 @@ static void mixer_psg_job(void *context)
     if(job->end>previous)psg_advance(job->end-previous);
     if(!job->keep_psg_leftover)psg_reset_leftover();
     size_t available=psg_samples_available();job->written=available<job->capacity?available:job->capacity;
-    if(job->output && job->written)psg_render_pair(job->output,job->raw_output,job->written);
+    if(job->output && job->written) {
+        if(s_audition_enabled)psg_peek_audition(s_aud_psg,s_aud_psg_raw,job->written);
+        psg_render_pair(job->output,job->raw_output,job->written);
+    }
 }
 typedef struct {MixerChipJob *fm,*psg;} MixerMainJob;
 static void mixer_main_job(void *context)
@@ -261,10 +276,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
         MixerMainJob main_job={&fm,&psg};
         s_executor(mixer_main_job,&main_job,mixer_shadow_job,&fm,s_executor_context);
         if(fm.output && fm.written)fm_shadow_verify_and_substitute(fm.output,fm.written);
+        if(s_audition_enabled) {
+            if(fm.output && fm.written)memcpy(fm.output,s_aud_fm,fm.written*2*sizeof *fm.output);
+            if(psg.output && psg.written)memcpy(psg.output,s_aud_psg,psg.written*sizeof *psg.output);
+        }
         if(fm.output && fm.written)
-            filter_present(fm.output,raw_fm,fm.written,2,&s_fm_filter_mix,s_fm_filter_span,!fm_shadow_active());
+            filter_present(fm.output,s_audition_enabled?s_aud_fm_raw:raw_fm,fm.written,2,&s_fm_filter_mix,s_fm_filter_span,s_audition_enabled||!fm_shadow_active());
         if(psg.output && psg.written)
-            filter_present(psg.output,raw_psg,psg.written,1,&s_psg_filter_mix,s_psg_filter_span,1);
+            filter_present(psg.output,s_audition_enabled?s_aud_psg_raw:raw_psg,psg.written,1,&s_psg_filter_mix,s_psg_filter_span,1);
         if((fm.output && fm.written) || (psg.output && psg.written))s_filter_started=1;
         /* Diagnostics retain the original merged applied order and clamped
          * stamps. The owner logs only after both jobs really completed. */
@@ -337,8 +356,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     /* Chip scratch capacity is8192 samples. Drain paired outputs once, leaving
      * the canonical queues/filter history independent of this preference. */
-    if (fm_stereo_out && fm_n > 0)  ym2612_render_pair(fm_stereo_out,raw_fm,fm_n);
-    if (psg_mono_out  && psg_n > 0) psg_render_pair(psg_mono_out,raw_psg,psg_n);
+    if(fm_stereo_out && fm_n>0) {
+        if(s_audition_enabled)ym2612_peek_audition(s_aud_fm,s_aud_fm_raw,fm_n);
+        ym2612_render_pair(fm_stereo_out,raw_fm,fm_n);
+    }
+    if(psg_mono_out && psg_n>0) {
+        if(s_audition_enabled)psg_peek_audition(s_aud_psg,s_aud_psg_raw,psg_n);
+        psg_render_pair(psg_mono_out,raw_psg,psg_n);
+    }
 
     /* Verified-enhancement FM shadow: feed (canon, shadow) to the verifier and
      * substitute the shadow FM samples into fm_stereo_out only when proven;
@@ -349,10 +374,14 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
     /* Enhanced FM remains an explicit separate choice. Never feed unfiltered
      * native samples to its verifier or replace its proven output silently. */
+    if(s_audition_enabled) {
+        if(fm_stereo_out && fm_n>0)memcpy(fm_stereo_out,s_aud_fm,fm_n*2*sizeof *fm_stereo_out);
+        if(psg_mono_out && psg_n>0)memcpy(psg_mono_out,s_aud_psg,psg_n*sizeof *psg_mono_out);
+    }
     if(fm_stereo_out && fm_n>0)
-        filter_present(fm_stereo_out,raw_fm,fm_n,2,&s_fm_filter_mix,s_fm_filter_span,!fm_shadow_active());
+        filter_present(fm_stereo_out,s_audition_enabled?s_aud_fm_raw:raw_fm,fm_n,2,&s_fm_filter_mix,s_fm_filter_span,s_audition_enabled||!fm_shadow_active());
     if(psg_mono_out && psg_n>0)
-        filter_present(psg_mono_out,raw_psg,psg_n,1,&s_psg_filter_mix,s_psg_filter_span,1);
+        filter_present(psg_mono_out,s_audition_enabled?s_aud_psg_raw:raw_psg,psg_n,1,&s_psg_filter_mix,s_psg_filter_span,1);
     if((fm_stereo_out && fm_n>0) || (psg_mono_out && psg_n>0))s_filter_started=1;
 
     if (fm_written)  *fm_written  = fm_n;

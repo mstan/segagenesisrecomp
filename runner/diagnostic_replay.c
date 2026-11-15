@@ -43,8 +43,6 @@ static unsigned executions;
 static uint64_t key_id;
 static ReplayKey *keys;
 static unsigned key_count;
-static void *scratch;
-static size_t scratch_cap;
 static GenesisReplayViewFn view_fn;
 static GenesisReplayView playback_view;
 int runner_load_state_file(const char *);
@@ -660,24 +658,8 @@ void genesis_replay_end(void) {
   if (!pending || failed)
     return;
   pending = 0;
-  size_t need = genesis_rb_bound();
-  if (need > MAX_SNAPSHOT) {
-    fail("machine checkpoint exceeds recording limit");
-    return;
-  }
-  if (scratch_cap < need) {
-    void *b = realloc(scratch, need);
-    if (!b) {
-      fail("cannot allocate checkpoint buffer");
-      return;
-    }
-    scratch = b;
-    scratch_cap = need;
-  }
-  size_t size = genesis_rb_save_untracked(scratch, scratch_cap);
-  const void *parts[4];
-  size_t sizes[4];
-  if (!size || !genesis_rb_replay_parts(scratch, size, parts, sizes)) {
+  uint32_t hashes[4];
+  if (!genesis_rb_replay_hashes(hashes,MAX_SNAPSHOT)) {
     fail("cannot inspect completed machine");
     return;
   }
@@ -695,7 +677,7 @@ void genesis_replay_end(void) {
     static const char *names[] = {"cpu/scheduler", "work RAM",
                                   "machine/audio/input", "game/mod state"};
     for (int i = 0; i < 4; ++i) {
-      uint32_t got = hash(parts[i], sizes[i]);
+      uint32_t got = hashes[i];
       if (got != want[i]) {
         fprintf(stderr,
                 "[feedback-replay] FIRST DIVERGENCE execution=%u %s "
@@ -712,9 +694,7 @@ void genesis_replay_end(void) {
       fail("input history limit reached");
       return;
     }
-    if (!GenesisReplayWriterFrame(writer, executions, parts[0], sizes[0],
-                                  parts[1], sizes[1], parts[2], sizes[2],
-                                  parts[3], sizes[3]))
+    if (!GenesisReplayWriterHashes(writer,executions,hashes))
       fail(GenesisReplayWriterError(writer));
   }
 }
@@ -742,8 +722,5 @@ void genesis_replay_shutdown(void) {
     }
   free(keys);
   keys = NULL;
-  free(scratch);
-  scratch = NULL;
-  scratch_cap = 0;
   active = 0;
 }

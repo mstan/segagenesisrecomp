@@ -26,6 +26,11 @@ void audio_mixer_drain(uint32_t frame_end_cycle,
 
 /* Call once at boot. */
 void audio_mixer_init(void);
+/* Explicit local audition, applied after canonical synthesis/verification.
+ * bits0..5 FM1..6, bit6 DAC, bits7..9 PSG tone1..3, bit10 noise.
+ * Full mask is0x7FF. All sequences, channels and canonical filters continue.
+ * Call outside a drain; a UI restores this preference with its own state. */
+void audio_mixer_set_audition(int enabled,unsigned channels);
 
 /* Presentation preference, default0: bypass the native FM/PSG hardware LPFs.
  * Both canonical filters keep advancing. Changes on the emulation/main thread

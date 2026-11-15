@@ -37,6 +37,12 @@ size_t ym2612_render(int16_t *out, size_t sample_count);
  * always generated and snapshotted, independent of presentation settings. */
 size_t ym2612_render_pair(int16_t *filtered, int16_t *unfiltered, size_t sample_count);
 
+/* Presentation audition: bits0..5 select FM1..6, bit6 selects DAC. All
+ * channels still execute. Peek the parallel output before its ordinary drain;
+ * this never consumes samples or replaces the canonical verifier stream. */
+void ym2612_set_audition_channels(unsigned mask);
+size_t ym2612_peek_audition(int16_t *filtered, int16_t *unfiltered, size_t sample_count);
+
 /* How many stereo samples are sitting in the internal scratch waiting to
  * be rendered. Call after ym2612_advance / write to know how many to
  * request from ym2612_render. */
