@@ -119,13 +119,18 @@ static void frame_contract(void) {
 #endif
 int main(int argc,char **argv) {
     int skip=atoi(argv[1]), mixed=atoi(argv[2]); (void)argc;
-    if(argc>3) {
+    if(argc>3 && atoi(argv[3])) {
         guard_mode=(unsigned)atoi(argv[3]);
         recomp_call_addr(0x800004u);
         return guard_mode==1 && guard_visits==2000101u ? 0 : 1;
     }
     g_cpu.A[7]=0xFFFE00; g_cpu.SR=0x2700;
     recomp_call_addr(0x200);
+    if(argc>4) {
+        int captures=atoi(argv[4]);
+        if(captures && g_cpu.D[4]!=0x288u)abort();
+        if(captures==2 && g_cpu.D[5]!=0x246u)abort();
+    }
     if (g_cpu.D[0]!=(skip<3 ? 42u:0u) || g_cpu.D[1]!=(skip<2 ? 1u:0u) ||
         g_cpu.D[2]!=(skip<1 ? 2u:0u) || g_cpu.D[3]!=(mixed?0x56781234u:0u) ||
         g_cpu.A[7]!=0xFFFE00 || pending) {
@@ -162,14 +167,21 @@ def main():
         (td/"harness.c").write_text(HARNESS)
         for slots,form in ((0,'quick'),(1,'quick'),(2,'quick'),
                            (3,'adda-word'),(3,'adda-long'),(3,'suba-negative'),
-                           (3,'balanced-adda-suba')):
+                           (3,'balanced-adda-suba'),
+                           (0,'indirect-normal'),(1,'capture1'),(2,'capture2'),
+                           (2,'capture-conditional2')):
             for split,mixed in ((False,False),(True,False),(False,True),(True,True)):
+                indirect=form.startswith('capture') or form=='indirect-normal'
+                if indirect and (split or mixed): continue
+                captures=2 if form in ('capture2','capture-conditional2') else 1 if form=='capture1' else 0
                 rom = bytearray(b"\xff"*0x400)
                 rom[0:8] = bytes.fromhex("00fffe00 00000200")
                 rom[0x100:0x200] = b" "*256
                 rom[0x100:0x104] = b"SEGA"
                 for addr,target,reg,value in ((0x200,0x240,0,42),(0x240,0x280,1,1),(0x280,0x2C0,2,2)):
                     code = bytes.fromhex("4eb9") + target.to_bytes(4,"big") + bytes([0x70+reg*2,value,0x4e,0x75])
+                    if indirect and addr==0x280:
+                        code=bytes.fromhex('41f9 000002c0 4e90 7402 4e75')
                     rom[addr:addr+len(code)] = code
                 adjust = bytes.fromhex({
                     'quick':{0:"4e71",1:"584f",2:"504f"}.get(slots,''),
@@ -177,6 +189,10 @@ def main():
                     'adda-long':'dffc0000000c',
                     'suba-negative':'9efcfff4',
                     'balanced-adda-suba':'defcfff8 9ffcfffffff8 defc000c',
+                    'indirect-normal':'4e71',
+                    'capture1':'281f',
+                    'capture2':'281f2a1f',
+                    'capture-conditional2':'4a466604281f2a1f',
                 }[form])
                 # IceCap column: save two word velocities, restore one long.
                 # The data must not be mistaken for a consumed return slot.
@@ -208,7 +224,7 @@ def main():
                 else:
                     flags=["-DGENESIS_DISABLE_NATIVE_CALL_FRAME=1"] if args.disable_native_frame else []
                     run([args.cc.resolve(),"-std=c11","-O1",*flags,"-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
-                run([exe,str(slots),str(int(mixed))],td)
+                run([exe,str(slots),str(int(mixed)),"0",str(captures)],td)
                 print(f"PASS skip {slots} return slots, form={form}, split={split}, mixed-width-data={mixed}")
                 if not slots and not split and not mixed:
                     run([exe,"0","0","1"],td)
