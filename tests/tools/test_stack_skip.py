@@ -49,6 +49,7 @@ void m68k_write16(uint32_t a,uint16_t v) { m68k_write8(a,v>>8);m68k_write8(a+1,v
 void m68k_write32(uint32_t a,uint32_t v) { m68k_write16(a,v>>16);m68k_write16(a+2,v); }
 void recomp_push_return(uint32_t a) { g_cpu.A[7]-=4;m68k_write32(g_cpu.A[7],a); }
 void glue_check_vblank(void) { abort(); }
+void glue_sr_written(void) { if(g_cpu.SR!=0x2700u)abort(); }
 uint32_t recomp_resolve_ram_trampoline(uint32_t a) { return a; }
 static unsigned dynamic_visits,native_visits,guard_visits,guard_mode;
 int recomp_dispatch_ram_stub(uint32_t a) {
@@ -165,14 +166,14 @@ def main():
         td = Path(temp)
         (td/"game.toml").write_text(CONFIG)
         (td/"harness.c").write_text(HARNESS)
-        for slots,form in ((0,'quick'),(1,'quick'),(2,'quick'),
+        for slots,form in ((0,'reconstructed-frame'),(0,'quick'),(1,'quick'),(2,'quick'),
                            (3,'adda-word'),(3,'adda-long'),(3,'suba-negative'),
                            (3,'balanced-adda-suba'),
                            (0,'indirect-normal'),(1,'capture1'),(2,'capture2'),
                            (2,'capture-conditional2'),(1,'capture-conditional1'),(0,'conditional-plain'),(2,'direct-capture2'),(2,'direct-movem2'),
                            (1,'word-capture1'),(2,'word-mixed2')):
             for split,mixed in ((False,False),(True,False),(False,True),(True,True)):
-                indirect=form.startswith('capture') or form in ('indirect-normal','conditional-plain')
+                indirect=form.startswith('capture') or form in ('indirect-normal','conditional-plain','reconstructed-frame')
                 if (indirect or form in ('direct-capture2','direct-movem2','word-capture1','word-mixed2')) and (split or mixed): continue
                 captures=2 if form in ('capture2','capture-conditional2') else 2 if form in ('direct-capture2','direct-movem2') else 1 if form in ('capture1','capture-conditional1') else 0
                 rom = bytearray(b"\xff"*0x400)
@@ -184,6 +185,10 @@ def main():
                     if indirect and addr==0x280:
                         code=bytes.fromhex('41f9 000002c0 4e90 7402 4e75')
                         if form=='conditional-plain':code=bytes.fromhex('7c01')+code
+                        if form=='reconstructed-frame':
+                            # The existing split-frame proof fixture returns below its
+                            # JSR slot, with a live two-byte-aligned stack frame.
+                            code=bytes.fromhex('41f9 000002c0 4e90 46df 4cdf 0202 4e5e 7402 4e75')
                     rom[addr:addr+len(code)] = code
                 adjust = bytes.fromhex({
                     'quick':{0:"4e71",1:"584f",2:"504f"}.get(slots,''),
@@ -192,6 +197,7 @@ def main():
                     'suba-negative':'9efcfff4',
                     'balanced-adda-suba':'defcfff8 9ffcfffffff8 defc000c',
                     'indirect-normal':'4e71',
+                    'reconstructed-frame':'205f 4e56 0000 48e7 4040 40e7 2f08',
                     'capture1':'281f',
                     'capture2':'281f2a1f',
                     'capture-conditional2':'4a466604281f2a1f',
