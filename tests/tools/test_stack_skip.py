@@ -169,11 +169,11 @@ def main():
                            (3,'adda-word'),(3,'adda-long'),(3,'suba-negative'),
                            (3,'balanced-adda-suba'),
                            (0,'indirect-normal'),(1,'capture1'),(2,'capture2'),
-                           (2,'capture-conditional2')):
+                           (2,'capture-conditional2'),(1,'capture-conditional1'),(0,'conditional-plain')):
             for split,mixed in ((False,False),(True,False),(False,True),(True,True)):
-                indirect=form.startswith('capture') or form=='indirect-normal'
+                indirect=form.startswith('capture') or form in ('indirect-normal','conditional-plain')
                 if indirect and (split or mixed): continue
-                captures=2 if form in ('capture2','capture-conditional2') else 1 if form=='capture1' else 0
+                captures=2 if form in ('capture2','capture-conditional2') else 1 if form in ('capture1','capture-conditional1') else 0
                 rom = bytearray(b"\xff"*0x400)
                 rom[0:8] = bytes.fromhex("00fffe00 00000200")
                 rom[0x100:0x200] = b" "*256
@@ -182,6 +182,7 @@ def main():
                     code = bytes.fromhex("4eb9") + target.to_bytes(4,"big") + bytes([0x70+reg*2,value,0x4e,0x75])
                     if indirect and addr==0x280:
                         code=bytes.fromhex('41f9 000002c0 4e90 7402 4e75')
+                        if form=='conditional-plain':code=bytes.fromhex('7c01')+code
                     rom[addr:addr+len(code)] = code
                 adjust = bytes.fromhex({
                     'quick':{0:"4e71",1:"584f",2:"504f"}.get(slots,''),
@@ -193,6 +194,8 @@ def main():
                     'capture1':'281f',
                     'capture2':'281f2a1f',
                     'capture-conditional2':'4a466604281f2a1f',
+                    'capture-conditional1':'4a466602281f',
+                    'conditional-plain':'4a466602281f',
                 }[form])
                 # IceCap column: save two word velocities, restore one long.
                 # The data must not be mistaken for a consumed return slot.
