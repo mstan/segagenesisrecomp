@@ -118,12 +118,16 @@ static void ym_write_side_effect(GenesisBus *b, uint8_t port, uint8_t val,
         if (val & 0x20u) b->ym_status &= 0xfdu;
         b->ym_mode = val;
         if (val & 0x02u) {
-            if (b->ym_timer_b_period == 0)
-                b->ym_timer_b_period =
-                    (uint64_t)(256u - (unsigned)b->ym_timer_b) *
-                    YM_TIMER_B_MASTER_TICK;
+            /* Loading starts a stopped timer. A flag acknowledgement that
+             * leaves it loaded must preserve the running timer's phase. */
+            if (!b->ym_timer_b_running) {
+                if (b->ym_timer_b_period == 0)
+                    b->ym_timer_b_period =
+                        (uint64_t)(256u - (unsigned)b->ym_timer_b) *
+                        YM_TIMER_B_MASTER_TICK;
+                b->ym_timer_b_deadline = now + b->ym_timer_b_period;
+            }
             b->ym_timer_b_running = 1;
-            b->ym_timer_b_deadline = now + b->ym_timer_b_period;
         } else {
             b->ym_timer_b_running = 0;
         }
