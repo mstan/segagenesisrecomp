@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(GenesisRecomp VERSION 0.1.2 LANGUAGES C)
+project(GenesisRecomp VERSION 0.1.3 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 
