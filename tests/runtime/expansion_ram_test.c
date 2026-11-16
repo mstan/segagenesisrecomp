@@ -9,7 +9,8 @@ uint8_t g_rom[0x400000],g_ram[0x10000],*g_rom_ext,g_sndwatch[0x2000];
 uint32_t g_rom_ext_size,g_audio_cycle_counter,g_68k_stamp_rebase;
 unsigned long g_snd_frame;
 unsigned g_snd_pcz;
-uint32_t machine_z80_stamp(void) { return 0; }
+static uint32_t s_test_z80_stamp;
+uint32_t machine_z80_stamp(void) { return s_test_z80_stamp; }
 uint32_t machine_z80_pc(void) { return 0; }
 void glue_charge_68k_stall(uint32_t x) { (void)x; }
 void snd_trace_68k_write(uint16_t a,uint8_t b,uint8_t c,int d,int e) { (void)a;(void)b;(void)c;(void)d;(void)e; }
@@ -25,8 +26,45 @@ void gvdp_write_data(GVDP *v,uint16_t x) { (void)v;(void)x; }
 void gvdp_write_control(GVDP *v,uint16_t x) { (void)v;(void)x; }
 uint32_t gvdp_consume_68k_stall(GVDP *v) { (void)v;return 0; }
 
+static void test_timer_b_acknowledge(void)
+{
+    GenesisBus b;
+    memset(&b, 0, sizeof b);
+    g_snd_frame = 0;
+    s_test_z80_stamp = 105;
+    gbus_z80_write(&b, 0x4000, 0x26);
+    gbus_z80_write(&b, 0x4001, 0xff);
+    gbus_z80_write(&b, 0x4000, 0x27);
+    gbus_z80_write(&b, 0x4001, 0x2a); /* clear B, load B, enable B flag */
+    const uint64_t deadline = b.ym_timer_b_deadline;
+    CHECK(deadline == 105u + 16128u);
+    s_test_z80_stamp = 805;
+    gbus_z80_write(&b, 0x4001, 0x2a); /* acknowledge without stopping */
+    CHECK(b.ym_timer_b_deadline == deadline);
+    s_test_z80_stamp = (uint32_t)deadline - 1;
+    CHECK((gbus_z80_read(&b, 0x4000) & 2) == 0);
+    s_test_z80_stamp++;
+    CHECK((gbus_z80_read(&b, 0x4000) & 2) == 2);
+    CHECK(b.ym_timer_b_deadline == deadline + 16128u);
+    gbus_z80_write(&b, 0x4001, 0x2a);
+    CHECK((gbus_z80_read(&b, 0x4000) & 2) == 0);
+    CHECK(b.ym_timer_b_deadline == deadline + 16128u);
+    gbus_z80_write(&b, 0x4001, 0x28); /* stop, then a new load restarts */
+    CHECK(!b.ym_timer_b_running);
+    s_test_z80_stamp += 700;
+    gbus_z80_write(&b, 0x4001, 0x2a);
+    CHECK(b.ym_timer_b_deadline == s_test_z80_stamp + 16128u);
+    /* A status read in the next guest frame uses the same absolute clock. */
+    g_snd_frame = 1;
+    s_test_z80_stamp = 0;
+    CHECK((gbus_z80_read(&b, 0x4000) & 2) == 2);
+    g_snd_frame = 0;
+    s_test_z80_stamp = 0;
+}
+
 int main(void)
 {
+    test_timer_b_acknowledge();
     GenesisBus b;
     memset(&b,0,sizeof b);
     uint8_t guarded[10];memset(guarded,0xCC,sizeof guarded);
