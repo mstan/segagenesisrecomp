@@ -128,7 +128,7 @@ int main(int argc,char **argv) {
     recomp_call_addr(0x200);
     if(argc>4) {
         int captures=atoi(argv[4]);
-        if(captures && g_cpu.D[4]!=0x288u)abort();
+        if(captures && g_cpu.D[4]!=(argc>5?(unsigned)strtoul(argv[5],NULL,0):0x288u))abort();
         if(captures==2 && g_cpu.D[5]!=0x246u)abort();
     }
     if (g_cpu.D[0]!=(skip<3 ? 42u:0u) || g_cpu.D[1]!=(skip<2 ? 1u:0u) ||
@@ -169,11 +169,12 @@ def main():
                            (3,'adda-word'),(3,'adda-long'),(3,'suba-negative'),
                            (3,'balanced-adda-suba'),
                            (0,'indirect-normal'),(1,'capture1'),(2,'capture2'),
-                           (2,'capture-conditional2'),(1,'capture-conditional1'),(0,'conditional-plain')):
+                           (2,'capture-conditional2'),(1,'capture-conditional1'),(0,'conditional-plain'),(2,'direct-capture2'),(2,'direct-movem2'),
+                           (1,'word-capture1'),(2,'word-mixed2')):
             for split,mixed in ((False,False),(True,False),(False,True),(True,True)):
                 indirect=form.startswith('capture') or form in ('indirect-normal','conditional-plain')
-                if indirect and (split or mixed): continue
-                captures=2 if form in ('capture2','capture-conditional2') else 1 if form in ('capture1','capture-conditional1') else 0
+                if (indirect or form in ('direct-capture2','direct-movem2','word-capture1','word-mixed2')) and (split or mixed): continue
+                captures=2 if form in ('capture2','capture-conditional2') else 2 if form in ('direct-capture2','direct-movem2') else 1 if form in ('capture1','capture-conditional1') else 0
                 rom = bytearray(b"\xff"*0x400)
                 rom[0:8] = bytes.fromhex("00fffe00 00000200")
                 rom[0x100:0x200] = b" "*256
@@ -196,6 +197,10 @@ def main():
                     'capture-conditional2':'4a466604281f2a1f',
                     'capture-conditional1':'4a466602281f',
                     'conditional-plain':'4a466602281f',
+                    'direct-capture2':'281f2a1f',
+                    'direct-movem2':'4cdf0030',
+                    'word-capture1':'381f3a1f',
+                    'word-mixed2':'381f2a1f3c1f',
                 }[form])
                 # IceCap column: save two word velocities, restore one long.
                 # The data must not be mistaken for a consumed return slot.
@@ -227,7 +232,7 @@ def main():
                 else:
                     flags=["-DGENESIS_DISABLE_NATIVE_CALL_FRAME=1"] if args.disable_native_frame else []
                     run([args.cc.resolve(),"-std=c11","-O1",*flags,"-I",root/"runner/include","-I",root/"runner",*sources,"-o",exe],td)
-                run([exe,str(slots),str(int(mixed)),"0",str(captures)],td)
+                run([exe,str(slots),str(int(mixed)),"0",str(captures),"0x286" if form in ("direct-capture2","direct-movem2") else "0x288"],td)
                 print(f"PASS skip {slots} return slots, form={form}, split={split}, mixed-width-data={mixed}")
                 if not slots and not split and not mixed:
                     run([exe,"0","0","1"],td)
