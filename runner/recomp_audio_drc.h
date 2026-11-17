@@ -376,11 +376,27 @@ static void rab__sample_at(const rab_bridge *b, double pos, float *s) {
 static double rab__loop_score(const rab_bridge *b, int64_t end_i, int L, int W, int stride) {
     int ch = b->cfg.channels;
     double num = 0.0, d1 = 0.0, d2 = 0.0;
+    /* Independent channel offsets contain no pitch. Only AC agreement may
+     * qualify a period; constant/insufficient-energy history scores zero. */
+    double mean_a[2] = {0.0, 0.0}, mean_b[2] = {0.0, 0.0};
+    int count = 0;
+    for (int k = 0; k < W; k += stride) {
+        for (int channel = 0; channel < ch; ++channel) {
+            mean_a[channel] += b->ring[((end_i - k) % b->cap) * ch + channel];
+            mean_b[channel] += b->ring[((end_i - L - k) % b->cap) * ch + channel];
+        }
+        ++count;
+    }
+    if (!count) return 0.0;
+    for (int channel = 0; channel < ch; ++channel) {
+        mean_a[channel] /= count;
+        mean_b[channel] /= count;
+    }
     for (int k = 0; k < W; k += stride)
         for (int channel = 0; channel < ch; ++channel) {
-            float a = b->ring[((end_i - k)     % b->cap) * ch + channel];
-            float c = b->ring[((end_i - L - k) % b->cap) * ch + channel];
-            num += (double)a * c; d1 += (double)a * a; d2 += (double)c * c;
+            double a = b->ring[((end_i - k) % b->cap) * ch + channel] - mean_a[channel];
+            double c = b->ring[((end_i - L - k) % b->cap) * ch + channel] - mean_b[channel];
+            num += a * c; d1 += a * a; d2 += c * c;
         }
     return num / (sqrt(d1 * d2) + 1e-9);
 }
