@@ -50,11 +50,13 @@ int cmd_server_mem_write_log_start_ranges(const uint32_t *lo,
                                           int frames,
                                           const char *path);
 
-/* True while a TCP client has issued "pause". Main loop should poll
- * cmd_server but skip game-frame advancement until cleared by
- * "continue". Used by tools/compare_runs.py to hold the ring buffer
- * still during multi-fetch comparisons. */
+/* Generic observer pause remains disabled. Only an explicit offline owner
+ * review launch can hold the host. Step permits bounded normal-loop frames,
+ * including scripts, audio emulation, bookkeeping and presentation. */
+void cmd_server_owner_review_init(const char *value);
 bool cmd_server_is_paused(void);
+bool cmd_server_owner_review_can_advance(void);
+void cmd_server_owner_review_frame_done(uint32_t completed_frames);
 
 /* Cleanup sockets. */
 void cmd_server_shutdown(void);

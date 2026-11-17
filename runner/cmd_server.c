@@ -36,6 +36,7 @@ typedef int sock_t;
 #include <inttypes.h>
 
 #include "cmd_server.h"
+#include "owner_review.h"
 #include "backend_decls.h"   /* own decls — native builds have no clownmdemu paths */
 #include "audio.h"
 #include "game_layout.h"
@@ -90,11 +91,23 @@ static int  s_recv_len = 0;
 /* Pending frame request */
 static int s_pending_frame_id = -1;
 
-/* Pause flag — set by "pause" cmd, cleared by "continue". When true,
- * the runner main loop polls cmd_server but does not advance the game
- * frame, so the ring buffer stays still for multi-fetch tools. */
-static int s_paused = 0;
-bool cmd_server_is_paused(void) { return s_paused != 0; }
+/* Explicit interactive owner review never changes the observer-ring policy. */
+static GenesisOwnerReview s_owner_review;
+static int s_owner_step_id = -1;
+static uint32_t s_owner_completed_frames;
+extern int (*g_cmd_server_online)(void);
+static int owner_review_online(void)
+{ return g_cmd_server_online && g_cmd_server_online(); }
+void cmd_server_owner_review_init(const char *value)
+{
+    genesis_owner_review_init(&s_owner_review, value);
+    s_owner_step_id = -1;
+    s_owner_completed_frames = 0;
+}
+bool cmd_server_is_paused(void)
+{ return s_owner_review.enabled && s_owner_review.paused && !owner_review_online(); }
+bool cmd_server_owner_review_can_advance(void)
+{ return !s_owner_review.enabled || !s_owner_review.paused || s_owner_review.remaining || owner_review_online(); }
 
 /* Wall-frame counter, kept in sync by cmd_server_record_frame() each
  * frame. Lives here (not in glue.c) because glue's g_frame_count is
@@ -2202,8 +2215,34 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
                      "(frame_timeseries / get_frame / rdb_*) for the window of "
                      "interest. If the ring is too small, enlarge it.");
     } else if (strcmp(cmd, "continue") == 0) {
-        s_paused = 0;
+        if (s_owner_step_id >= 0) {
+            send_err(s_owner_step_id, "owner review step cancelled by continue");
+            s_owner_step_id = -1;
+        }
+        s_owner_review.remaining = s_owner_review.requested = 0;
+        s_owner_review.paused = 0;
         send_ok(id);
+    } else if (strcmp(cmd, "owner_review") == 0) {
+        char action[16] = {0};
+        json_get_str(json, "action", action, sizeof action);
+        const char *count = strstr(json, "\"frames\"");
+        int frames = genesis_owner_review_frames(count ? count + 8 : NULL);
+        int result = genesis_owner_review_request(&s_owner_review, action, frames,
+                                                 owner_review_online());
+        if (result == OWNER_REVIEW_DISABLED)
+            send_err(id, "owner review requires GENESIS_OWNER_REVIEW=1");
+        else if (result == OWNER_REVIEW_BUSY)
+            send_err(id, "owner review step already pending");
+        else if (result != OWNER_REVIEW_OK)
+            send_err(id, "owner review action must be pause/play/step; step frames must be 1-8 offline");
+        else if (!strcmp(action, "step")) s_owner_step_id = id;
+        else {
+            char response[192];
+            snprintf(response, sizeof response,
+                "{\"id\":%d,\"ok\":true,\"owner_review\":true,\"paused\":%s,\"current_frame\":%u}",
+                id, s_owner_review.paused ? "true" : "false", s_owner_completed_frames);
+            send_response(response);
+        }
     } else if (strcmp(cmd, "ping") == 0) {
         handle_ping(id, frame_num);
     } else if (strcmp(cmd, "save_state") == 0) {
@@ -2640,6 +2679,19 @@ void cmd_server_send_frame_result(int frames_run)
         s_pending_frame_id, frames_run);
     send_response(buf);
     s_pending_frame_id = -1;
+}
+
+void cmd_server_owner_review_frame_done(uint32_t completed_frames)
+{
+    if (s_owner_review.enabled) s_owner_completed_frames = completed_frames;
+    unsigned frames = genesis_owner_review_frame_done(&s_owner_review);
+    if (!frames || s_owner_step_id < 0) return;
+    char response[224];
+    snprintf(response, sizeof response,
+        "{\"id\":%d,\"ok\":true,\"owner_review\":true,\"paused\":true,\"frames_run\":%u,\"current_frame\":%u}",
+        s_owner_step_id, frames, completed_frames);
+    send_response(response);
+    s_owner_step_id = -1;
 }
 
 void cmd_server_record_frame(uint32_t frame_num)

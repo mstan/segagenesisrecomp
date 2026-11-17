@@ -5,7 +5,8 @@
  * shipping build). It satisfies every public cmd_server_* symbol referenced by
  * the always-compiled runner (main.c, glue.c) so the native target links while
  * carrying NO TCP command server, NO history ring, and NO dev tracing. The
- * release binary therefore never opens a localhost port.
+ * release binary opens no port during normal launches. An explicit offline
+ * owner-review launch enables only its small interactive-control bridge.
  *
  * This is purely additive to the RELEASING.md prod config (which already builds
  * with GEN_DEV_TRACE=OFF / SONIC_REVERSE_DEBUG=OFF): it also strips the cmd
@@ -18,17 +19,10 @@
 /* The runner publishes session state even when the debug server is stripped. */
 int (*g_cmd_server_online)(void);
 #include <stdint.h>
+#include "owner_review_server.inc"
 
 /* Per-game TCP command handlers (sonic_extras.c) emit replies via these two
  * helpers; in a server-less prod build they discard. */
-void cmd_send_response(const char *json) { (void)json; }
-void cmd_send_err(int id, const char *msg) { (void)id; (void)msg; }
-
-void cmd_server_init(int port) { (void)port; }
-CmdResult cmd_server_poll(void) {
-    CmdResult r = { false, 0, false, 0 };  /* don't quit, 0 extra frames, no input override */
-    return r;
-}
 void cmd_server_send_frame_result(int frames_run) { (void)frames_run; }
 void cmd_server_record_frame(uint32_t frame_num) { (void)frame_num; }
 void cmd_server_record_timing(uint32_t frame_num, const uint32_t us[8]) { (void)frame_num; (void)us; }
@@ -42,8 +36,6 @@ int cmd_server_mem_write_log_start_ranges(const uint32_t *lo, const uint32_t *hi
                                           int n_ranges, int frames, const char *path) {
     (void)lo; (void)hi; (void)n_ranges; (void)frames; (void)path; return 0;
 }
-bool cmd_server_is_paused(void) { return false; }
-void cmd_server_shutdown(void) {}
 uint32_t cmd_server_current_frame(void) { return 0; }
 uint32_t cmd_server_current_a7(void) { return 0; }
 uint32_t cmd_server_stack_read32(uint32_t addr) { (void)addr; return 0; }
