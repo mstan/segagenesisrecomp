@@ -20,6 +20,17 @@ static AudioEvent s_ring[QUEUE_CAP];
 static size_t     s_head = 0;  /* producer writes here */
 static size_t     s_tail = 0;  /* consumer reads here */
 static size_t     s_overflow_count = 0;
+/* AudioEvent has host padding which is not part of the pending write. Ring
+ * slots and mixer scratch can retain different padding after a restore, even
+ * when every queued cycle/port/value is identical. Serialize all active fields
+ * and canonical zero padding, without changing the queue or its ordering. */
+static void event_state_save(uint8_t *dst, const AudioEvent *event)
+{
+    memset(dst, 0, sizeof *event);
+    memcpy(dst + offsetof(AudioEvent, cycle_stamp), &event->cycle_stamp, sizeof event->cycle_stamp);
+    memcpy(dst + offsetof(AudioEvent, port), &event->port, sizeof event->port);
+    memcpy(dst + offsetof(AudioEvent, value), &event->value, sizeof event->value);
+}
 size_t audio_event_state_size(void) { return sizeof(uint32_t)+sizeof s_ring; }
 size_t audio_event_rb_save(void *dst, size_t cap)
 {
@@ -29,8 +40,8 @@ size_t audio_event_rb_save(void *dst, size_t cap)
     if (cap < need) return 0;
     memcpy(dst, &n, sizeof n);
     for (uint32_t i = 0; i < n; ++i)
-        memcpy((uint8_t *)dst + sizeof n + (size_t)i * sizeof(AudioEvent),
-               &s_ring[(s_tail + i) % QUEUE_CAP], sizeof(AudioEvent));
+        event_state_save((uint8_t *)dst + sizeof n + (size_t)i * sizeof(AudioEvent),
+                         &s_ring[(s_tail + i) % QUEUE_CAP]);
     return need;
 }
 int audio_event_rb_load(const void *src, size_t len)
@@ -55,7 +66,7 @@ int audio_event_state_save(void *data,size_t size)
     uint32_t n=(uint32_t)audio_event_queue_count();
     memset(data,0,size); memcpy(data,&n,sizeof n);
     for (uint32_t i=0;i<n;++i)
-        memcpy((uint8_t *)data+sizeof n+i*sizeof(AudioEvent),&s_ring[(s_tail+i)%QUEUE_CAP],sizeof(AudioEvent));
+        event_state_save((uint8_t *)data+sizeof n+i*sizeof(AudioEvent),&s_ring[(s_tail+i)%QUEUE_CAP]);
     return 1;
 }
 int audio_event_state_load(const void *data,size_t size,int apply)

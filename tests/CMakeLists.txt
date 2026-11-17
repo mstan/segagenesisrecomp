@@ -104,6 +104,12 @@ add_executable(audio_event_order_test runtime/audio_event_order_test.c)
 target_include_directories(audio_event_order_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 add_test(NAME audio_event_order COMMAND audio_event_order_test)
 
+add_executable(audio_event_state_test runtime/audio_event_state_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/event_queue.c")
+target_include_directories(audio_event_state_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+target_compile_features(audio_event_state_test PRIVATE c_std_11)
+add_test(NAME audio_event_state COMMAND audio_event_state_test)
+
 add_executable(audio_latched_write_test runtime/audio_latched_write_test.c)
 target_include_directories(audio_latched_write_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 add_test(NAME audio_latched_write COMMAND audio_latched_write_test)
