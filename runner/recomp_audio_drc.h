@@ -65,7 +65,7 @@ typedef struct {
     uint64_t pulled_frames;
     uint64_t underrun_events;   /* times the ring ran dry mid-pull            */
     uint64_t overflow_drops;    /* source frames dropped on ring overflow     */
-    uint64_t stretch_frames;    /* output frames synthesized by stall conceal */
+    uint64_t stretch_frames;    /* output frames synthesized/faded during a stall */
     uint64_t stretch_events;    /* distinct stall episodes concealed          */
     double   last_fill_ms;
     double   last_correction;   /* applied ratio correction (signed)          */
@@ -376,17 +376,19 @@ static void rab__sample_at(const rab_bridge *b, double pos, float *s) {
 static double rab__loop_score(const rab_bridge *b, int64_t end_i, int L, int W, int stride) {
     int ch = b->cfg.channels;
     double num = 0.0, d1 = 0.0, d2 = 0.0;
-    for (int k = 0; k < W; k += stride) {
-        float a = b->ring[((end_i - k)     % b->cap) * ch];
-        float c = b->ring[((end_i - L - k) % b->cap) * ch];
-        num += (double)a * c; d1 += (double)a * a; d2 += (double)c * c;
-    }
+    for (int k = 0; k < W; k += stride)
+        for (int channel = 0; channel < ch; ++channel) {
+            float a = b->ring[((end_i - k)     % b->cap) * ch + channel];
+            float c = b->ring[((end_i - L - k) % b->cap) * ch + channel];
+            num += (double)a * c; d1 += (double)a * a; d2 += (double)c * c;
+        }
     return num / (sqrt(d1 * d2) + 1e-9);
 }
 
-/* Choose a loop length (source frames) ending at end_i whose period best matches
- * the signal one period earlier (normalized cross-correlation on ch0), so the
- * loop wrap is pitch-continuous instead of buzzy. */
+/* Choose a common period for all output channels. A silent or unrelated left
+ * channel must not choose the repeat period of an audible right channel.
+ * Return zero when history has no credible periodic continuation: repeating
+ * an arbitrary noise/music fragment fabricates a tone rather than its pitch. */
 static double rab__find_loop_len(const rab_bridge *b, int64_t end_i) {
     double sr = b->cfg.source_rate;
     int Lmin = (int)(b->cfg.stretch_min_ms * sr / 1000.0); if (Lmin < 1) Lmin = 1;
@@ -395,7 +397,7 @@ static double rab__find_loop_len(const rab_bridge *b, int64_t end_i) {
     int64_t oldest = (int64_t)b->in_count - b->cap + b->half + 2;
     if (oldest < (int64_t)b->half) oldest = (int64_t)b->half;
     while (Lmax > Lmin && (end_i - Lmax - W) < oldest) Lmax--;
-    if ((end_i - Lmax - W) < oldest) return (double)Lmin;
+    if ((end_i - Lmax - W) < oldest) return 0.0;
     /* This runs on the device callback while the producer is locked out.
      * At the Genesis PSG rate the exhaustive search performed ~5 million
      * sample products per stall, starving its own producer.
@@ -415,7 +417,7 @@ static double rab__find_loop_len(const rab_bridge *b, int64_t end_i) {
         double r = rab__loop_score(b, end_i, L, W, 1);
         if (r > best) { best = r; bestL = L; }
     }
-    return (double)bestL;
+    return best >= 0.90 ? (double)bestL : 0.0;
 }
 
 void rab_pull(rab_bridge *b, int16_t *out, int frames) {
@@ -461,7 +463,9 @@ void rab_pull(rab_bridge *b, int16_t *out, int frames) {
         } else if (b->primed && b->cfg.stretch_enable
                    && (int64_t)b->in_count > (int64_t)(2 * b->half + 4)) {
             /* Producer stalled: conceal by looping the most recent audio,
-             * pitch-aligned, instead of fading to silence. out_pos is held at the
+             * pitch-aligned when a common period is verified. Otherwise use the
+             * existing smooth decay instead of inventing a periodic tone.
+             * out_pos is held at the
              * stall edge so live play resumes seamlessly once the producer
              * recovers (the concealed time becomes latency the servo drains). */
             if (!b->concealing) {
@@ -474,20 +478,27 @@ void rab_pull(rab_bridge *b, int16_t *out, int frames) {
                 b->concealing = 1;
                 b->stats.stretch_events++;
             }
-            double loop_end = b->loop_start + b->loop_len;
-            rab__sample_at(b, b->loop_pos, s);
-            double into_xf = b->loop_pos - (loop_end - xf);
-            if (into_xf > 0.0 && b->loop_len > xf) {   /* pitch-continuous wrap */
-                float sw[2];
-                rab__sample_at(b, b->loop_pos - b->loop_len, sw);
-                double w = into_xf / xf; if (w > 1.0) w = 1.0;
-                s[0] = (float)((1.0 - w) * s[0] + w * sw[0]);
-                if (ch == 2) s[1] = (float)((1.0 - w) * s[1] + w * sw[1]);
+            if (b->loop_len > 0.0) {
+                double loop_end = b->loop_start + b->loop_len;
+                rab__sample_at(b, b->loop_pos, s);
+                double into_xf = b->loop_pos - (loop_end - xf);
+                if (into_xf > 0.0 && b->loop_len > xf) {   /* pitch-continuous wrap */
+                    float sw[2];
+                    rab__sample_at(b, b->loop_pos - b->loop_len, sw);
+                    double w = into_xf / xf; if (w > 1.0) w = 1.0;
+                    s[0] = (float)((1.0 - w) * s[0] + w * sw[0]);
+                    if (ch == 2) s[1] = (float)((1.0 - w) * s[1] + w * sw[1]);
+                }
+                b->loop_pos += step;
+                if (b->loop_pos >= loop_end) b->loop_pos -= b->loop_len;
+                delivering = 1;
+            } else {
+                /* No verified period. Keep the recovery/refill state while
+                 * the normal three-ms gate decays the last real sample. */
+                s[0] = b->last_out[0];
+                if (ch == 2) s[1] = b->last_out[1];
             }
-            b->loop_pos += step;
-            if (b->loop_pos >= loop_end) b->loop_pos -= b->loop_len;
             b->stats.stretch_frames++;
-            delivering = 1;
         } else {
             /* not primed, or no history to loop: hold last sample, fade to silence */
             s[0] = b->last_out[0];

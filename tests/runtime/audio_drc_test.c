@@ -119,8 +119,53 @@ static void test_stall_recovery(double rate, int host_frames)
     free(in); rab_free(&b);
 }
 
+/* A silent left channel must not choose an arbitrary period for a right-only
+ * tone. The repeated waveform must retain that tone's complete cycles. */
+static void test_right_channel_period(void)
+{
+    const double rates[]={22050,44100,48000,96000,223721};
+    for(unsigned r=0;r<sizeof rates/sizeof rates[0];++r) {
+        rab_config cfg; rab_config_defaults(&cfg); cfg.source_rate=rates[r];
+        rab_bridge b; assert(!rab_init(&b,&cfg));
+        int frames=(int)(rates[r]*.1);
+        int16_t *in=(int16_t *)calloc((size_t)frames*2,sizeof *in); assert(in);
+        for(int i=0;i<frames;++i)
+            in[2*i+1]=(int16_t)(12000*sin(2*RAB_PI*440*i/rates[r]));
+        rab_push(&b,in,frames);
+        double lag=rab__find_loop_len(&b,(int64_t)b.in_count-b.half-1);
+        double cycles=lag*440/rates[r];
+        assert(lag>0 && fabs(cycles-floor(cycles+.5))<.025);
+        free(in); rab_free(&b);
+    }
+    puts("PASS right-only stereo tone keeps its pitch during concealment");
+}
+
+/* Aperiodic history has no pitch-preserving repeat period. Starvation should
+ * decay smoothly rather than turn a short noise fragment into a new tone. */
+static void test_aperiodic_stall_decay(void)
+{
+    rab_config cfg; rab_config_defaults(&cfg); cfg.source_rate=223721;
+    rab_bridge b; assert(!rab_init(&b,&cfg));
+    int frames=(int)(cfg.source_rate*.1);
+    int16_t *in=(int16_t *)malloc((size_t)frames*2*sizeof *in); assert(in);
+    uint32_t random=1;
+    for(int i=0;i<frames*2;++i) {
+        random=random*1664525u+1013904223u;
+        in[i]=(int16_t)((int)(random>>16)-32768);
+    }
+    rab_push(&b,in,frames);
+    int16_t out[1024*2];
+    for(unsigned i=0;i<8;++i) rab_pull(&b,out,1024);
+    assert(b.stats.stretch_events==1 && b.stats.stretch_frames>0);
+    for(unsigned i=512*2;i<1024*2;++i) assert(abs(out[i])<=1);
+    free(in); rab_free(&b);
+    puts("PASS aperiodic starvation decays without a fabricated periodic tone");
+}
+
 int main(void)
 {
+    test_right_channel_period();
+    test_aperiodic_stall_decay();
     test_prepared_publication();
     const double rates[]={22050,44100,48000,96000,223721};
     for(unsigned r=0;r<sizeof rates/sizeof rates[0];++r) {
@@ -144,7 +189,7 @@ int main(void)
         assert(b.stats.stretch_events && b.stats.stretch_frames && !b.stats.underrun_events);
         rab_reset(&b); assert(!b.primed && !b.stats.stretch_events);
         memset(in,0,(size_t)frames*2*sizeof *in); rab_push(&b,in,frames);
-        lag=rab__find_loop_len(&b,end); assert(lag==floor(rates[r]*.005));
+        lag=rab__find_loop_len(&b,end); assert(lag==0); /* no audible period in silence */
         free(in); rab_free(&b);
         test_stall_recovery(rates[r],480);
         test_stall_recovery(rates[r],1024);
