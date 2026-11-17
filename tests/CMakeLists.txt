@@ -229,6 +229,13 @@ add_executable(load_hold_test runtime/load_hold_test.c
 target_include_directories(load_hold_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 add_test(NAME load_hold COMMAND load_hold_test)
 
+add_executable(owner_review_test runtime/owner_review_test.c)
+target_include_directories(owner_review_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+if(WIN32)
+    target_link_libraries(owner_review_test PRIVATE ws2_32)
+endif()
+add_test(NAME owner_review COMMAND owner_review_test)
+
 add_executable(host_state_test runtime/host_state_test.c)
 target_include_directories(host_state_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
 target_link_libraries(host_state_test PRIVATE SDL2::SDL2)

@@ -2465,7 +2465,7 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
             if (ev.type == SDL_QUIT) *running = 0;
         }
     }
-    audio_set_playback_enabled(!turbo);
+    audio_set_playback_enabled(!turbo && !cmd_server_is_paused());
 }
 
 static void replay_view(GenesisReplayView *v,int apply)
@@ -2484,6 +2484,7 @@ static void replay_view(GenesisReplayView *v,int apply)
 
 int main(int argc, char *argv[])
 {
+    cmd_server_owner_review_init(getenv("GENESIS_OWNER_REVIEW"));
     init_exe_dir(argv[0]);
     const char *user_dir=getenv("GENESIS_USER_DIR");
     if(user_dir && *user_dir) {
@@ -3269,6 +3270,7 @@ int main(int argc, char *argv[])
      *   3. DEFAULT_DEBUG_PORT macro  compile-time default per build target
      *      (4378 native, 4379 oracle â€” set in CMakeLists.txt) */
     static int s_debug_enabled    = 0;
+    if (cmd_server_is_paused()) s_debug_enabled = 1;
     int    debug_port_from_ini    = 0;
     double target_fps_from_ini    = 0.0;
     char   pacing_from_ini[32]    = {0};
@@ -3529,7 +3531,7 @@ session_begin:;
                                     !g_game_spec.state_unavailable_reason()),
                                    g_app_config.rewind_depth,
                                    g_app_config.rewind_interval);
-    audio_set_playback_enabled(!turbo);
+    audio_set_playback_enabled(!turbo && !cmd_server_is_paused());
     uint32_t frame_num = 0;
     HostTiming host_timing = {0};
     const Uint64 host_perf_freq = SDL_GetPerformanceFrequency();
@@ -3582,14 +3584,16 @@ session_begin:;
         }
         /* run_extra_frames handled after normal frame */
 
-        /* Pause loop â€” hold ring buffer steady for multi-fetch tools.
-         * Drain SDL events so the window stays responsive; spin on the
-         * cmd server so "continue" / "quit" can break us out. */
-        if (s_debug_enabled && cmd_server_is_paused()
+        /* Explicit offline review holds execution; bounded steps instead
+         * complete the normal scripts/audio/bookkeeping/presentation path. */
+        if (cmd_server_is_paused() && !cmd_server_owner_review_can_advance()
 #if GENESIS_HAS_RECOMP_NET
             && !genesis_netplay_active()   /* no pause online: it is refused at the server */
 #endif
             ) {
+            audio_set_playback_enabled(0);
+            frame_pacer_reset(&frame_pacer);
+            presentation_clock_reset(&presentation_clock);
             cancel_load_hold();
             SDL_Event pev;
             while (window_poll_event(&pev)) {
@@ -3598,8 +3602,6 @@ session_begin:;
                 if (pev.type == SDL_QUIT) { running = 0; window_close_requested = 1; break; }
             }
             if (!running) break;
-            CmdResult pcr = cmd_server_poll();
-            if (pcr.should_quit) { running = 0; break; }
             SDL_Delay(5);
             continue;   /* re-check at loop top */
         }
@@ -3788,7 +3790,7 @@ session_begin:;
 #if GENESIS_HAS_RECOMP_NET
           if (genesis_netplay_active()) turbo = 0;
 #endif
-          audio_set_playback_enabled(!turbo); }
+          audio_set_playback_enabled(!turbo && !cmd_server_is_paused()); }
 
 #if GENESIS_HAS_RECOMP_NET
         if (genesis_netplay_active()) {
@@ -4397,6 +4399,7 @@ session_begin:;
                               phase_us, &audio_timing);
         }
 #undef FRAME_PHASE
+        cmd_server_owner_review_frame_done(frame_num);
     }
     if (window_close_requested) {
         SDL_HideWindow(window);
