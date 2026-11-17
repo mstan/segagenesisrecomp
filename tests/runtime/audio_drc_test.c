@@ -162,8 +162,70 @@ static void test_aperiodic_stall_decay(void)
     puts("PASS aperiodic starvation decays without a fabricated periodic tone");
 }
 
+
+/* Offsets are not audio pitch: changing either channel's DC level must not
+ * change the period selected for the same genuine stereo waveform. */
+static void test_dc_period_invariance(void)
+{
+    const double rates[]={22050,44100,48000,96000,223721};
+    for(unsigned r=0;r<sizeof rates/sizeof rates[0];++r) {
+        rab_config cfg; rab_config_defaults(&cfg); cfg.source_rate=rates[r];
+        rab_bridge a,b; assert(!rab_init(&a,&cfg)); assert(!rab_init(&b,&cfg));
+        int frames=(int)(rates[r]*.1);
+        int16_t *plain=(int16_t *)malloc((size_t)frames*2*sizeof *plain);
+        int16_t *biased=(int16_t *)malloc((size_t)frames*2*sizeof *biased);
+        assert(plain && biased);
+        for(int i=0;i<frames;++i) {
+            plain[2*i]=(int16_t)(6000*sin(2*RAB_PI*440*i/rates[r]));
+            plain[2*i+1]=(int16_t)(4000*sin(2*RAB_PI*440*i/rates[r]+.7));
+            biased[2*i]=plain[2*i]+10000;
+            biased[2*i+1]=plain[2*i+1]-8000;
+        }
+        rab_push(&a,plain,frames); rab_push(&b,biased,frames);
+        int64_t end=(int64_t)a.in_count-a.half-1;
+        double lag=rab__find_loop_len(&a,end);
+        double shifted=rab__find_loop_len(&b,end);
+        double cycles=lag*440/rates[r];
+        assert(lag>0 && shifted==lag);
+        assert(fabs(cycles-floor(cycles+.5))<.025);
+        free(plain); free(biased); rab_free(&a); rab_free(&b);
+    }
+    puts("PASS stereo pitch period is invariant under independent DC offsets");
+}
+
+/* Quiet nonperiodic audio can have a large DC offset. It must decay on a
+ * producer stall rather than have the offset certify an artificial period.
+ * Constant DC likewise contains no audible pitch to sustain. */
+static void test_dc_stall_decay(void)
+{
+    for(int noisy=1;noisy>=0;--noisy) {
+        rab_config cfg; rab_config_defaults(&cfg); cfg.source_rate=223721;
+        rab_bridge b; assert(!rab_init(&b,&cfg));
+        int frames=(int)(cfg.source_rate*.1);
+        int16_t *in=(int16_t *)malloc((size_t)frames*2*sizeof *in); assert(in);
+        uint32_t random=1;
+        for(int i=0;i<frames*2;++i) {
+            random=random*1664525u+1013904223u;
+            int signal=noisy?((int)(random>>16)-32768)/64:0;
+            in[i]=(int16_t)((i&1?-10000:12000)+signal);
+        }
+        rab_push(&b,in,frames);
+        assert(rab__find_loop_len(&b,(int64_t)b.in_count-b.half-1)==0);
+        int16_t out[1024*2];
+        for(unsigned i=0;i<8;++i) rab_pull(&b,out,1024);
+        assert(b.stats.stretch_events==1 && b.stats.stretch_frames>0);
+        for(unsigned i=512*2;i<1024*2;++i) assert(abs(out[i])<=1);
+        double cursor=b.out_pos; rab_pull(&b,out,1024);
+        assert(b.out_pos==cursor); /* Concealment does not consume new source. */
+        free(in); rab_free(&b);
+    }
+    puts("PASS DC-biased nonperiodic and constant history decay without false pitch");
+}
+
 int main(void)
 {
+    test_dc_stall_decay();
+    test_dc_period_invariance();
     test_right_channel_period();
     test_aperiodic_stall_decay();
     test_prepared_publication();
