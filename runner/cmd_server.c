@@ -2189,7 +2189,18 @@ static CmdResult dispatch_command(const char *json, uint32_t frame_num)
         }
     }
 
-    if (strcmp(cmd, "pause") == 0) {
+    if (strcmp(cmd, "manual_review_pause") == 0) {
+        /* Owner-operated review panels opt in per child process. The online
+         * guard above continues to refuse all execution control. */
+        const char *review = getenv("GENESIS_MANUAL_REVIEW");
+        if (!review || strcmp(review, "1")) {
+            send_err(id, "manual review control is not enabled for this process");
+        } else {
+            s_paused = 1;
+            audio_set_playback_enabled(0);
+            send_ok(id);
+        }
+    } else if (strcmp(cmd, "pause") == 0) {
         /* No-op by design (ported from snesrecomp). Pausing the simulation to
          * "freeze the ring for query" is the same anti-pattern as
          * arm-then-capture: it synchronizes the observer with the system

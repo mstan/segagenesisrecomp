@@ -3570,6 +3570,7 @@ session_begin:;
 #endif
             ) {
             cancel_load_hold();
+            frame_pacer_reset(&frame_pacer);
             SDL_Event pev;
             while (window_poll_event(&pev)) {
                 load_hold_event(&pev, window);
