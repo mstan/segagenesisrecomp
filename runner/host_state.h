@@ -154,6 +154,11 @@ static void host_state_tick(void)
         host_state_notice_until=0;
     }
 #endif
+    /* Rewind snapshots include scheduler flags, whereas the save queue is
+     * process-local. Reconcile both directions: an old requested bit must
+     * not park a later level without a capture to release it, and a live
+     * capture must remain armed after restoring an earlier clear bit. */
+    glue_state_boundary_request(*host_state_pending!=0);
     if (!*host_state_pending) return;
     if (glue_state_boundary_ready()) {
         if(!host_state_save_now(host_state_pending)) {

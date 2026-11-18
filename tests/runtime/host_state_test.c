@@ -100,6 +100,15 @@ int main(int argc,char **argv) {
     set_guest(1);CHECK(host_state_save_now(path));CHECK(host_state_collect(1));
     uint32_t original=file_crc(path);
 
+    /* Rewind restores scheduler flags, but the host save queue belongs to
+     * this process. An old request with no live capture must not park the
+     * first resumable frame; a live request must survive an older clear flag. */
+    requested=1;host_state_tick();CHECK(!requested&&!*host_state_pending);
+    boundary=0;CHECK(host_state_save(path));requested=0;host_state_tick();
+    CHECK(requested&&*host_state_pending);
+    boundary=1;host_state_tick();CHECK(!requested&&!*host_state_pending);
+    CHECK(host_state_collect(1));boundary=0;
+
     /* Storage stalls cannot mutate the producer or replace the prior slot.
      * A second request is rejected, and the immutable snapshot wins later. */
     block_commit=1;set_guest(2);CHECK(host_state_save_now(path));
