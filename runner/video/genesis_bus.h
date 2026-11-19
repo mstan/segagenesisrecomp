@@ -43,15 +43,14 @@ typedef struct GenesisBus {
      * synchronously while polling $4000/$A04000 (RKA's Z80 driver uses timer
      * B as its music tick). */
     uint8_t  ym_addr[2];                /* address latch for ports 0/1         */
-    uint8_t  ym_timer_a;                /* register $24                        */
-    uint8_t  ym_timer_a_hi;             /* register $25                        */
+    uint8_t  ym_timer_a_hi;             /* register $24                        */
+    uint8_t  ym_timer_a_lo;             /* register $25 bits 1:0               */
     uint8_t  ym_timer_b;                /* register $26                        */
     uint8_t  ym_mode;                   /* register $27                        */
     uint8_t  ym_status;                 /* timer overflow flags, bits 1..0     */
     uint8_t  ym_timer_a_running;
     uint8_t  ym_timer_b_running;
     uint64_t ym_timer_a_deadline;       /* absolute scheduler master cycles    */
-    uint64_t ym_timer_a_period;         /* cached period in master cycles      */
     uint64_t ym_timer_b_deadline;       /* absolute scheduler master cycles    */
     uint64_t ym_timer_b_period;         /* cached period in master cycles      */
 

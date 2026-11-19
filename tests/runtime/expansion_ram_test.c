@@ -62,9 +62,50 @@ static void test_timer_b_acknowledge(void)
     s_test_z80_stamp = 0;
 }
 
+static void write_ym_z80(GenesisBus *bus, uint8_t reg, uint8_t value)
+{
+    gbus_z80_write(bus, 0x4000, reg);
+    gbus_z80_write(bus, 0x4001, value);
+}
+
+static void test_timer_a_reload(void)
+{
+    GenesisBus bus;
+    gbus_init(&bus, NULL);
+    s_test_z80_stamp = 105;
+    write_ym_z80(&bus, 0x24, 0xfe);
+    write_ym_z80(&bus, 0x25, 0xfd); /* Low two bits only: period 7 * 1008. */
+    write_ym_z80(&bus, 0x27, 0x05);
+    const uint32_t first_deadline = 105u + 7056u;
+    CHECK(bus.ym_timer_a_deadline == first_deadline);
+
+    s_test_z80_stamp = 805;
+    write_ym_z80(&bus, 0x27, 0x15);
+    CHECK(bus.ym_timer_a_deadline == first_deadline);
+    write_ym_z80(&bus, 0x25, 0x02); /* Timer A reloads with 6 * 1008. */
+    write_ym_z80(&bus, 0x27, 0x55);
+    CHECK(bus.ym_timer_a_deadline == first_deadline);
+    s_test_z80_stamp = first_deadline - 1;
+    CHECK((gbus_z80_read(&bus, 0x4000) & 3u) == 0);
+    s_test_z80_stamp++;
+    CHECK((gbus_z80_read(&bus, 0x4000) & 3u) == 1);
+    CHECK(bus.ym_timer_a_deadline == first_deadline + 6048u);
+    write_ym_z80(&bus, 0x27, 0x11); /* Clear A and turn off its flag. */
+    s_test_z80_stamp += 2u * 6048u;
+    CHECK((gbus_z80_read(&bus, 0x4000) & 3u) == 0);
+    CHECK(bus.ym_timer_a_deadline == first_deadline + 3u * 6048u);
+    write_ym_z80(&bus, 0x27, 0x04);
+    CHECK(!bus.ym_timer_a_running);
+    s_test_z80_stamp += 17;
+    write_ym_z80(&bus, 0x27, 0x05);
+    CHECK(bus.ym_timer_a_deadline == s_test_z80_stamp + 6048u);
+    s_test_z80_stamp = 0;
+}
+
 int main(void)
 {
     test_timer_b_acknowledge();
+    test_timer_a_reload();
     GenesisBus b;
     memset(&b,0,sizeof b);
     uint8_t guarded[10];memset(guarded,0xCC,sizeof guarded);
