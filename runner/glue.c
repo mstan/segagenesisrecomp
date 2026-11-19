@@ -2226,7 +2226,19 @@ void genesis_log_dispatch_miss(uint32_t addr)
      * charter: interpreter fallback is fine, silent corruption is defeat).
      *
      * Default OFF (GENESIS_FLOOR); enabled per game where validated. */
-    if (floor_enabled() && !s_in_floor && !floor_blacklisted(addr)) {
+    /* Interior-label misses are a codegen gap, not dead data: the game JMPs
+     * into a uniform instruction sequence (the Duff's-device shape) and the
+     * static dispatch, which only holds function entries, cannot run it. With
+     * the floor off, that shape silently becomes a no-op, and any routine the
+     * game reaches this way - dialogue handlers in particular - never runs.
+     *
+     * The capsule below is exactly the right machine for that shape: it is
+     * A7-neutral and validates that the exit PC is the return address the
+     * native caller is about to pop. So run it for interior labels even when
+     * the global floor is disabled; every other miss keeps the previous
+     * behaviour. */
+    if ((floor_enabled() || is_interior_label(addr)) &&
+        !s_in_floor && !floor_blacklisted(addr)) {
         uint32_t rl = g_game_spec.expected_rom_size
                           ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
         /* The native loose-A7 return the caller (JSR site / enclosing JSR) is
