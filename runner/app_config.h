@@ -13,6 +13,11 @@
 
 #include <stddef.h>
 
+/* Titles can override the display label without changing the saved aspect. */
+#ifndef GENESIS_WIDESCREEN_32_9_LABEL
+#define GENESIS_WIDESCREEN_32_9_LABEL "32:9 (experimental)"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
