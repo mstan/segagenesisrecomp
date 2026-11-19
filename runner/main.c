@@ -573,6 +573,8 @@ static void set_interlace_display_mode(const char *value)
 
 static int display_logical_height(void)
 {
+    if (s_video_frame.height)
+        return s_screen_height;
     if (netplay_peer_view_active())
         return s_screen_height / 2;
     if (s_screen_height > 240 && s_interlace_display_mode == INTERLACE_DISPLAY_TV)
@@ -722,6 +724,7 @@ static GenesisIndexedSink s_direct_pixels={NULL,own_scanline_sink,own_indexed_si
 static int own_custom_row_enabled(void *user)
 {
     (void)user;
+    if(s_video_frame.height)return 1;
     const GameVideo *owner=s_video_frame.owner;
     const GameVideo *adapter=s_video_frame.adapter;
     int capture=g_app_config.presentation_rate && adapter && adapter->presentation_capture &&
@@ -737,6 +740,11 @@ static void own_custom_row(void *user, const GVDP *vdp, int line, int native_w,
 {
     (void)user;
     if (line < 0 || line >= MAX_SCREEN_HEIGHT) return;
+    if(s_video_frame.height) {
+        s_video_frame.owner->canvas_scanline(vdp,line,native_w,s_framebuf,s_frame_stride,
+            s_video_frame.width,s_video_frame.height,native_row,native_ctx);
+        return;
+    }
     /* The machine supplies actual H32/H40/margin/canvas row geometry. */
     uint32_t *row = s_framebuf + line * MAX_SCREEN_WIDTH;
     s_screen_width = game_video_draw_presented_row(&s_video_frame, vdp, line, native_w,
@@ -784,7 +792,9 @@ static void custom_video_prepare(void)
             return;
         }
     }
-    if (width < 320) { game_video_native_fallback(&s_video_frame); return; }
+    if (width < 320 || s_video_frame.height > MAX_SCREEN_HEIGHT) {
+        game_video_native_fallback(&s_video_frame); return;
+    }
     if (width > s_frame_stride) {
         size_t count = (size_t)width * MAX_SCREEN_HEIGHT;
         uint32_t *frame = (uint32_t *)calloc(count, sizeof(uint32_t));
@@ -3888,7 +3898,7 @@ session_begin:;
           /* Output height doubles in interlace mode 2 (S2 2P split-screen);
            * the existing interlace display modes (tv squash / raw) take over
            * from here, same as the clownmdemu path. */
-          s_screen_height = gvdp_output_height(&g_machine.vdp);
+          s_screen_height = s_video_frame.height ? s_video_frame.height : gvdp_output_height(&g_machine.vdp);
           if (!completed) {                        /* reverse-debug quit */
               fprintf(stderr,genesis_replay_finished()?"[session] diagnostic replay completed\n":
                   "[session] tick stopped by the post-drain hook (reverse-debug quit)\n");
@@ -4286,7 +4296,7 @@ session_begin:;
          * tick (144/59.94), without another sim/audio/input call. */
         double display_rate=g_app_config.presentation_rate;
         int high_refresh=display_rate!=0 && !turbo && !runtime_uncapped &&
-            target_fps>40 && target_fps<70 && s_screen_height==224 &&
+            target_fps>40 && target_fps<70 && s_screen_height==224 && !s_video_frame.height &&
             g_game_spec.video && g_game_spec.video->interpolate && frame_texture==texture;
 #if RECOMP_LAUNCHER
         if(recomp_runtime_ui_is_open(s_runtime_ui.ui))high_refresh=0;

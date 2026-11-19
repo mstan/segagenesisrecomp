@@ -76,6 +76,13 @@ typedef struct GameVideo {
      * Never enters disk states, deterministic RB images, or netplay digests. */
     size_t (*presentation_state_save)(void *dst, size_t capacity);
     int (*presentation_state_load)(const void *src, size_t size, int apply);
+    /* Optional host canvas with its own width and height. The adapter owns
+     * every pixel (including overlays) and may fill several output rows for
+     * each raster callback. Zero dimensions retain the ordinary row path. */
+    void (*canvas_size)(int *width, int *height);
+    void (*canvas_scanline)(const struct GVDP *vdp, int line, int native_w,
+                            uint32_t *pixels, int stride, int width, int height,
+                            GameVideoNativeRow native_row, void *native_ctx);
 } GameVideo;
 
 /* Host-local derived frame plan, never deterministic machine/snapshot state.
@@ -84,6 +91,7 @@ typedef struct GameVideoFrame {
     const GameVideo *adapter,*owner;
     int requested_width,width;
     int viewport; /* qualified simulation/view policy, not local row ownership */
+    int height; /* nonzero only for a host canvas */
 } GameVideoFrame;
 
 static inline int game_video_has_viewport(const GameVideo *video)
@@ -99,7 +107,7 @@ static inline int game_video_viewport_enabled(const GameVideo *video)
 static inline GameVideoFrame game_video_prepare_frame(const GameVideo *video,
     int drawable_w,int drawable_h,int native_w,int native_h)
 {
-    GameVideoFrame frame={video,NULL,0,0,0};
+    GameVideoFrame frame={video,NULL,0,0,0,0};
     if(!video || native_w<=0 || native_h<=0)return frame;
     /* Width may publish simulation state. Always do it before local ownership
      * or texture eligibility, including when the selected renderer declines. */
@@ -112,6 +120,16 @@ static inline GameVideoFrame game_video_prepare_frame(const GameVideo *video,
         frame.owner=video;
         frame.width=valid_width ? frame.requested_width : 0;
     }
+    if(video->canvas_size && video->canvas_scanline) {
+        int w=0,h=0;
+        video->canvas_size(&w,&h);
+        if(w>=native_w && h>=native_h) {
+            frame.owner=video;
+            frame.width=w;
+            frame.height=h;
+            frame.viewport=1;
+        }
+    }
     return frame;
 }
 
@@ -119,7 +137,7 @@ static inline GameVideoFrame game_video_prepare_frame(const GameVideo *video,
  * enabled(), requested simulation width, or an agreed session profile. */
 static inline void game_video_native_fallback(GameVideoFrame *frame)
 {
-    frame->owner=NULL;frame->width=0;
+    frame->owner=NULL;frame->width=0;frame->height=0;
 }
 
 static inline int game_video_output_width(const GameVideoFrame *frame,int native_w)
