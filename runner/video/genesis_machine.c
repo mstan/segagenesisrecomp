@@ -428,9 +428,27 @@ uint32_t machine_z80_stamp(void)
     return s_line_base + s_z80_off;
 }
 
-static void step_z80(GenesisMachine *m, uint32_t target)
+/* Z80 position bookkeeping. Within scanline L the Z80 has executed up to
+ * line-relative Z80 cycle (s_z80_line_target + z80_cycle_debt), i.e. master
+ * cycle s_line_base + that * MASTER_PER_Z80: s_z80_line_target is 0 until this
+ * line's step_z80 slice and Z80_PER_LINE after it. It is re-derived at every
+ * scanline start, so it is never live across a wall-frame boundary (where
+ * snapshots, rollback digests and co-sim hashes sample) and carries no state;
+ * z80_cycle_debt, which does, is already part of the machine image. */
+static uint32_t s_z80_line_target = 0;
+/* Monotonic count of Z80 cycles executed by this process. Progress witness
+ * for glue.c's bounded no-progress poll fallback, compared only within one
+ * interrupt service; never feeds simulation otherwise. */
+static uint64_t s_z80_progress = 0;
+/* [Z80-SYNC] always-on counters (see machine_z80_sync_to). */
+static uint64_t s_z80_sync_calls, s_z80_sync_runs, s_z80_sync_cycles,
+                s_z80_sync_halted, s_z80_sync_halted_cycles, s_z80_sync_capped;
+
+/* Z80 can execute now: not held in reset and the 68K does not own its bus.
+ * Applies a reset pulse the 68K made while it was halted. */
+static int z80_ready(GenesisMachine *m)
 {
-    if (!m->bus.z80_reset_off || m->bus.z80_busreq) return;   /* Z80 halted */
+    if (!m->bus.z80_reset_off || m->bus.z80_busreq) return 0;   /* Z80 halted */
     /* The 68K pulsed the Z80 reset line while halted — restart the core at
      * $0000 now that it's released, so it runs the freshly-uploaded driver
      * from its entry point (not from a stale, pre-upload PC). */
@@ -443,13 +461,15 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 #endif
         m->bus.z80_reset_pending = 0;
     }
-    int pend_before =
-#ifdef GENESIS_Z80_RECOMP
-        z80_recomp_irq_pending();
-#else
-        m->z80.int_pending ? 1 : 0;
-#endif
-    uint32_t done = m->z80_cycle_debt;
+    return 1;
+}
+
+/* Execute Z80 instructions from line-relative cycle `done` until it reaches
+ * `target`; returns the cycle reached (>= target: the last instruction may
+ * overshoot). Each instruction's chip writes stamp at its start cycle. */
+static uint32_t z80_run_span(GenesisMachine *m, uint32_t done, uint32_t target)
+{
+    uint32_t start = done;
 #ifndef GENESIS_Z80_RECOMP
     m->z80.cyc = 0;            /* per-slice t-state counter (kept bounded) */
 #endif
@@ -469,6 +489,92 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 #endif
     }
 #endif
+    if (done > start) s_z80_progress += done - start;
+    return done;
+}
+
+/* Bring the Z80 up to master cycle `master_now` of the current wall frame
+ * (the 68K's own time, STAMP_68K) before a 68K access to the Z80 domain made
+ * inside an atomically-executed interrupt handler.
+ *
+ * The scheduler runs a V-int/H-int handler to completion between two Z80
+ * slices, so without this the Z80 stays frozen at the delivery line for the
+ * whole handler while the 68K's clock runs on. On hardware the two CPUs run
+ * concurrently: a handler that stops the Z80, finds it mid-way through a
+ * shared-resource sequence (Sonic 1's DAC driver flags each YM $2A
+ * address/data pair in Z80 RAM $1FFD bit 7), releases the bus and retries,
+ * sees the Z80 finish the sequence. Frozen, the retry can never succeed, and
+ * the old shortcut that answered such reads with 0 let the handler overwrite
+ * the YM address latch the Z80 was about to use (the Sonic 1 random beep:
+ * the Z80's DAC byte landed in $28 key-on). Executing the Z80 for the elapsed
+ * time restores the handshake for every title and every Z80-domain access.
+ *
+ * Time while the Z80 is halted (68K owns the bus, or reset held) passes
+ * without execution, as on hardware: the position advances to `master_now`.
+ * The cycles executed here are credited to z80_cycle_debt, so the following
+ * scanline slices skip them: the Z80 runs the same instruction stream at the
+ * same timeline positions, its chip-write stamps stay monotonic across the
+ * handler, and its per-frame cycle budget is unchanged. Stamps past the wall
+ * frame are legal: the mixer defers them to the following drains (the same
+ * multi-frame spreading that carries a long handler's 68K writes). Sonic 1's
+ * level V-int routinely runs 40+ lines past line 225, so a frame-end cap is
+ * wrong. The position is capped instead at the next Z80 vblank-IRQ assertion
+ * the scheduler has not made yet — the Z80 must not execute past an IRQ it
+ * cannot see. Only a multi-frame handler (Sonic 1's SEGA PCM V-int) can reach
+ * that; it is counted, and glue.c's bounded no-progress fallback covers a
+ * poll that waits on a capped Z80. */
+void machine_z80_sync_to(uint32_t master_now)
+{
+    GenesisMachine *m = &g_machine;
+    /* The scheduler asserts the Z80 vblank IRQ after the Z80 slice of the
+     * first vblank line (machine_run_frame_ex), i.e. at the end of that line.
+     * The next assertion still ahead of the Z80's line is this frame's when
+     * that point has not been reached yet, else the next frame's. */
+    const uint32_t irq_at = ((uint32_t)gvdp_screen_height(&m->vdp) + 1u) * MASTER_PER_LINE;
+    const uint32_t z80_line_pos = s_line_base + s_z80_line_target * MASTER_PER_Z80;
+    const uint32_t cap = z80_line_pos >= irq_at ? LINES_TOTAL * MASTER_PER_LINE + irq_at
+                                                : irq_at;
+    s_z80_sync_calls++;
+    int clamped = master_now > cap;
+    if (clamped) master_now = cap;
+    if (master_now <= s_line_base) return;
+    uint32_t want = (master_now - s_line_base) / MASTER_PER_Z80;
+    uint32_t have = s_z80_line_target + m->z80_cycle_debt;
+    if (want <= have) return;
+    if (!z80_ready(m)) {
+        /* Halted: no instruction can observe the clamp (Sonic 1's SEGA PCM
+         * handler holds the bus for ~2 s of 68K time and lands here). */
+        m->z80_cycle_debt = want - s_z80_line_target;
+        s_z80_sync_halted++;
+        s_z80_sync_halted_cycles += want - have;
+        return;
+    }
+    if (clamped) s_z80_sync_capped++;   /* a running Z80 stopped short of the 68K */
+    uint32_t done = z80_run_span(m, have, want);
+    m->z80_cycle_debt = done - s_z80_line_target;
+    s_z80_sync_runs++;
+    s_z80_sync_cycles += done - have;
+}
+
+uint64_t machine_z80_progress(void) { return s_z80_progress; }
+
+void machine_z80_sync_stats(uint64_t out[6])
+{
+    out[0] = s_z80_sync_calls;  out[1] = s_z80_sync_runs;
+    out[2] = s_z80_sync_cycles; out[3] = s_z80_sync_halted;
+    out[4] = s_z80_sync_capped; out[5] = s_z80_sync_halted_cycles;
+}
+
+static void step_z80(GenesisMachine *m, uint32_t target)
+{
+    if (!z80_ready(m)) return;
+    int pend_before =
+#ifdef GENESIS_Z80_RECOMP
+        z80_recomp_irq_pending();
+#else
+        m->z80.int_pending ? 1 : 0;
+#endif
+    uint32_t done = z80_run_span(m, m->z80_cycle_debt, target);
     m->z80_cycle_debt = done - target;
 #ifdef GEN_DEV_TRACE
     /* [SND-TRACE] V-int acceptance: pending fell 1->0 during this slice. */
@@ -534,6 +640,7 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
         g_snd_line = (unsigned)line;   /* [SND-TRACE] */
         s_line_base = (uint32_t)line * MASTER_PER_LINE;
         s_z80_off   = 0;   /* 68K writes during the chunk below land at the line start */
+        s_z80_line_target = 0;   /* Z80 sits at line-relative z80_cycle_debt */
 
         /* Advance the recompiled 68K ~one scanline (it parks at WaitForVBlank). */
         glue_run_game_chunk(M68K_PER_LINE);
@@ -547,6 +654,7 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
 
         /* Step the Z80 (SMPS driver) for its share of the line. */
         step_z80(m, Z80_PER_LINE);
+        s_z80_line_target = Z80_PER_LINE;   /* halted or not, the line's time passed */
 
         /* Deliver interrupts to the 68K (and the Z80 at vblank). */
         if (irq & GVDP_IRQ_VBLANK) {

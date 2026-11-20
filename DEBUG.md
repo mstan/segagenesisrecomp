@@ -22,6 +22,18 @@ keyed to the `id` field of the request.
 | **audio event queue** | `audio/event_queue.c:12` | 4096 events | Yes | YM2612 / SN76489 register writes for audio probes. |
 | **audio delivery rings** | `audio.c` (`s_depth_ring` / `s_evt_ring`) | 4096 depths (~68 s) + 256 events | Yes | SDL queue depth at every realtime flush + drop/underrun anomaly events. The WAV and [BOOP] detector tap the *generated* stream; these rings are the only view of what the *speaker* got. Dump via `audio_delivery_dump`. |
 
+**Always-on counters (exit summary).** `[Z80-SYNC]` is printed on every
+normal exit, including an input-script `EXIT`: `service_syncs/runs/z80_cycles`
+(Z80 advanced to the 68K's clock inside atomic V-int/H-int handlers,
+`machine_z80_sync_to`), `halted_advances`/`halted_z80_cycles` (time that
+passed inside handlers while the 68K held the Z80 bus or reset — the Z80
+executes nothing then, as on hardware), `irq_caps` (a running Z80 was held at the next Z80 vblank
+IRQ, short of a handler that outran it), and
+three counters that must stay 0 — `yield_fallbacks` (256-poll bound in the
+main-loop Z80 poll), `service_fallbacks` (no-progress bound inside a handler)
+and `unscheduled_reads` (Z80 RAM read with no chunk or handler running). Each
+fallback hit is also logged on stderr (first 16) with address and Z80 PC.
+
 **Capacity gaps to fix in Wave 2** (see `humming-wibbling-hammock.md`):
 - No Tier-2 *block* ring — frame_record is per-*frame*, not per-block.
   Block-trace ring + monotonic block counter is the headline Wave 2

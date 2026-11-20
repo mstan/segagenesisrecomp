@@ -79,6 +79,18 @@ int machine_load_state(FILE *f);
 size_t machine_rb_save(void *dst, size_t cap);
 int    machine_rb_load(const void *src, size_t len);
 
+/* Run the Z80 up to master cycle `master_now` of the current wall frame
+ * (the 68K's STAMP_68K time) — glue.c calls it before every 68K access to the
+ * Z80 domain made inside an atomically-executed interrupt handler, so the two
+ * CPUs' handshakes see each other's progress. See genesis_machine.c. */
+#include <stdint.h>
+void machine_z80_sync_to(uint32_t master_now);
+/* Monotonic executed-Z80-cycle count (progress witness, not simulation). */
+uint64_t machine_z80_progress(void);
+/* [Z80-SYNC] counters: calls, runs, cycles run, halted advances, IRQ caps,
+ * Z80 cycles that passed halted (68K owned the bus / reset) inside handlers. */
+void machine_z80_sync_stats(uint64_t out[6]);
+
 /* Run one full frame: per scanline, advance the 68K (fiber), step the Z80, tick
  * the VDP, deliver interrupts, and emit active scanlines via `sink`. */
 void machine_run_frame(GenesisScanlineSink sink, void *user);
