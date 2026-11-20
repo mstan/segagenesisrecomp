@@ -58,6 +58,25 @@ int  genesis_netplay_sram_writes_allowed(void) { return !genesis_netplay_active(
 
 static GenesisNetplayState g_np;
 static int g_return_to_lobby;
+
+/* Link status bookkeeping (genesis_netplay_link_status); reset per session. */
+/* next_ms paces "waiting" lines before the first tick and "stalled" lines;
+ * periodic_ms paces the 10 s "running" lines. Separate so a stall is reported
+ * within a second even right after a periodic line. */
+static uint64_t s_link_started_ms, s_link_first_admit_ms, s_link_stall_since_ms, s_link_next_ms,
+                s_link_periodic_ms;
+static uint32_t s_link_lines;
+
+static uint64_t np_mono_ms(void)
+{
+#if defined(_WIN32)
+    return (uint64_t)GetTickCount64();
+#else
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000u + (uint64_t)(ts.tv_nsec / 1000000);
+#endif
+}
 static GenesisNetplayRunTick g_tick_runner;
 
 /* ---- env ------------------------------------------------------------------ */
@@ -486,6 +505,11 @@ int genesis_netplay_start(const GenesisNetplayConfig *cfg)
     }
 
     g_np.active = 1;
+    s_link_started_ms = np_mono_ms();
+    s_link_first_admit_ms = s_link_stall_since_ms = 0;
+    s_link_next_ms = s_link_started_ms + 1000u;
+    s_link_periodic_ms = 0;
+    s_link_lines = 0;
     g_np.slot_count = (int)rcfg.slot_count;
     g_np.spectator = cfg->spectator ? 1 : 0;
     g_np.input_player = cfg->input_player >= 0 && cfg->input_player < GENESIS_SIM_MAX_PLAYERS
@@ -522,6 +546,98 @@ int genesis_netplay_start(const GenesisNetplayConfig *cfg)
             g_np.slot_port[2], g_np.slot_port[3], cfg->bind_hostport, cfg->peer_hostport,
             g_np.spectator ? " SPECTATOR" : "");
     return 0;
+}
+
+static const char *ice_state_name(RNetIceState s)
+{
+    switch (s) {
+    case RNET_ICE_STATE_IDLE:       return "idle";
+    case RNET_ICE_STATE_GATHERING:  return "gathering";
+    case RNET_ICE_STATE_CONNECTING: return "connecting";
+    case RNET_ICE_STATE_CONNECTED:  return "connected";
+    case RNET_ICE_STATE_COMPLETED:  return "completed";
+    case RNET_ICE_STATE_FAILED:     return "FAILED";
+    default:                        return "?";
+    }
+}
+
+static void print_link_status(const char *what, uint64_t now)
+{
+    RNetSessionStats st;
+    char seats[192];
+    size_t o = 0;
+    const char *refusal = genesis_netplay_refusal();
+    memset(&st, 0, sizeof st);
+    rnet_session_get_stats(g_np.session, &st);
+    seats[0] = 0;
+    for (int i = 0; i < g_np.slot_count && i < GENESIS_NETPLAY_MAX_SLOTS && o < sizeof seats - 24; ++i) {
+        if (i == g_np.local_slot) continue;
+        if (g_np.occupied_mask && !(g_np.occupied_mask & (1u << i))) continue;
+        rnet_u64 age = rnet_session_peer_rx_age_ms(g_np.session, i);
+        int n = age == RNET_PEER_RX_NEVER
+                    ? snprintf(seats + o, sizeof seats - o, "%s%d:never", o ? "," : "", i)
+                    : snprintf(seats + o, sizeof seats - o, "%s%d:%llums", o ? "," : "", i,
+                               (unsigned long long)age);
+        if (n > 0) o += (size_t)n;
+    }
+    fprintf(stderr,
+            "genesis_netplay: link %s t=%.1fs transport=%s mode=%s running=%d tick=%u "
+            "ice=%s path=%s local=%s remote=%s packets_rx=%u last_rx=%s%llums seat_rx=[%s] "
+            "peer_gone=%d stall=%s x%u wait=%ums sram=%s lobby=%d refusal=%s\n",
+            what, (double)(now - s_link_started_ms) / 1000.0, genesis_netplay_transport_name(),
+            g_np.rollback ? "rollback" : "delay", st.is_running, (unsigned)st.sim_tick,
+            ice_state_name(st.ice_state), st.ice_path[0] ? st.ice_path : "-",
+            st.ice_local[0] ? st.ice_local : "-", st.ice_remote[0] ? st.ice_remote : "-",
+            (unsigned)st.packets_rx, st.packets_rx ? "" : "never/",
+            (unsigned long long)st.last_peer_rx_age_ms, seats, st.peer_gone,
+            rnet_admit_stall_name(st.last_stall), (unsigned)st.consecutive_stalls,
+            (unsigned)st.last_admit_wait_ms,
+            !g_sram || !g_sram_size ? "none" : g_np.sram_sync_done ? "done"
+                : g_np.sram_sync_sent ? "sending" : "waiting",
+            rnet_lobby_connected(), refusal ? refusal : "-");
+    ++s_link_lines;
+}
+
+void genesis_netplay_link_status(int admitted, int periodic)
+{
+    uint64_t now;
+    if (!g_np.active || !g_np.session) return;
+    now = np_mono_ms();
+    if (admitted) {
+        if (!s_link_first_admit_ms) {
+            s_link_first_admit_ms = now;
+            fprintf(stderr, "genesis_netplay: link up: first tick admitted %.1fs after start\n",
+                    (double)(now - s_link_started_ms) / 1000.0);
+            print_link_status("up", now);
+            s_link_periodic_ms = now + 10000u;
+        } else if (s_link_stall_since_ms && now - s_link_stall_since_ms >= 1000u) {
+            fprintf(stderr, "genesis_netplay: link resumed after a %.1fs stall\n",
+                    (double)(now - s_link_stall_since_ms) / 1000.0);
+        } else if (periodic && now >= s_link_periodic_ms) {
+            print_link_status("running", now);
+            s_link_periodic_ms = now + 10000u;
+        }
+        s_link_stall_since_ms = 0;
+        return;
+    }
+    if (!s_link_first_admit_ms) {
+        /* Nothing is presented before the first tick: this is the black
+         * screen. One line a second; every 5 s once it has lasted 30 s. */
+        if (now >= s_link_next_ms) {
+            print_link_status("waiting-for-players", now);
+            s_link_next_ms = now + (now - s_link_started_ms >= 30000u ? 5000u : 1000u);
+        }
+        return;
+    }
+    if (!s_link_stall_since_ms) {
+        s_link_stall_since_ms = now;
+        s_link_next_ms = now + 1000u;   /* first "stalled" line one second in */
+        return;
+    }
+    if (now - s_link_stall_since_ms >= 1000u && now >= s_link_next_ms) {
+        print_link_status("stalled", now);
+        s_link_next_ms = now + 1000u;
+    }
 }
 
 void genesis_netplay_print_summary(void)

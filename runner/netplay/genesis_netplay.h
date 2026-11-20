@@ -183,6 +183,15 @@ int  genesis_netplay_sram_writes_allowed(void);
 /* Diagnostics. */
 void genesis_netplay_print_summary(void);
 
+/* Link status lines on stderr, for player diagnostics (captured by
+ * runner/console_capture.c into the Online diagnostics file). Call once per
+ * main-loop pass with whether this pass admitted a tick. Always printed:
+ * "link up" with the time to the first admitted tick, a status line every
+ * second while the first tick has not been admitted (the black screen after
+ * Play), and every second during a stall over one second. `periodic` adds a
+ * status line every 10 s during play. */
+void genesis_netplay_link_status(int admitted, int periodic);
+
 #ifdef __cplusplus
 }
 #endif

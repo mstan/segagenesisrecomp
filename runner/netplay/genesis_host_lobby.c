@@ -177,12 +177,100 @@ static int create_with_relay_policy(void *ctx, const char *lobby_name, char *hos
     return s_base_create(ctx, lobby_name, host_endpoint, password, settings, lan_only, max_slots);
 }
 
+/* ---- lobby state lines for player diagnostics ------------------------------
+ * The launcher's room UI shows this state, but a player's report cannot. Each
+ * pump compares one summary line (connection, room, Start, host-relay NAT
+ * discovery and guest reachability, server error) with the last one printed
+ * and prints it when it changed, so the Online diagnostics file carries the
+ * room's history without per-frame noise. */
+static void (*s_base_pump)(void *);
+static int (*s_base_join)(void *, const char *, const char *, char *);
+static int (*s_base_start)(void *, const RecompLauncherCSettings *);
+static int (*s_base_leave)(void *);
+
+/* Reads only: several launcher callbacks advance LAN / Direct IP state when
+ * called (cb_in_lobby, cb_launch_pending), so this uses recomp-net's pure
+ * getters instead; last_error only reads. LAN rooms are host-carried and
+ * report their own lines; this summary covers the online lobby. */
+static void log_lobby_state(void)
+{
+    static char last[1400];
+    char line[1400], relay[900];
+    const char *err = s_callbacks.last_error ? s_callbacks.last_error(NULL) : NULL;
+    const RNetLobbyMatchCaps *caps = rnet_lobby_match_caps();
+    RNetHostRelayStatus st;
+    relay[0] = 0;
+    if (rnet_lobby_host_relay_status(&st) && st.role) {
+        if (st.role == 1)
+            snprintf(relay, sizeof relay,
+                     " relay=host port=%u how=%s stage=\"%s\" endpoint=%s advertised=%s "
+                     "probes_answered=%u detail=\"%s\"",
+                     (unsigned)st.port.local_port, st.port.how[0] ? st.port.how : "-",
+                     st.port.stage, st.port.endpoint[0] ? st.port.endpoint : "-",
+                     st.advertised[0] ? st.advertised : "-", st.port.probes_answered,
+                     st.port.detail);
+        else
+            snprintf(relay, sizeof relay,
+                     " relay=guest probing=%d probed=%s report=%s reports_sent=%u",
+                     st.probing, st.probed[0] ? st.probed : "-",
+                     st.last_report[0] ? st.last_report : "-", st.reports_sent);
+    }
+    snprintf(line, sizeof line,
+             "genesis_netplay: lobby connected=%d lan=%d in_room=%d host=%d members=%d "
+             "ready=%d/%d caps=%s%s%s%s%s launch_pending=%d error=\"%s\"",
+             rnet_lobby_connected(), recomp_netplay_host_in_lan(), rnet_lobby_in_lobby(),
+             rnet_lobby_is_host(), rnet_lobby_member_count(), rnet_lobby_local_ready(),
+             rnet_lobby_all_ready(),
+             caps && caps->valid ? "on" : "none",
+             caps && caps->valid && caps->relay_host ? ",relay_host" : "",
+             caps && caps->valid && caps->force_input_relay ? ",force_input_relay" : "",
+             caps && caps->valid && caps->force_turn ? ",force_turn" : "",
+             relay,
+             rnet_lobby_launch_pending(), err ? err : "");
+    if (strcmp(line, last)) {
+        fprintf(stderr, "%s\n", line);
+        snprintf(last, sizeof last, "%s", line);
+    }
+}
+
+static void pump_logged(void *ctx)
+{
+    s_base_pump(ctx);
+    log_lobby_state();
+}
+
+static int join_logged(void *ctx, const char *lobby_id, const char *password, char *bind)
+{
+    int rc = s_base_join(ctx, lobby_id, password, bind);
+    fprintf(stderr, "genesis_netplay: join room rc=%d bind=%s\n", rc, bind ? bind : "");
+    return rc;
+}
+
+static int start_logged(void *ctx, const RecompLauncherCSettings *settings)
+{
+    int rc = s_base_start(ctx, settings);
+    fprintf(stderr, "genesis_netplay: Start requested rc=%d\n", rc);
+    log_lobby_state();
+    return rc;
+}
+
+static int leave_logged(void *ctx)
+{
+    int rc = s_base_leave(ctx);
+    fprintf(stderr, "genesis_netplay: left room rc=%d\n", rc);
+    return rc;
+}
+
 const RecompLauncherCNetplayCallbacks *genesis_host_lobby_callbacks(void)
 {
     if (!s_base_create) {
         s_callbacks = *recomp_netplay_host_callbacks();
         s_base_create = s_callbacks.create;
         s_callbacks.create = create_with_relay_policy;
+        if ((s_base_pump = s_callbacks.pump)) s_callbacks.pump = pump_logged;
+        if ((s_base_join = s_callbacks.join)) s_callbacks.join = join_logged;
+        if ((s_base_start = s_callbacks.request_start)) s_callbacks.request_start = start_logged;
+        if ((s_base_leave = s_callbacks.leave)) s_callbacks.leave = leave_logged;
     }
     return &s_callbacks;
 }
@@ -228,6 +316,18 @@ int genesis_host_lobby_config_from_launch(const RecompLauncherCNetplayLaunch *l,
     }
     /* Adopt the host's session configuration (ephemeral: never persisted). */
     genesis_netplay_adopt_session_config(s_host_cfg_valid ? &s_host_cfg : NULL);
+    fprintf(stderr, "genesis_netplay: launch slot=%d players=%d seats=%d occupied=%x spectator=%d "
+                    "lan=%d transport_host=%d force_input_relay=%d force_turn=%d rollback=%d "
+                    "delay=%d bind=%s peer=%s session=%u\n",
+            l->local_slot, l->player_count, l->max_slots, (unsigned)l->occupied_mask,
+            l->is_spectator, recomp_netplay_host_in_lan(),
+#if defined(RECOMP_LAUNCHER_HAS_HOST_RELAY)
+            l->transport_host,
+#else
+            -1,
+#endif
+            l->force_input_relay, l->force_turn, l->rollback, l->input_delay,
+            l->bind_hostport, l->peer_hostport, (unsigned)l->session_id);
     return 0;
 }
 

@@ -61,3 +61,38 @@ use input-only routes for replay QA.
 Regression tests: `diagnostic_replay_test`,
 `tests/runtime/test_diagnostic_replay.py`, and `video_mod_test`. Reports and
 machine checkpoints are forbidden release assets.
+
+# Online diagnostics
+
+Netplay builds add **Mods > Diagnostics > Online diagnostics**. It is **off**
+by default. Replayable feedback does not cover online startup, so a failed
+connection (for example a black screen after Play) needs this file instead:
+
+1. Turn on Online diagnostics. It starts at once; no restart is needed.
+2. Host or join and press Play as usual. If the screen stays black, wait about
+   a minute.
+3. Close the game and send `logs/<game>-online-diagnostics.txt` (Sonic 2:
+   `logs/Sonic2-online-diagnostics.txt`). Ask every player for theirs.
+
+The previous file is kept as `...txt.previous`. The setting persists until it
+is turned off. It changes no simulation state and is not part of the netplay
+configuration, so players with and without it can play together.
+
+Contents: a header (game version, build, exe fingerprint, OS), then every
+console line since the game was opened, timestamped in seconds since launch,
+then live lines until exit. That includes the lobby state on every change
+(connection, room, Start, host-relay UPnP/NAT-PMP/STUN discovery, guest
+reachability reports, server errors), the launch descriptor, the transport,
+ICE/TURN progress, and `genesis_netplay: link ...` lines: one per second while
+the first tick has not been admitted (the black screen), `link up` with the
+time it took, stalls over one second, and a status line every 10 s during play.
+It contains IP addresses and lobby/player names, never passwords or tokens.
+
+Mechanism (`runner/console_capture.c`): from the first line of `main`, stdout
+and stderr are piped through reader threads that still echo to the original
+console and keep the last ~1 MiB of timestamped lines in memory, so enabling
+the file later includes what was printed before. Set
+`GENESIS_CONSOLE_CAPTURE=0` to disable the pipes; the fallback writes the
+file by pointing stdout/stderr at it directly (no console echo, no launch
+history). Fatal crash reports drain the pipes into the file before exiting.
+Test: `console_capture_test`; Mods entry: `video_mod_test`.

@@ -25,6 +25,10 @@ static void presentation_configure(int on){presentation_enabled=on;}
 static void presentation_capture(const struct GVDP *v,int l,const uint32_t *p,int w,int n,const struct GVDPRasterRow *r)
 {(void)v;(void)l;(void)p;(void)w;(void)n;(void)r;}
 static int interpolate(double t,uint32_t *p,int s,int h){(void)t;(void)p;(void)s;(void)h;return 0;}
+static int online_applies,online_state;
+static void online_apply(void){++online_applies;online_state=g_app_config.online_diagnostics;}
+static const char *online_status(void){return online_state?"Recording to logs/Test-online-diagnostics.txt":"Off";}
+static const char *online_path(void){return "logs/Test-online-diagnostics.txt";}
 static const GameVideo interpolated_video={.configure=configure,.enabled=enabled,.width=width,.presentation_configure=presentation_configure,
     .presentation_capture=presentation_capture,.interpolate=interpolate};
 
@@ -202,7 +206,40 @@ int main(int argc,char **argv)
     memset(&g_input_map.shortcuts,0,sizeof g_input_map.shortcuts);CHECK(app_config_load(argv[1]));
     CHECK(!g_input_map.shortcuts.enabled&&g_input_map.shortcuts.selector&&g_input_map.shortcuts.load_button==8&&g_input_map.shortcuts.save_button==INPUT_SHORTCUT_NONE);
     app_config_apply_video(&renderer_only); /* no configure callback */
+
+    /* Online diagnostics: absent until registered (non-netplay builds), then
+     * last so every existing index is unchanged; off by default; applied at
+     * once (not next launch); persisted; never touched by reload. */
+    CHECK(!g_app_config.online_diagnostics);
+    CHECK(!p->feature_enable(p->ctx,"online-diagnostics","online-log",1));
+    app_config_online_diagnostics_hooks(online_apply,online_status,online_path);
+    p=app_config_video_mods(&renderer_only,argv[1]);
+    CHECK(p->package_count(p->ctx)==4 && p->feature_count(p->ctx)==4);
+    CHECK(p->feature_get(p->ctx,0,&feature) && !strcmp(feature.id,"replay"));
+    CHECK(p->feature_get(p->ctx,3,&feature) && !strcmp(feature.id,"online-log"));
+    CHECK(!strcmp(feature.package_id,"online-diagnostics") && !strcmp(feature.group,"Diagnostics"));
+    CHECK(!feature.enabled && feature.option_count==0 && !strcmp(feature.status,"Off"));
+    CHECK(strstr(feature.description,"logs/Test-online-diagnostics.txt"));
+    { RecompLauncherCModPackage pkg;CHECK(p->package_get(p->ctx,3,&pkg) && !strcmp(pkg.id,"online-diagnostics") && !pkg.enabled); }
+    online_applies=0;
+    CHECK(p->feature_enable(p->ctx,"online-diagnostics","online-log",1));
+    CHECK(g_app_config.online_diagnostics && online_applies==1 && online_state==1);
+    CHECK(p->feature_get(p->ctx,3,&feature) && feature.enabled && strstr(feature.status,"Recording"));
+    CHECK(p->commit(p->ctx,NULL) && online_state==1);
+    app_config_defaults();CHECK(!g_app_config.online_diagnostics);
+    CHECK(app_config_load(argv[1]) && g_app_config.online_diagnostics);
+    g_app_config.online_diagnostics=0;app_config_reload_preserving_mods(argv[1]);
+    CHECK(!g_app_config.online_diagnostics); /* live Mods edits win over the file */
+    g_app_config.online_diagnostics=1;
+    CHECK(p->feature_enable(p->ctx,"online-diagnostics","online-log",0));
+    CHECK(!g_app_config.online_diagnostics && online_state==0);
+    CHECK(p->commit(p->ctx,NULL));app_config_defaults();CHECK(app_config_load(argv[1]) && !g_app_config.online_diagnostics);
+    p=app_config_video_mods(&interpolated_video,argv[1]);
+    CHECK(p->feature_count(p->ctx)==6 && p->feature_get(p->ctx,5,&feature) && !strcmp(feature.id,"online-log"));
+    CHECK(p->feature_get(p->ctx,4,&feature) && !strcmp(feature.id,"state-actions"));
+    app_config_online_diagnostics_hooks(NULL,NULL,NULL);
+
     CHECK(remove(argv[1])==0); /* this executable owns only its explicit CTest fixture */
-    puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence and input binding preservation");
+    puts("PASS opt-in and game default, saved-off precedence, four aspect choices, provider validation, persistence, online diagnostics and input binding preservation");
     return 0;
 }
