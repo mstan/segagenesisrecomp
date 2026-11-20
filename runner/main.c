@@ -4335,6 +4335,8 @@ session_begin:;
         }
         if(high_refresh) {
             Uint64 now=SDL_GetPerformanceCounter();
+            Uint64 guest_work=now-frame_start;
+            int submitted=0;
             presentation_clock_begin(&presentation_clock,perf_frequency,display_rate,guest_deadline);
             Uint64 at;double phase;
             while(presentation_clock_next(&presentation_clock,guest_deadline,
@@ -4342,6 +4344,10 @@ session_begin:;
                 /* A late draw drops an output deadline rather than queuing
                  * overdue pictures or changing the guest clock. */
                 if(now>at && now-at>(Uint64)((double)perf_frequency/display_rate))continue;
+                /* An extra picture can be on time for the display and still
+                 * leave too little time for the next guest frame. */
+                Uint64 ready=now>at?now:at;
+                if(submitted && (ready>=frame_pacer.next || frame_pacer.next-ready<=guest_work))break;
                 int interpolated=g_game_spec.video->interpolate(phase,interpolation_image,s_frame_stride,s_screen_height);
                 const uint32_t *pixels=interpolated?interpolation_image:s_framebuf;
                 if(s_color_lut_on) {
@@ -4355,6 +4361,7 @@ session_begin:;
                 if(now<at)genesis_host_wait_until(at,perf_frequency);
                 draw_load_hold(renderer);
                 SDL_RenderPresent(renderer);
+                submitted=1;
                 ++presentation_count;interpolation_count+=interpolated!=0;
                 if(presentation_trace) {
                     uint64_t hash=14695981039346656037ull;
