@@ -165,10 +165,15 @@ rollback sched section. The audit's Z80-streak hypothesis is refuted.
 **The 256-poll fallback (filed separately).** `m68k_read8`'s Z80 poll path
 returns a synthesized `0x00` after 256 unanswered polls. Measured: 0 hits in
 S2, S3K and S&K (18000-frame attract, baseline and candidate). It is still a
-fake-the-answer path (PRINCIPLES.md, No Stubs) that would fire silently --
-counted only in `g_z80poll_fallback_hits` under GEN_DEV_TRACE. Open: make it
-loud (log + miss file) or delete it; not changed here because nothing
-measured reaches it.
+fake-the-answer path (PRINCIPLES.md, No Stubs). **2026-11-19:** it is now
+loud in every build: each hit is logged (`[Z80-SYNC] 256-poll yield bound
+fired`, first 16) and counted in the always-on `[Z80-SYNC]` exit summary
+(`yield_fallbacks`). The same change removed the unconditional `$00` answer
+that in-interrupt reads of `$A01FFD/$A01FFF` used to get (it disabled Sonic
+1's DAC-pair guard and caused its random FM beep); atomic interrupt handlers
+now run the Z80 forward to the 68K's clock at every Z80-domain access
+(`machine_z80_sync_to`), with a counted no-progress bound
+(`service_fallbacks`) as the only remaining `$00` answer there.
 
 **B. Fiber test.** Signed-overflow UB in the test; a real hazard (8 KB frames
 skipped the 4 KB guard page). 64 KB guard + `-fstack-clash-protection` +

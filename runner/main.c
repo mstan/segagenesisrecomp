@@ -687,6 +687,25 @@ static void scanline_rendered_cb(void *user_data,
 }
 
 #include "genesis_machine.h"
+/* [Z80-SYNC] 68K<->Z80 handshake health (always on; printed on every normal
+ * exit path, including an input-script EXIT). The three fallback counters
+ * must stay 0: each counts a Z80 RAM read answered $00 without the Z80
+ * having produced the value. unscheduled_reads counts Z80 RAM reads made
+ * while neither a game chunk nor an interrupt service was running. */
+static void report_z80_sync(void)
+{
+    extern unsigned long g_z80poll_fallback_hits, g_z80poll_yields;
+    extern unsigned long g_z80poll_service_fallback_hits, g_z80poll_unscheduled_reads;
+    uint64_t z[6];
+    machine_z80_sync_stats(z);
+    fprintf(stderr, "[Z80-SYNC] service_syncs=%llu runs=%llu z80_cycles=%llu "
+            "halted_advances=%llu halted_z80_cycles=%llu irq_caps=%llu | poll_yields=%lu "
+            "yield_fallbacks=%lu service_fallbacks=%lu unscheduled_reads=%lu\n",
+            (unsigned long long)z[0], (unsigned long long)z[1],
+            (unsigned long long)z[2], (unsigned long long)z[3],
+            (unsigned long long)z[5], (unsigned long long)z[4], g_z80poll_yields, g_z80poll_fallback_hits,
+            g_z80poll_service_fallback_hits, g_z80poll_unscheduled_reads);
+}
 /* Own-backend scanline sink: copy our VDP's rendered ARGB row to the framebuf. */
 static const uint32_t *provided_native_row(void *ctx) { return (const uint32_t *)ctx; }
 static void own_scanline_sink(void *u, int line, const uint32_t *argb, int width)
@@ -4087,6 +4106,7 @@ session_begin:;
                 audio_wav_stop();
                 if(!genesis_host_stream_flush_all())fprintf(stderr,"[capture] final write failed\n");
                 genesis_replay_shutdown();
+                report_z80_sync();
                 return input_script_exit_code();
             }
         }
@@ -4525,6 +4545,7 @@ session_begin:;
       fprintf(stderr, "[VBLA] cvblank_fires=%llu VBla_Exit=%d VBla_Music=%d loc_B88=%d\n",
               (unsigned long long)g_cvblank_fires_total,
               g_dbg_b64_count, g_dbg_b5e_count, g_dbg_b88_count); }
+    report_z80_sync();
     }
 
     /* --- Discovery runtime oracle: dump executed-PC coverage ---

@@ -233,6 +233,7 @@ GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
 #define s_cycle_budget g_native_register_budget.cycle_budget
 #define s_budget_cyc_seen g_native_register_budget.budget_cyc_seen
 static void dump_bus_ring(void);   /* defined after the bus ring below; both watchdogs use it */
+static void z80_no_progress_reset(void);   /* Z80 RAM poll bound, see m68k_read8 */
 
 static void instruction_watchdog_reset(void)
 {
@@ -731,6 +732,7 @@ void glue_run_game_chunk(uint32_t cycles)
     }
 
     s_chunk_cycles = cycles;
+    z80_no_progress_reset();
     unsigned divisor = !s_native_pc_scope && g_game_spec.main_cpu_divisor ? g_game_spec.main_cpu_divisor() : 1;
     if (!divisor) divisor = 1;
     if (divisor != s_main_cpu_divisor) s_main_cpu_clock.remainder = 0;
@@ -872,6 +874,7 @@ static void own_deliver_vint(GVDP *vdp)
     uint32_t exception_sp=(saved.A[7]-6u)&0xFFFFFFu;
     g_cpu.A[7] = precise ? exception_sp : STK;
     s_in_vblank_service = 1;
+    z80_no_progress_reset();
     if(precise) {
         native_interrupt_frame_write(g_ram,exception_sp,saved.SR,saved.PC);
         g_cpu.SR=(uint16_t)((saved.SR&~0x0700u)|0x0600u);
@@ -1062,6 +1065,7 @@ void glue_own_interrupt(int level, GVDP *vdp)
         for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
         g_cpu.A[7] = STK;
         s_in_vblank_service = 1;
+        z80_no_progress_reset();
         /* Same audio-stamp re-base as own_deliver_vint: H-int handler chip
          * writes stamp at the delivery raster, not the parked counter. */
         uint32_t saved_rebase = g_68k_stamp_rebase;
@@ -1740,11 +1744,94 @@ static inline void spin_check(uint32_t byte_addr, int is_write)
 }
 
 
+/* ---- 68K <-> Z80 handshakes inside atomic interrupt service -------------
+ * own_deliver_vint / the H-int path run a handler to completion between two
+ * Z80 slices (s_in_vblank_service). Every 68K access to the Z80 domain made
+ * there first brings the Z80 up to the 68K's own clock (STAMP_68K), exactly
+ * as the scanline scheduler interleaves them everywhere else — see
+ * machine_z80_sync_to. Z80 domain = Z80 address space $A00000-$A0FFFF (RAM,
+ * YM2612, bank register), BUSREQ $A11100 and RESET $A11200. One choke point
+ * for all six 68K accessors, so no access shape can bypass it. */
+static inline int z80_domain_addr(uint32_t a)
+{
+    return (a >= 0xA00000u && a < 0xA10000u) ||
+           (a & 0xFFFFFEu) == 0xA11100u || (a & 0xFFFFFEu) == 0xA11200u;
+}
+static inline void z80_sync_for_68k_access(uint32_t a, unsigned bytes)
+{
+    if (!s_in_vblank_service) return;
+    if (z80_domain_addr(a) || (bytes > 2 && z80_domain_addr(a + 2u)))
+        machine_z80_sync_to(g_audio_cycle_counter * 7u + g_68k_stamp_rebase);
+}
+
+/* Bounded no-progress fallback for Z80 RAM polls the scheduler cannot
+ * resolve by yielding: inside atomic service (the Z80 advances only through
+ * machine_z80_sync_to, which a handler running past its wall frame can cap)
+ * and outside any game chunk (host-side calls on the main fiber: no clock
+ * runs at all). A read is "no progress" when it hits the same Z80 RAM
+ * address as the previous such read and the Z80 executed nothing in
+ * between. Past Z80POLL_NO_PROGRESS_LIMIT consecutive no-progress reads the
+ * read returns $00 (the historical "driver ready" answer) so the 68K cannot
+ * hang — counted and logged, never silent. Streak state is reset at every
+ * interrupt delivery and chunk start, so it never crosses a wall frame. */
+#define Z80POLL_NO_PROGRESS_LIMIT 4096u
+static uint32_t s_z80np_addr = 0;
+static uint32_t s_z80np_streak = 0;
+static uint64_t s_z80np_mark = 0;
+unsigned long g_z80poll_service_fallback_hits = 0;  /* [Z80-SYNC] no-progress bound fired */
+unsigned long g_z80poll_unscheduled_reads = 0;      /* [Z80-SYNC] Z80 RAM reads outside chunk+service */
+static void z80_no_progress_reset(void) { s_z80np_addr = 0; s_z80np_streak = 0; }
+static void z80_fallback_log(const char *what, uint32_t addr, unsigned long hits)
+{
+    /* Rare by construction; first 16 occurrences only, the exit summary
+     * carries the totals. */
+    if (hits <= 16u)
+        fprintf(stderr, "[Z80-SYNC] %s #%lu addr=$%06X service=%d interleave=%d "
+                "z80pc=$%04X busreq=%d reset_off=%d frame=%" PRIu64 "\n",
+                what, hits, (unsigned)addr, s_in_vblank_service,
+                s_interleave_active, (unsigned)g_machine.z80.pc,
+                g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off, g_frame_count);
+}
+static int z80_no_progress_bound(uint32_t addr);
+/* Word/long reads: same guard as m68k_read8's Z80 RAM path (no yield path
+ * exists for them; inside a chunk spin_check covers same-address spins). */
+static int z80_ram_unscheduled_poll(uint32_t addr)
+{
+    if ((!s_in_vblank_service && s_interleave_active) ||
+        addr < 0xA00000u || addr >= 0xA04000u) return 0;
+    if (!s_in_vblank_service) {
+        g_z80poll_unscheduled_reads++;
+        z80_fallback_log("Z80 RAM read outside any chunk or service",
+                         addr, g_z80poll_unscheduled_reads);
+    }
+    return z80_no_progress_bound(addr);
+}
+/* Returns 1 when the bound fired (caller answers $00). */
+static int z80_no_progress_bound(uint32_t addr)
+{
+    uint64_t now = machine_z80_progress();
+    if (addr == s_z80np_addr && now == s_z80np_mark) {
+        if (++s_z80np_streak > Z80POLL_NO_PROGRESS_LIMIT) {
+            g_z80poll_service_fallback_hits++;
+            z80_fallback_log("no-progress poll bound fired; answering $00",
+                             addr, g_z80poll_service_fallback_hits);
+            s_z80np_streak = 0;
+            return 1;
+        }
+    } else {
+        s_z80np_addr = addr;
+        s_z80np_mark = now;
+        s_z80np_streak = 1;
+    }
+    return 0;
+}
+
 uint16_t m68k_read16(uint32_t byte_addr)
 {
     byte_addr &= 0xFFFFFFu;
     watchdog_check(byte_addr, 0, 0);
     bus_ring_push(byte_addr, 1);
+    z80_sync_for_68k_access(byte_addr, 2);
     if (byte_addr == 0xA11100u) {
         uint16_t ack = gbus_read16(&g_machine.bus, byte_addr);
         HYBRID_BUMP_CYCLES();
@@ -1752,6 +1839,7 @@ uint16_t m68k_read16(uint32_t byte_addr)
     }
     spin_check(byte_addr, 0);
     HYBRID_BUMP_CYCLES();
+    if (z80_ram_unscheduled_poll(byte_addr)) return 0x0000u;
     return gbus_read16(&g_machine.bus, byte_addr);
 }
 
@@ -1772,6 +1860,7 @@ uint8_t m68k_read8(uint32_t byte_addr)
     byte_addr &= 0xFFFFFFu;
     watchdog_check(byte_addr, 0, 0);
     bus_ring_push(byte_addr, 0);
+    z80_sync_for_68k_access(byte_addr, 1);
     /* This bus model grants BUSREQ synchronously in gbus_write16. Latch
      * its acknowledgement before any scheduler yield. Unconditionally
      * yielding here let a lag-frame V-int do its own stop/startZ80, release
@@ -1799,13 +1888,23 @@ uint8_t m68k_read8(uint32_t byte_addr)
      *
      * Bounded fallback: if a single read polls > 256 times without
      * resolving (corrupted Z80 state, dead driver), return 0 so we
-     * don't hang. Counter resets across distinct read addresses. */
+     * don't hang. Counter resets across distinct read addresses. The
+     * bound is counted and logged ([Z80-SYNC]), never silent.
+     *
+     * Inside atomic interrupt service the scheduler cannot be yielded to;
+     * z80_sync_for_68k_access above already advanced the Z80 to the 68K's
+     * clock, so the read below returns the real Z80 RAM byte. (Until
+     * 2026-11 this path answered $00 unconditionally, which disabled every
+     * handler-side handshake — Sonic 1's UpdateMusic $1FFD DAC-pair guard —
+     * and let the 68K steal the YM address latch from the Z80 mid-pair.) */
     if (byte_addr == 0xA01FFDu || byte_addr == 0xA01FFFu) {
         if (s_interleave_active && !s_in_vblank_service) {
             if (byte_addr == s_z80poll_last_addr) {
                 if (++s_z80poll_streak > 256) {
                     extern unsigned long g_z80poll_fallback_hits; /* [POLL-DIAG] */
                     g_z80poll_fallback_hits++;
+                    z80_fallback_log("256-poll yield bound fired; answering $00",
+                                     byte_addr, g_z80poll_fallback_hits);
                     return 0x00u;
                 }
             } else {
@@ -1816,13 +1915,14 @@ uint8_t m68k_read8(uint32_t byte_addr)
             { char stack_marker; game_stack_note("z80-poll", &stack_marker); }
             yield_to_main(GLUE_YIELD_Z80POLL);
             /* fall through to real read */
-        } else {
-            return 0x00u;  /* outside interleave: keep old shortcut */
         }
     } else {
         s_z80poll_last_addr = 0;
         s_z80poll_streak    = 0;
     }
+    /* Any Z80 RAM read the scheduler cannot resolve by yielding: in atomic
+     * service (Z80 advanced by the sync above) or outside every chunk. */
+    if (z80_ram_unscheduled_poll(byte_addr)) return 0x00u;
     HYBRID_BUMP_CYCLES();
     cc_bool hi = (byte_addr & 1) == 0;
     cc_bool lo = !hi;
@@ -1844,10 +1944,12 @@ uint32_t m68k_read32(uint32_t byte_addr)
     byte_addr &= 0xFFFFFFu;
     watchdog_check(byte_addr, 0, 0);
     bus_ring_push(byte_addr, 2);
+    z80_sync_for_68k_access(byte_addr, 4);
     spin_check(byte_addr, 0);
     /* Bump once for the whole 32-bit op — both halves at same cycle.
      * Prevents VDP/Z80 sync between the two 16-bit reads. */
     HYBRID_BUMP_CYCLES();
+    if (z80_ram_unscheduled_poll(byte_addr)) return 0u;
     uint16_t hi = gbus_read16(&g_machine.bus, byte_addr);
     uint16_t lo = gbus_read16(&g_machine.bus, byte_addr + 2);
     return ((uint32_t)hi << 16) | (uint32_t)lo;
@@ -1858,6 +1960,7 @@ void m68k_write16(uint32_t byte_addr, uint16_t val)
     byte_addr &= 0xFFFFFFu;
     watchdog_check(byte_addr, 1, val);
     bus_ring_push(byte_addr, 4);
+    z80_sync_for_68k_access(byte_addr, 2);
     /* 16-bit FM writes land one byte per port per cycle on hardware. The
      * YM2612 only takes 8-bit data; SMPS always uses 8-bit writes. Be
      * defensive: if a 16-bit write hits the FM bus, treat the low byte
@@ -1876,6 +1979,7 @@ void m68k_write8(uint32_t byte_addr, uint8_t val)
     byte_addr &= 0xFFFFFFu;
     watchdog_check(byte_addr, 1, val);
     bus_ring_push(byte_addr, 3);
+    z80_sync_for_68k_access(byte_addr, 1);
     audio_detour_write(byte_addr, val);
     if (s_io_log_enabled && byte_addr >= 0xA10000u && byte_addr <= 0xA1001Fu) {
         if (s_io_log_count < 200) {
@@ -1895,6 +1999,7 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
     byte_addr &= 0xFFFFFFu;
     watchdog_check(byte_addr, 1, (uint32_t)(val >> 16));
     bus_ring_push(byte_addr, 5);
+    z80_sync_for_68k_access(byte_addr, 4);
     /* 32-bit write = two consecutive 16-bit writes. Only matters for FM
      * bus; SMPS never uses 32-bit to write FM regs so this is defensive
      * only. */
@@ -1932,13 +2037,17 @@ void m68k_write32(uint32_t byte_addr, uint32_t val)
  * So the reset is now an explicit rule, called by the tick driver
  * immediately before machine_run_frame(), and the four variables are part of
  * the rollback scheduler section (glue_rb_*). The Z80 poll streak is reset
- * with it because the baseline's post-frame m68k_read8 reset it too. */
+ * with it because the baseline's post-frame m68k_read8 reset it too. The
+ * Z80 RAM no-progress streak (z80_no_progress_bound) also restarts at every
+ * chunk and interrupt delivery, so it never carries simulation-relevant state
+ * across this boundary and needs no rollback slot. */
 void glue_sched_frame_begin(void)
 {
     s_spin_addr         = 0;
     s_spin_count        = 0;
     s_z80poll_last_addr = 0;
     s_z80poll_streak    = 0;
+    z80_no_progress_reset();
 }
 
 /* =========================================================================
