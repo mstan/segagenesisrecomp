@@ -241,7 +241,7 @@ void machine_init(void)
  * Z80 RAM + SRAM, full superzazu Z80 core state — the embedded struct now
  * carries everything, no side blob). The format is a raw struct image,
  * private to a build. main.c owns the file container. */
-/* g_snd_frame is the YM2612 timer-B clock (genesis_bus.c ym_abs_*_stamp:
+/* g_snd_frame is the YM2612 timer clock (genesis_bus.c ym_abs_*_stamp:
  * absolute time = g_snd_frame * frame + stamp) as well as a trace counter.
  * Timer deadlines saved inside the bus are absolute in that clock, so a state
  * that restored them without the clock put every timer in the wrong frame

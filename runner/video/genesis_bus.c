@@ -81,7 +81,7 @@ extern void glue_charge_68k_stall(uint32_t cycles);
 #define CHIP_PC_68K() (g_snd_pcz = 0xFFFFu)
 #define CHIP_PC_Z80() (g_snd_pcz = (unsigned)machine_z80_pc())
 
-/* YM2612 timer B -----------------------------------------------------------
+/* YM2612 timers ------------------------------------------------------------
  * Timer B advances once per 16*144 YM clocks; the YM clock is master/7 on a
  * Genesis. Thus one increment is 16128 master cycles and overflow occurs
  * after (256 - reg $26) increments. RKA programs $26=$F2, yielding roughly
@@ -89,9 +89,9 @@ extern void glue_charge_68k_stall(uint32_t cycles);
  *
  * The audio chips themselves are rendered later from the stamped write queue,
  * so this small synchronous model exists solely for CPU-visible status reads.
- * It deliberately models BUSY as always clear; only timer flag B is currently
- * needed by supported software. */
+ * The bus exposes both overflow flags and keeps BUSY clear. */
 #define MASTER_CYCLES_PER_FRAME  (262ull * 3420ull)
+#define YM_TIMER_A_MASTER_TICK   (144ull * 7ull)
 #define YM_TIMER_B_MASTER_TICK   (16ull * 144ull * 7ull)
 
 static uint64_t ym_abs_z80_stamp(void)
@@ -106,8 +106,27 @@ static uint64_t ym_abs_68k_stamp(void)
            (uint64_t)STAMP_68K();
 }
 
+/* Timer A period from $24 (high 8 bits) and $25 (low 2 bits): the chip counts
+ * up to $400 in 144-clock ticks, so the period is (1024 - NA) * 144 clocks,
+ * expressed at the same 7:1 master-cycle scale as timer B. */
+static uint64_t ym_timer_a_period(const GenesisBus *b)
+{
+    unsigned na = ((unsigned)b->ym_timer_a_hi << 2) | b->ym_timer_a_lo;
+    return (uint64_t)(1024u - na) * YM_TIMER_A_MASTER_TICK;
+}
+
 static void ym_timer_update(GenesisBus *b, uint64_t now)
 {
+    if (b->ym_timer_a_running && now >= b->ym_timer_a_deadline) {
+        if (b->ym_mode & 0x04u)         /* enable timer-A overflow flag */
+            b->ym_status |= 0x01u;
+        /* Overflow reloads from the register latch. A write to the latch
+         * while running leaves the current deadline in place. */
+        uint64_t period = ym_timer_a_period(b);
+        uint64_t elapsed = now - b->ym_timer_a_deadline;
+        b->ym_timer_a_deadline += (elapsed / period + 1u) * period;
+    }
+
     if (!b->ym_timer_b_running || b->ym_timer_b_period == 0 ||
         now < b->ym_timer_b_deadline)
         return;
@@ -134,7 +153,11 @@ static void ym_write_side_effect(GenesisBus *b, uint8_t port, uint8_t val,
     if (bank != 0) return;              /* timers live in register bank 0 */
 
     uint8_t reg = b->ym_addr[0];
-    if (reg == 0x26u) {
+    if (reg == 0x24u) {
+        b->ym_timer_a_hi = val;
+    } else if (reg == 0x25u) {
+        b->ym_timer_a_lo = val & 0x03u;
+    } else if (reg == 0x26u) {
         b->ym_timer_b = val;
         b->ym_timer_b_period =
             (uint64_t)(256u - (unsigned)val) * YM_TIMER_B_MASTER_TICK;
@@ -145,6 +168,10 @@ static void ym_write_side_effect(GenesisBus *b, uint8_t port, uint8_t val,
         if (val & 0x10u) b->ym_status &= 0xfeu;
         if (val & 0x20u) b->ym_status &= 0xfdu;
         b->ym_mode = val;
+        /* The load edge starts A. A flag clear while loaded keeps its phase. */
+        if ((val & 0x01u) && !b->ym_timer_a_running)
+            b->ym_timer_a_deadline = now + ym_timer_a_period(b);
+        b->ym_timer_a_running = val & 0x01u;
         if (val & 0x02u) {
             /* Loading starts a stopped timer. A flag acknowledgement that
              * leaves it loaded must preserve the running timer's phase. */
