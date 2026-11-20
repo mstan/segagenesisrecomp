@@ -67,6 +67,8 @@ set(GENESIS_RUNNER_CORE_SOURCES
     runtime_evidence.c
     diagnostic_replay.c
     replay_writer.c
+    console_capture.c
+    online_diagnostics.c
     fiber_compat.c
     crash_report.c
     input_script.c
@@ -115,7 +117,9 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     overlay_draw.c
     runtime_evidence.c
     diagnostic_replay.c
-    replay_writer.c)
+    replay_writer.c
+    console_capture.c
+    online_diagnostics.c)
 list(APPEND GENESIS_RUNNER_RECONCILED_SOURCES video/genesis_raster_jobs.c video/genesis_hd_gpu.c)
 
 function(genesisrecomp_runner_sources out_var)

@@ -47,6 +47,8 @@
 #include "load_hold.h"
 #include "gamepad.h"
 #include "diagnostic_replay.h"
+#include "console_capture.h"
+#include "online_diagnostics.h"
 
 static GenesisLoadHold s_load_hold;
 static SDL_Keycode s_load_key;
@@ -2479,6 +2481,8 @@ static void replay_view(GenesisReplayView *v,int apply)
 
 int main(int argc, char *argv[])
 {
+    /* First: capture console output from launch (console_capture.h). */
+    (void)console_capture_install();
     init_exe_dir(argv[0]);
     const char *user_dir=getenv("GENESIS_USER_DIR");
     if(user_dir && *user_dir) {
@@ -2718,6 +2722,11 @@ int main(int argc, char *argv[])
     app_config_defaults();
     app_config_load(settings_ini);   /* also seeds g_input_map controller bindings */
     if (g_game_spec.load_settings) g_game_spec.load_settings(settings_ini);
+#if GENESIS_HAS_RECOMP_NET
+    /* Offers Mods > Diagnostics > Online diagnostics and, when it is on,
+     * starts the file now (before the launcher and lobby run). */
+    online_diagnostics_init();
+#endif
 #if GENESIS_HAS_RECOMP_NET && RECOMP_LAUNCHER
     {
         /* Content identity for the lobby: the ROM's SHA-256, when a ROM is
@@ -3832,6 +3841,7 @@ session_begin:;
                 continue;
             }
             if (!genesis_netplay_poll_admit()) {
+                genesis_netplay_link_status(0, g_app_config.online_diagnostics);
                 /* Wake as soon as peer UDP arrives. SDL_Delay(1) can stretch
                  * several milliseconds under two-process render/audio load,
                  * putting every input-confirm round trip outside the frame
@@ -3839,6 +3849,7 @@ session_begin:;
                 genesis_netplay_wait_recv(1);
                 continue;
             }
+            genesis_netplay_link_status(1, g_app_config.online_diagnostics);
         }
 #endif
 

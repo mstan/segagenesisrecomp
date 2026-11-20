@@ -39,6 +39,7 @@ typedef struct AppConfig {
     int rewind_depth;       /* snapshot slots */
     int rewind_interval;    /* guest frames between snapshots */
     int replay_diagnostics; /* default-on replayable player feedback */
+    int online_diagnostics; /* opt-in console/netplay log for player reports */
 } AppConfig;
 
 extern AppConfig g_app_config;
@@ -69,6 +70,13 @@ int app_config_aspect_index(const char *mode); /* -1 if not a UI preset */
 int app_config_presentation_index(int rate);
 int app_config_presentation_rate(int index);
 void app_config_apply_video(const struct GameVideo *video);
+/* Online diagnostics (runner/online_diagnostics.c) registers these; until it
+ * does, the Mods entry is not offered. apply opens/closes the file to match
+ * g_app_config.online_diagnostics; status is the launcher's status line; path
+ * is the file's location relative to the game folder. */
+void app_config_online_diagnostics_hooks(void (*apply)(void), const char *(*status)(void),
+                                         const char *(*path)(void));
+
 /* Built-in recomp-ui provider; available on launcher-enabled targets. */
 const struct RecompLauncherCModProvider *app_config_video_mods(
     const struct GameVideo *video, const char *settings_path);

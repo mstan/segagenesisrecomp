@@ -10,6 +10,12 @@
 #include <string.h>
 
 AppConfig g_app_config;
+static void (*s_online_diag_apply)(void);
+static const char *(*s_online_diag_status)(void);
+static const char *(*s_online_diag_path)(void);
+void app_config_online_diagnostics_hooks(void (*apply)(void), const char *(*status)(void),
+                                         const char *(*path)(void))
+{ s_online_diag_apply=apply;s_online_diag_status=status;s_online_diag_path=path; }
 static const char *const shortcut_ids[]={"original","none","south","east","west","north","back","guide","start","left-stick","right-stick","left-shoulder","right-shoulder","up","down","left","right"};
 static const char *const shortcut_labels[]={"Original shortcut","Unbound","South button (A / Cross)","East button (B / Circle)","West button (X / Square)","North button (Y / Triangle)","Back / View / Select","Guide / Home","Start / Menu","Left stick press","Right stick press","Left shoulder (LB / L1)","Right shoulder (RB / R1)","D-pad Up","D-pad Down","D-pad Left","D-pad Right"};
 const char *input_shortcut_button_id(int code)
@@ -53,6 +59,7 @@ void app_config_defaults(void)
     g_app_config.rewind_depth     = 60;
     g_app_config.rewind_interval  = 6;
     g_app_config.replay_diagnostics = 1;
+    g_app_config.online_diagnostics = 0;
 }
 
 /* ---- tiny ini helpers ---------------------------------------------------- */
@@ -124,6 +131,7 @@ int app_config_load(const char *path)
             else if (!strcmp(name, "mods.widescreen")) section = 3;
             else if (!strcmp(name, "rewind"))   section = 4;
             else if (!strcmp(name, "mods.diagnostics")) section = 5;
+            else if (!strcmp(name, "mods.online_diagnostics")) section = 7;
             else if (!strcmp(name,"controller.states")) section=6;
             else if (!strcmp(name, "input.p1")) section = 10;
             else if (!strcmp(name, "input.p2")) section = 11;
@@ -180,6 +188,8 @@ int app_config_load(const char *path)
             else if (!strcmp(key, "interval")) g_app_config.rewind_interval = atoi(val);
         } else if (section == 5) {
             if (!strcmp(key,"enabled")) g_app_config.replay_diagnostics=atoi(val)!=0;
+        } else if (section == 7) {
+            if (!strcmp(key,"enabled")) g_app_config.online_diagnostics=atoi(val)!=0;
         } else if(section==6) {
             InputShortcuts *s=&g_input_map.shortcuts;
             int button=input_shortcut_button_code(val);
@@ -230,12 +240,14 @@ static void write_player(FILE *f, int player)
 void app_config_reload_preserving_mods(const char *path)
 {
     int on=g_app_config.custom_widescreen,aspect=g_app_config.custom_aspect,diagnostics=g_app_config.replay_diagnostics;
+    int online=g_app_config.online_diagnostics;
     int rate=g_app_config.presentation_rate,bypass=g_app_config.audio_filter_bypass;
     InputShortcuts shortcuts=g_input_map.shortcuts;
     app_config_load(path);
     g_app_config.presentation_rate=rate;g_app_config.audio_filter_bypass=bypass;
     g_app_config.custom_widescreen=on;g_app_config.custom_aspect=aspect;
     g_app_config.replay_diagnostics=diagnostics;
+    g_app_config.online_diagnostics=online;
     g_input_map.shortcuts=shortcuts;
 }
 int app_config_save(const char *path)
@@ -265,6 +277,7 @@ int app_config_save(const char *path)
     fprintf(f, "[mods.widescreen]\nenabled = %d\naspect = %s\n\n",
             g_app_config.custom_widescreen, app_config_aspect_mode(g_app_config.custom_aspect));
     fprintf(f,"[mods.diagnostics]\nenabled = %d\n\n",g_app_config.replay_diagnostics);
+    fprintf(f,"[mods.online_diagnostics]\nenabled = %d\n\n",g_app_config.online_diagnostics);
     const InputShortcuts *s=&g_input_map.shortcuts;
     fprintf(f,"[controller.states]\nenabled = %d\nsave = %s\nload = %s\nrewind = %s\nactivation = %s\n\n",
         s->enabled,input_shortcut_button_id(s->save_button),input_shortcut_button_id(s->load_button),
@@ -307,7 +320,7 @@ void app_config_apply_video(const GameVideo *video)
  * offered only when the game supplies a custom renderer; no external archive
  * or game-specific addresses belong in the shared settings bridge. */
 static char s_mod_settings[600],s_mod_error[128];
-static int s_mod_video_available,s_mod_interp_available;
+static int s_mod_video_available,s_mod_interp_available,s_mod_online_available;
 static int interpolation_identity(const char *p,const char *f)
 { return p && f && !strcmp(p,"high-refresh") && !strcmp(f,"interpolation"); }
 static int audio_identity(const char *p,const char *f)
@@ -321,7 +334,12 @@ static int video_mod_identity(const char *package,const char *feature)
 {
     return package && feature && !strcmp(package,"custom-widescreen") && !strcmp(feature,"widescreen");
 }
-static int video_mod_count(void *ctx) { (void)ctx;return 3+s_mod_video_available+s_mod_interp_available; }
+static int online_identity(const char *p,const char *f)
+{ return p && f && !strcmp(p,"online-diagnostics") && !strcmp(f,"online-log"); }
+/* Index layout: [widescreen] replay [interpolation] audio shortcuts [online].
+ * Online is last so every existing index is unchanged. */
+static int online_index(void) { return 3+s_mod_video_available+s_mod_interp_available; }
+static int video_mod_count(void *ctx) { (void)ctx;return online_index()+s_mod_online_available; }
 static int shortcut_identity(const char *p,const char *f)
 {return p&&f&&!strcmp(p,"controller-shortcuts")&&!strcmp(f,"state-actions");}
 static const char *const shortcut_options[]={"save-button","load-button","rewind-button","activation"};
@@ -336,6 +354,12 @@ static int video_mod_package(void *ctx,int i,RecompLauncherCModPackage *out)
 {
     (void)ctx;if(!out || i<0 || i>=video_mod_count(ctx))return 0;
     memset(out,0,sizeof(*out));
+    if(s_mod_online_available && i==online_index()) {
+        MOD_COPY(out->id,"online-diagnostics");MOD_COPY(out->name,"Online Diagnostics");MOD_COPY(out->version,"1");
+        MOD_COPY(out->author,"GenesisRecomp contributors");MOD_COPY(out->license,"PolyForm Noncommercial 1.0.0");
+        MOD_COPY(out->description,"Record a log of online play to send with a bug report.");
+        out->enabled=g_app_config.online_diagnostics;return 1;
+    }
     if(i==2+s_mod_video_available+s_mod_interp_available) {
         MOD_COPY(out->id,"controller-shortcuts");MOD_COPY(out->name,"Controller Shortcuts");MOD_COPY(out->version,"1");
         MOD_COPY(out->description,"Choose, unbind or disable Player 1's controller state shortcuts. Keyboard state controls remain available.");
@@ -366,6 +390,21 @@ static int video_mod_feature(void *ctx,int i,RecompLauncherCModFeature *out)
 {
     (void)ctx;if(!out || i<0 || i>=video_mod_count(ctx))return 0;
     memset(out,0,sizeof(*out));
+    if(s_mod_online_available && i==online_index()) {
+        MOD_COPY(out->id,"online-log");MOD_COPY(out->package_id,"online-diagnostics");
+        MOD_COPY(out->package_name,"Online Diagnostics");MOD_COPY(out->package_version,"1");
+        MOD_COPY(out->name,"Online diagnostics");MOD_COPY(out->group,"Diagnostics");
+        MOD_COPY(out->author,"GenesisRecomp contributors");
+        snprintf(out->description,sizeof out->description,
+            "Off by default. If online play does not work (for example a black screen after Play): "
+            "turn this on, try again, close the game, then send %s from the game folder. "
+            "It records what the game reports while hosting, joining and playing online, "
+            "including network addresses and lobby names, but no passwords. "
+            "It does not change gameplay or who you can play with.",
+            s_online_diag_path?s_online_diag_path():"the online diagnostics file in logs");
+        MOD_COPY(out->status,s_online_diag_status?s_online_diag_status():"Off");
+        out->enabled=g_app_config.online_diagnostics;return 1;
+    }
     if(i==2+s_mod_video_available+s_mod_interp_available) {
         MOD_COPY(out->id,"state-actions");MOD_COPY(out->package_id,"controller-shortcuts");MOD_COPY(out->package_name,"Controller Shortcuts");
         MOD_COPY(out->name,"Controller State Shortcuts");MOD_COPY(out->group,"Input");
@@ -447,6 +486,11 @@ static int video_mod_enable(void *ctx,const char *package,const char *feature,in
         g_app_config.presentation_rate=on?(g_app_config.presentation_rate?g_app_config.presentation_rate:120):0;return 1;
     }
     if(diagnostic_identity(package,feature)) {g_app_config.replay_diagnostics=on!=0;return 1;}
+    if(s_mod_online_available && online_identity(package,feature)) {
+        g_app_config.online_diagnostics=on!=0;
+        if(s_online_diag_apply)s_online_diag_apply();   /* takes effect now, not next launch */
+        return 1;
+    }
     (void)ctx;if(!video_mod_identity(package,feature))return 0;
     g_app_config.custom_widescreen=on!=0;return 1;
 }
@@ -475,6 +519,7 @@ static int video_mod_commit(void *ctx,const char *image)
     (void)ctx;(void)image;s_mod_error[0]=0;
     /* Keep any controller rebindings the launcher already persisted. */
     app_config_reload_preserving_mods(s_mod_settings);
+    if(s_online_diag_apply)s_online_diag_apply();
     if(app_config_save(s_mod_settings))return 1;
     MOD_COPY(s_mod_error,"Unable to save widescreen settings.ini");return 0;
 }
@@ -484,6 +529,7 @@ const RecompLauncherCModProvider *app_config_video_mods(const GameVideo *video,c
     static RecompLauncherCModProvider provider;
     s_mod_video_available=game_video_has_viewport(video);
     s_mod_interp_available=video && video->interpolate && video->presentation_capture && video->presentation_configure;
+    s_mod_online_available=s_online_diag_apply!=NULL;
     snprintf(s_mod_settings,sizeof s_mod_settings,"%s",path?path:"");s_mod_error[0]=0;
     memset(&provider,0,sizeof provider);
     provider.package_count=video_mod_count;provider.package_get=video_mod_package;

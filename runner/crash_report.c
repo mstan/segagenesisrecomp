@@ -50,6 +50,10 @@ unsigned crash_report_recent_blocks(uint32_t *out, unsigned max, uint32_t *total
 
 /* ---- Persistent crash log ---- */
 
+/* Installed by console_capture.c: drains captured console output into an
+ * attached diagnostics file before a fatal path ends the process. */
+void (*crash_report_pre_exit_hook)(void);
+
 static char s_log_path[256] = "last_error.log";
 static int  s_log_disabled  = 0;
 
@@ -278,6 +282,7 @@ void crash_report_dump_persistent(const char *reason,
     crash_report_dump(stderr, reason, cpu, last_access_addr,
                       last_access_is_write, frame_count);
     fflush(stderr);
+    if (crash_report_pre_exit_hook) crash_report_pre_exit_hook();
 
     if (s_log_disabled) return;
 
