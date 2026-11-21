@@ -182,8 +182,15 @@ function(genesisrecomp_runner_target target)
     # tests/runtime/fiber_snapshot_test.c assert it (--overflow-huge).
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND NOT MSVC)
         include(CheckCCompilerFlag)
-        check_c_compiler_flag(-fstack-clash-protection GENESIS_HAVE_STACK_CLASH)
-        if(GENESIS_HAVE_STACK_CLASH)
+        include(CMakePushCheckState)
+        cmake_push_check_state()
+        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+            # A recognized option can still be ignored on the target architecture.
+            string(APPEND CMAKE_REQUIRED_FLAGS " -Werror=unused-command-line-argument")
+        endif()
+        check_c_compiler_flag(-fstack-clash-protection GENESIS_HAVE_TARGET_STACK_CLASH)
+        cmake_pop_check_state()
+        if(GENESIS_HAVE_TARGET_STACK_CLASH)
             target_compile_options(${target} PRIVATE
                 "$<$<COMPILE_LANGUAGE:C,CXX>:-fstack-clash-protection>")
             target_compile_definitions(${target} PRIVATE GENESIS_STACK_CLASH_PROTECTION=1)
