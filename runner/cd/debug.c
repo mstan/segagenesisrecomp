@@ -30,6 +30,7 @@ static int d_would_block(void){return errno==EWOULDBLOCK||errno==EAGAIN;}
 #define D_LINE 2048
 #define D_OUT 32768
 #define D_READ_MAX 1024
+#define D_LOOPBACK 0x7F000001u
 #ifdef _WIN32
 #define d_strtok strtok_s
 #else
@@ -223,7 +224,7 @@ SegaCDDebugServer *segacd_debug_start(SegaCDMachine*m,uint16_t port,SegaCDDebugW
 #endif
     s->listener=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);if(s->listener==D_INVALID){error_text(error,error_size,"socket failed");segacd_debug_stop(s);return NULL;}
     int yes=1;setsockopt(s->listener,SOL_SOCKET,SO_REUSEADDR,(const char*)&yes,sizeof yes);
-    struct sockaddr_in a;memset(&a,0,sizeof a);a.sin_family=AF_INET;a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);a.sin_port=htons(port);
+    struct sockaddr_in a;memset(&a,0,sizeof a);a.sin_family=AF_INET;a.sin_addr.s_addr=htonl(D_LOOPBACK);a.sin_port=htons(port);
     if(bind(s->listener,(struct sockaddr*)&a,sizeof a)||listen(s->listener,1)||!nonblocking(s->listener)){error_text(error,error_size,"loopback bind/listen failed");segacd_debug_stop(s);return NULL;}
 #ifdef _WIN32
     int alen=(int)sizeof a;
@@ -248,7 +249,7 @@ void segacd_debug_poll(SegaCDDebugServer*s)
 #else
         socklen_t n=(socklen_t)sizeof a;
 #endif
-        DSocket c=accept(s->listener,(struct sockaddr*)&a,&n);if(c!=D_INVALID){if(ntohl(a.sin_addr.s_addr)!=INADDR_LOOPBACK||!nonblocking(c))d_close(c);else{
+        DSocket c=accept(s->listener,(struct sockaddr*)&a,&n);if(c!=D_INVALID){if(ntohl(a.sin_addr.s_addr)!=D_LOOPBACK||!nonblocking(c))d_close(c);else{
 #if defined(SO_NOSIGPIPE)
             int no_sigpipe=1;(void)setsockopt(c,SOL_SOCKET,SO_NOSIGPIPE,(const char*)&no_sigpipe,sizeof no_sigpipe);
 #endif
