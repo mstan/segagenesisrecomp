@@ -7,7 +7,7 @@ option(GENESIS_MACOS_ADHOC_SIGN
 
 function(genesisrecomp_macos_bundle target)
     set(one_value_args BUNDLE_IDENTIFIER BUNDLE_NAME VERSION ICON)
-    set(multi_value_args RESOURCES)
+    set(multi_value_args RESOURCES RUNTIME_LIBRARIES)
     cmake_parse_arguments(GMB "" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
     if(GMB_UNPARSED_ARGUMENTS)
@@ -46,6 +46,8 @@ function(genesisrecomp_macos_bundle target)
         OUTPUT_NAME "${GMB_BUNDLE_NAME}"
         MACOSX_BUNDLE_BUNDLE_NAME "${GMB_BUNDLE_NAME}"
         MACOSX_BUNDLE_GUI_IDENTIFIER "${GMB_BUNDLE_IDENTIFIER}"
+        MACOSX_BUNDLE_INFO_PLIST
+            "${_GENESIS_RECOMP_MACOS_CMAKE_DIR}/GenesisRecompInfo.plist.in"
         MACOSX_BUNDLE_INFO_STRING "${GMB_BUNDLE_NAME} ${GMB_VERSION}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${GMB_VERSION}"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${GMB_VERSION}")
@@ -72,10 +74,28 @@ function(genesisrecomp_macos_bundle target)
             MACOSX_PACKAGE_LOCATION "Resources")
     endforeach()
 
+    set(_runtime_libraries "")
+    foreach(_library IN LISTS GMB_RUNTIME_LIBRARIES)
+        if(TARGET "${_library}")
+            list(APPEND _runtime_libraries "$<TARGET_FILE:${_library}>")
+        else()
+            get_filename_component(
+                _library_abs "${_library}" ABSOLUTE
+                BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            if(NOT EXISTS "${_library_abs}")
+                message(FATAL_ERROR
+                    "genesisrecomp_macos_bundle(${target}): missing runtime "
+                    "library ${_library_abs}")
+            endif()
+            list(APPEND _runtime_libraries "${_library_abs}")
+        endif()
+    endforeach()
+
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}"
             "-DGENESIS_APP_BUNDLE=$<TARGET_BUNDLE_DIR:${target}>"
             "-DGENESIS_ADHOC_SIGN=$<BOOL:${GENESIS_MACOS_ADHOC_SIGN}>"
+            "-DGENESIS_RUNTIME_LIBRARIES=$<JOIN:${_runtime_libraries},|>"
             -P "${_GENESIS_RECOMP_MACOS_CMAKE_DIR}/GenesisFixupMacOSBundle.cmake"
         COMMENT "Embedding and signing ${GMB_BUNDLE_NAME}.app"
         VERBATIM)

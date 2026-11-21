@@ -18,7 +18,11 @@ bundle. Ad-hoc signing is suitable for local builds; it does not notarize the
 application for distribution.
 
 `ICON` accepts an `.icns` file. Additional files listed in `RESOURCES` are
-copied into `Contents/Resources`.
+copied into `Contents/Resources`. Libraries loaded dynamically rather than
+through Mach-O load commands can be listed in `RUNTIME_LIBRARIES`.
+For example, an application linked to `sdl2-compat` should pass the unversioned
+`libSDL3.dylib` path so the helper preserves SDL3's symlink chain in
+`Contents/Frameworks`.
 
 Bundled runners store writable settings, saves, replay logs, and evidence in
 `~/Library/Application Support/GenesisRecomp/<short_name>/`. Set the existing
