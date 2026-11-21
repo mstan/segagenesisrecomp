@@ -9,13 +9,14 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include "../../runner/game_spec.h"
 #include "../../runner/state_crc.h"
 #define CHECK(x) do { if(!(x)) { fprintf(stderr,"FAIL line %d: %s\n",__LINE__,#x); exit(2); } } while(0)
 #define RECOMP_LAUNCHER 0
 uint8_t g_ram[65536],g_rom[0x400000];
 static uint8_t adapter[16];
 static uint32_t machine=17,glue=23,fm=29,psg=31,resumed;
-static int boundary,requested,discarded,replaying;
+static int boundary,requested,discarded,replaying,reject_mode;
 static int genesis_replay_playing(void) { return replaying; }
 static void genesis_local_states_save_finished(const char *path,int ok) { (void)path;(void)ok; }
 static size_t state_size(void) { return sizeof adapter; }
@@ -25,15 +26,21 @@ static int state_load(const void *p,size_t n,int apply) {
     if(apply)memcpy(adapter,p,n);
     return 1;
 }
-static const struct {
-    const char *display_name,*state_build_id;
-    size_t expected_rom_size;
-    size_t (*state_size)(void);
-    int (*state_save)(void *,size_t);
-    int (*state_load)(const void *,size_t,int);
-    uint32_t resume_main_loop_pc;
-    uint32_t (*save_resume_pc)(uint8_t);
-} g_game_spec={"Writer test","test-build",sizeof g_rom,state_size,state_save,state_load,0x1000,NULL};
+static uint32_t save_resume_pc(uint8_t mode) {
+    return reject_mode && mode==(uint8_t)reject_mode
+        ? GAME_RESUME_PC_UNSUPPORTED
+        : 0;
+}
+const GameSpec g_game_spec={
+    .display_name="Writer test",
+    .state_build_id="test-build",
+    .expected_rom_size=sizeof g_rom,
+    .state_size=state_size,
+    .state_save=state_save,
+    .state_load=state_load,
+    .resume_main_loop_pc=0x1000,
+    .save_resume_pc=save_resume_pc
+};
 static const struct { uint32_t game_mode_addr; } g_game_layout={0xfff600};
 static uint32_t rom_crc32(const uint8_t *p,size_t n) { return ~genesis_state_crc32_update(UINT32_MAX,p,n); }
 static void glue_save_state(FILE *f) { (void)fwrite(&glue,sizeof glue,1,f); }
@@ -110,6 +117,8 @@ int main(int argc,char **argv) {
     SDL_SemPost(release_write);CHECK(host_state_collect(1));block_commit=0;
     CHECK(!fopen(temporary,"rb"));CHECK(host_state_load(path));check_guest(2);
     CHECK(resumed==0x1000&&discarded==1);uint32_t second=file_crc(path);CHECK(second!=original);
+    set_guest(9);reject_mode=2;resumed=0;
+    CHECK(!host_state_load(path));check_guest(9);CHECK(!resumed);reject_mode=0;
 
     /* Pending capture cannot silently load the stale previous slot. A mode
      * without a resumable boundary times out while retaining that slot. */

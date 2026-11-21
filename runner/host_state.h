@@ -204,16 +204,20 @@ static int host_state_load(const char *path)
     if (fwrite(body+h.section[0],1,h.bytes-h.section[0],staged)!=h.bytes-h.section[0] || fflush(staged)) goto done;
     rewind(staged);
     if (!host_machine_read(staged)) { rewind(backup); host_machine_read(backup); goto done; }
+    uint8_t mode=g_game_layout.game_mode_addr?glue_peek8(g_game_layout.game_mode_addr):0u;
+    uint32_t pc=0;
+    if (!game_spec_resolve_save_resume_pc(
+            &g_game_spec,g_game_layout.game_mode_addr!=0,mode,&pc)) {
+        fprintf(stderr,"[LOAD] unsupported restored game mode $%02X; state cannot resume safely\n",mode);
+        rewind(backup);
+        host_machine_read(backup);
+        goto done;
+    }
     /* apply cannot fail after successful preflight; game adapters own no disk
      * writes and cannot select a serialized filesystem path. */
     ok=g_game_spec.state_load(body,h.section[0],1);
     if (!ok) { rewind(backup); host_machine_read(backup); goto done; }
     audio_discard_playback(); /* host payload restored deferred chip events */
-    uint32_t pc=g_game_spec.resume_main_loop_pc;
-    if (g_game_spec.save_resume_pc && g_game_layout.game_mode_addr) {
-        uint32_t mapped=g_game_spec.save_resume_pc(glue_peek8(g_game_layout.game_mode_addr));
-        if (mapped) pc=mapped;
-    }
     if (pc) glue_restart_game_fiber(pc);
 done:
     if (f) fclose(f); if (backup) fclose(backup); if (staged) fclose(staged); free(body);
