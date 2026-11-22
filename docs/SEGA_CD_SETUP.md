@@ -239,3 +239,13 @@ core and executable identities, publish checksums, and verify downloads.
 - [Media format and conversion](https://github.com/mstan/segagenesisrecomp/blob/feature/segacd-backend/docs/SEGA_CD_MEDIA.md)
 - [Permissive device implementation reuse and attribution](https://github.com/mstan/segagenesisrecomp/blob/feature/segacd-backend/docs/SEGA_CD_REUSE.md)
 - [Original-program module frontend](https://github.com/mstan/segagenesisrecomp/blob/feature/segacd-backend/docs/M68K_STEP_MODULES.md)
+
+## Project metadata
+
+At the separate game repository root, use
+`python segagenesisrecomp/tools/write_recomp_json.py .recomp.json --system "Sega CD" --game "My Game"`.
+Supply known `--region` and `--serial` values when available. Do not use the
+cartridge default of Genesis for a Sega CD project. Commit the metadata and
+update its status as development progresses; rerunning the command fills only
+missing fields and preserves maintainer values. The format is the independent
+[recomp.board project specification](https://recomp.fyi/spec).

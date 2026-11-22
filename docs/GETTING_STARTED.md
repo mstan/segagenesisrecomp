@@ -48,6 +48,26 @@ describe another 68000 game. The
 [disassembly guide](DISASSEMBLIES.md) explains how verified labels and
 annotations feed that analysis.
 
+
+## Describe the game project
+
+In the separate game's repository root, write its community metadata with the
+engine's small metadata command. Supply the game's actual name rather than
+guessing it from a filename:
+
+```powershell
+python segagenesisrecomp/tools/write_recomp_json.py .recomp.json `
+  --game "My Game" --project MyGameRecomp --rom 'D:/ROMs/My Game.bin'
+```
+
+Commit `.recomp.json` with the game project. This uses the open
+[recomp.board specification](https://recomp.fyi/spec): it records the original
+system, toolchain, game name and input SHA-1, without copying ROM data or local
+paths. Add `--region` or `--serial` only when you know that release's values.
+New files start at `exploring`; update the status and other metadata as the
+project progresses. Running the command again only fills missing fields and
+keeps maintainer-written values, including supported revisions.
+
 ## 3. Generate and integrate the host
 
 From your game folder, run the compiler you built, pointing it at your ROM
