@@ -4228,7 +4228,6 @@ session_begin:;
                 ui_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
 #endif
         update_render_logical_size(renderer);
-        SDL_RenderClear(renderer);
 
         /* Nearest-filtered presentation uploads only the active area the VDP
          * reported. Linear filtering keeps the full upload so edge sampling
@@ -4251,6 +4250,32 @@ session_begin:;
                     frame_texture=enhanced;SDL_QueryTexture(enhanced,NULL,NULL,&src.w,&src.h);src.x=src.y=0;}
             }gvdp_hd_release(job);}
         }
+        /* Guest deadlines stay at the original tick rate. The independent
+         * display clock may issue two OR three fractional pictures in one
+         * tick (144/59.94), without another sim/audio/input call. */
+        double display_rate=g_app_config.presentation_rate;
+        int high_refresh=display_rate!=0 && !turbo && !runtime_uncapped &&
+            target_fps>40 && target_fps<70 && s_screen_height==224 && !s_video_frame.height &&
+            g_game_spec.video && g_game_spec.video->interpolate && frame_texture==texture;
+#if RECOMP_LAUNCHER
+        if(recomp_runtime_ui_is_open(s_runtime_ui.ui))high_refresh=0;
+#endif
+#if GENESIS_HAS_RECOMP_NET
+        if(netplay_peer_view_active())high_refresh=0;
+#endif
+        if(high_refresh && display_rate<0) {
+            SDL_DisplayMode dm;int display=SDL_GetWindowDisplayIndex(window);
+            display_rate=display>=0 && SDL_GetCurrentDisplayMode(display,&dm)==0 && dm.refresh_rate>0?dm.refresh_rate:target_fps;
+        }
+        if(high_refresh) {
+            size_t need=(size_t)s_frame_stride*MAX_SCREEN_HEIGHT;
+            if(need>interpolation_capacity) {
+                uint32_t *next=(uint32_t*)realloc(interpolation_image,need*sizeof *next);
+                if(next){interpolation_image=next;interpolation_capacity=need;}else high_refresh=0;
+            }
+        }
+        /* The high-refresh path draws and uploads its first actual slot below. */
+        if(!high_refresh)SDL_RenderClear(renderer);
         if(frame_texture==texture) {
             static int peer_view_was_active = 0;
             int peer_view_is_active = netplay_peer_view_active();
@@ -4289,36 +4314,20 @@ session_begin:;
                     fprintf(stderr, "[NETVIEW] slot=%d crop=%d,%d %dx%d\n",
                             slot, src.x, peer_source_y, src.w, src.h);
 #endif
-            } else {
+            } else if(!high_refresh || s_frame_texture_filtered) {
+                /* Linear sampling still needs the full initialized texture. */
                 SDL_UpdateTexture(texture, base_upload_rect, present_src,
                                   MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
             }
             peer_view_was_active = peer_view_is_active;
         }
-        SDL_RenderCopy(renderer, frame_texture, &src, NULL);
+        if(!high_refresh)SDL_RenderCopy(renderer, frame_texture, &src, NULL);
 #if GENESIS_HAS_RECOMP_NET
         /* Process the peer INPUT and emit our CONFIRM before the blocking
          * present, so confirmation delivery overlaps vsync as well. */
         if (genesis_netplay_active() && !genesis_netplay_rollback_active())
             (void)genesis_netplay_poll_admit();
 #endif
-        /* Guest deadlines stay at the original tick rate. The independent
-         * display clock may issue two OR three fractional pictures in one
-         * tick (144/59.94), without another sim/audio/input call. */
-        double display_rate=g_app_config.presentation_rate;
-        int high_refresh=display_rate!=0 && !turbo && !runtime_uncapped &&
-            target_fps>40 && target_fps<70 && s_screen_height==224 && !s_video_frame.height &&
-            g_game_spec.video && g_game_spec.video->interpolate && frame_texture==texture;
-#if RECOMP_LAUNCHER
-        if(recomp_runtime_ui_is_open(s_runtime_ui.ui))high_refresh=0;
-#endif
-#if GENESIS_HAS_RECOMP_NET
-        if(netplay_peer_view_active())high_refresh=0;
-#endif
-        if(high_refresh && display_rate<0) {
-            SDL_DisplayMode dm;int display=SDL_GetWindowDisplayIndex(window);
-            display_rate=display>=0 && SDL_GetCurrentDisplayMode(display,&dm)==0 && dm.refresh_rate>0?dm.refresh_rate:target_fps;
-        }
         int want_vsync=high_refresh?0:original_vsync;
         if(want_vsync!=presentation_vsync) {
             if(SDL_RenderSetVSync(renderer,want_vsync)==0)presentation_vsync=want_vsync;
@@ -4326,13 +4335,6 @@ session_begin:;
         Uint64 guest_deadline=SDL_GetPerformanceCounter();
         if(turbo || runtime_uncapped)frame_pacer_reset(&frame_pacer);
         else guest_deadline=frame_pacer_deadline(&frame_pacer,guest_deadline);
-        if(high_refresh) {
-            size_t need=(size_t)s_frame_stride*MAX_SCREEN_HEIGHT;
-            if(need>interpolation_capacity) {
-                uint32_t *next=(uint32_t*)realloc(interpolation_image,need*sizeof *next);
-                if(next){interpolation_image=next;interpolation_capacity=need;}else high_refresh=0;
-            }
-        }
         if(high_refresh) {
             Uint64 now=SDL_GetPerformanceCounter();
             Uint64 guest_work=now-frame_start;
