@@ -26,6 +26,14 @@ static unsigned s_player_limit = 2;
 /* Edge-triggered shoulder latches (consumed by main loop once per press). */
 static int s_pending_save = 0;
 static int s_pending_load = 0;
+static int s_pending_rewind;
+static int shortcut_button(int configured,int original)
+{
+    if(!g_input_map.shortcuts.enabled || !(g_input_map.p[0].device&INPUT_DEV_GAMEPAD))return -1;
+    if(configured==INPUT_SHORTCUT_ORIGINAL)
+        return g_input_map.p[0].pad_type==PAD_6BUTTON?-1:original;
+    return configured>=0&&configured<SDL_CONTROLLER_BUTTON_MAX?configured:-1;
+}
 
 static void open_pad_index(int joystick_index)
 {
@@ -61,7 +69,7 @@ static void close_pad_by_jid(SDL_JoystickID jid)
             SDL_GameControllerClose(s_pad[i]);
             s_pad[i]     = NULL;
             s_pad_jid[i] = -1;
-            if (i == 0) s_pending_load = 0;
+            if (i == 0) s_pending_save=s_pending_load=s_pending_rewind=0;
         }
     }
 }
@@ -90,6 +98,7 @@ void gamepad_shutdown(void)
     }
     s_pending_save = 0;
     s_pending_load = 0;
+    s_pending_rewind=0;
     s_player_limit = 2;
 }
 
@@ -109,13 +118,14 @@ void gamepad_handle_event(const SDL_Event *ev)
         case SDL_CONTROLLERBUTTONDOWN:
             /* Quicksave / quickload taps from player 1's shoulders — only when
              * P1 is a 3-button pad (6-button uses LB/RB for Y/Z). */
-            if (s_pad[0] && ev->cbutton.which == s_pad_jid[0] &&
-                g_input_map.p[0].pad_type != PAD_6BUTTON) {
-                if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
+            if (s_pad[0] && ev->cbutton.which == s_pad_jid[0]) {
+                const InputShortcuts *s=&g_input_map.shortcuts;
+                if (ev->cbutton.button == shortcut_button(s->save_button,SDL_CONTROLLER_BUTTON_LEFTSHOULDER))
                     s_pending_save = 1;
-                else if (ev->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER &&
-                         !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK))
+                else if (ev->cbutton.button == shortcut_button(s->load_button,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) &&
+                         (s->load_button!=INPUT_SHORTCUT_ORIGINAL || !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK)))
                     s_pending_load = 1;
+                else if(ev->cbutton.button==shortcut_button(s->rewind_button,-1))s_pending_rewind=1;
             }
             break;
         default:
@@ -157,6 +167,10 @@ uint16_t gamepad_player_mask(int player)
     for (int b = 0; b < GB_COUNT; b++) {
         /* In 3-button mode the X/Y/Z/Mode binds are inert. */
         if (pi->pad_type != PAD_6BUTTON && b >= GB_X) continue;
+        if(!player && g_input_map.shortcuts.enabled && pi->pad[b].kind==GP_BIND_BUTTON &&
+           (pi->pad[b].code==g_input_map.shortcuts.save_button ||
+            pi->pad[b].code==g_input_map.shortcuts.load_button ||
+            pi->pad[b].code==g_input_map.shortcuts.rewind_button))continue;
         if (bind_held(c, &pi->pad[b], dz))
             m |= input_button_bit((GenesisButton)b);
     }
@@ -211,22 +225,25 @@ int gamepad_consume_quicksave(void)
 {
     if (!s_pending_save) return 0;
     s_pending_save = 0;
-    return 1;   /* slot 1 */
+    return g_input_map.shortcuts.enabled;   /* slot 1 */
 }
 
 int gamepad_consume_quickload(void)
 {
     if (!s_pending_load) return 0;
     s_pending_load = 0;
-    return 1;   /* slot 1 */
+    return g_input_map.shortcuts.enabled;   /* slot 1 */
 }
+int gamepad_consume_rewind(void)
+{int pending=s_pending_rewind;s_pending_rewind=0;return pending&&g_input_map.shortcuts.enabled;}
 
 int gamepad_quickload_held(void)
 {
-    return gamepad_player_connected(0) &&
-        g_input_map.p[0].pad_type != PAD_6BUTTON &&
-        !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK) &&
-        SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    int b=shortcut_button(g_input_map.shortcuts.load_button,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    return gamepad_player_connected(0) && b>=0 &&
+        (g_input_map.shortcuts.load_button!=INPUT_SHORTCUT_ORIGINAL ||
+         !SDL_GameControllerGetButton(s_pad[0], SDL_CONTROLLER_BUTTON_BACK)) &&
+        SDL_GameControllerGetButton(s_pad[0],(SDL_GameControllerButton)b);
 }
 
 int gamepad_cancels_quickload(const SDL_Event *ev)
@@ -238,7 +255,7 @@ int gamepad_cancels_quickload(const SDL_Event *ev)
         return 0;
     return ev->cbutton.which == s_pad_jid[0] &&
         ((ev->type == SDL_CONTROLLERBUTTONUP &&
-          ev->cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) ||
+          ev->cbutton.button == shortcut_button(g_input_map.shortcuts.load_button,SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) ||
          (ev->type == SDL_CONTROLLERBUTTONDOWN &&
-          ev->cbutton.button == SDL_CONTROLLER_BUTTON_BACK));
+          g_input_map.shortcuts.load_button==INPUT_SHORTCUT_ORIGINAL && ev->cbutton.button == SDL_CONTROLLER_BUTTON_BACK));
 }

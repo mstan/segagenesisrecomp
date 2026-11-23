@@ -50,6 +50,7 @@ int gamepad_player_connected(int player);
 int     gamepad_turbo_held(void);
 int     gamepad_consume_quicksave(void);
 int     gamepad_consume_quickload(void);
+int     gamepad_consume_rewind(void);
 /* Continuous physical P1 RB, only in 3-button mode and without Back/View. */
 int     gamepad_quickload_held(void);
 /* Read before handling the event, while the original P1 assignment is valid. */

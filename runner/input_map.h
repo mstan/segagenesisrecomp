@@ -61,9 +61,14 @@ typedef struct PlayerInput {
 } PlayerInput;
 
 enum { INPUT_MAX_PLAYERS = 6 };
+enum { INPUT_SHORTCUT_ORIGINAL=-2,INPUT_SHORTCUT_NONE=-1 };
+typedef struct InputShortcuts {
+    int enabled,save_button,load_button,rewind_button,selector;
+} InputShortcuts;
 typedef struct InputMap {
     /* Host logical players; the Genesis bus still exposes two physical ports. */
     PlayerInput p[INPUT_MAX_PLAYERS];
+    InputShortcuts shortcuts;
 } InputMap;
 
 /* The single live instance the runner + launcher read/write. */
@@ -73,6 +78,9 @@ extern InputMap g_input_map;
  * arrows/Z/X/C/Return + first gamepad, P2 disabled). Call once at startup before
  * app_config_load() (which overrides any fields present in settings.ini). */
 void input_map_init_defaults(void);
+const char *input_shortcut_button_id(int code);
+const char *input_shortcut_button_label(int code);
+int input_shortcut_button_code(const char *id); /* -3 for invalid input */
 
 /* Keyboard contribution for a player: a GPAD_* bit mask of currently-held bound
  * keys (reads SDL_GetKeyboardState). Does NOT apply device gating. */
