@@ -27,6 +27,11 @@ typedef struct GenesisMachine {
 } GenesisMachine;
 
 extern GenesisMachine g_machine;
+/* Native sound providers enqueue DAC output on the existing audio timeline.
+ * The callback is host configuration, while its clock belongs in title state. */
+typedef void (*GenesisHleAudioAdvance)(uint32_t start,uint32_t cycles);
+void machine_set_hle_audio(GenesisHleAudioAdvance advance);
+uint32_t machine_z80_stamp(void);
 
 /* Native CPU scheduler hook, implemented by glue.c. Use the fixed-width public
  * budget ABI on every host (uint_fast32_t is 64-bit on some platforms). */

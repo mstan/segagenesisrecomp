@@ -17,6 +17,8 @@
 #include <stdio.h>   /* [SND-TRACE] temporary sound-command lifecycle trace */
 
 GenesisMachine g_machine;
+static GenesisHleAudioAdvance s_hle_audio;
+void machine_set_hle_audio(GenesisHleAudioAdvance advance){s_hle_audio=advance;}
 
 /* ===================== [SND-TRACE] sound-command lifecycle =================
  * Always-on in-memory ring (no I/O in the hot path — PRINCIPLES #17/#18).
@@ -430,6 +432,11 @@ uint32_t machine_z80_stamp(void)
 
 static void step_z80(GenesisMachine *m, uint32_t target)
 {
+#if GENESIS_AUDIO_HLE
+    /* The qualified title provider owns sound requests and the sound clock.
+     * No uploaded instruction stream or guest CPU fallback runs in HLE. */
+    (void)m;(void)target;return;
+#else
     if (!m->bus.z80_reset_off || m->bus.z80_busreq) return;   /* Z80 halted */
     /* The 68K pulsed the Z80 reset line while halted — restart the core at
      * $0000 now that it's released, so it runs the freshly-uploaded driver
@@ -483,6 +490,7 @@ static void step_z80(GenesisMachine *m, uint32_t target)
 #else
     (void)pend_before;
 #endif
+#endif /* GENESIS_AUDIO_HLE */
 }
 
 typedef struct NativeRowContext {
@@ -547,6 +555,7 @@ void machine_run_frame_ex(GenesisScanlineSink sink, void *user,
 
         /* Step the Z80 (SMPS driver) for its share of the line. */
         step_z80(m, Z80_PER_LINE);
+        if(s_hle_audio)s_hle_audio(s_line_base,MASTER_PER_LINE);
 
         /* Deliver interrupts to the 68K (and the Z80 at vblank). */
         if (irq & GVDP_IRQ_VBLANK) {
