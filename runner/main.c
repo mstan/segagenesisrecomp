@@ -2769,18 +2769,36 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    /* Scripted launches must never request desktop input. Resolve the saved
+     * path before either launcher or native chooser, then fail closed if the
+     * test did not supply a readable image. Explicit --launcher still allows
+     * launcher tests, with this same known image prefilled. */
+    int automation = (max_frames || hash_frames || hash_on_mode || input_script_path ||
+                      snd_dump_frame || snd_dump_vint || target_fps_cli != 0.0 ||
+                      mem_write_log_spec || wav_path || s_script_start_frame ||
+                      s_script_right_frame || debug_port_cli || start_turbo ||
+                      no_launcher || getenv("GENESIS_NO_LAUNCHER") != NULL ||
+                      getenv("GENESIS_NONINTERACTIVE") != NULL ||
+                      getenv("LNG_SCRIPT") != NULL ||
+                      getenv("LNG_TEST_HIDDEN") != NULL);
+    if (automation) {
+        static char automation_rom[600];
+        if (!rom_path && rom_cfg_read(rom_cfg_path, automation_rom, sizeof automation_rom))
+            rom_path = automation_rom;
+        FILE *probe = rom_path && rom_path[0] ? fopen(rom_path, "rb") : NULL;
+        if (!probe) {
+            fprintf(stderr, "[rom] Noninteractive launch requires a readable ROM path; "
+                    "pass the original image on the command line or prefill rom.cfg.\n");
+            return 1;
+        }
+        fclose(probe);
+    }
     {
-        /* The GUI launcher only runs for a plain double-click: no positional
-         * ROM and no automation/headless flag (preserves every scripted dev /
-         * CI invocation in CLAUDE.md). */
+        /* A positional image normally boots directly. --launcher explicitly
+         * opens the launcher and uses that image as its initial selection. */
         int positional_rom = (rom_path != NULL);
-        int automation = (max_frames || hash_frames || hash_on_mode || input_script_path ||
-                          snd_dump_frame || snd_dump_vint || target_fps_cli != 0.0 ||
-                          mem_write_log_spec || wav_path || s_script_start_frame ||
-                          s_script_right_frame || debug_port_cli || start_turbo ||
-                          no_launcher || getenv("GENESIS_NO_LAUNCHER") != NULL);
 #if RECOMP_LAUNCHER
-        if (!positional_rom && !automation) {
+        if (force_launcher || (!positional_rom && !automation)) {
             static char cached_rom[600];
             int booted_cached = 0;
             if (g_app_config.skip_launcher && !force_launcher &&
@@ -2790,7 +2808,8 @@ int main(int argc, char *argv[])
             }
             if (!booted_cached) {
                 char initial_rom[600] = "";
-                rom_cfg_read(rom_cfg_path, initial_rom, sizeof initial_rom);
+                if (rom_path) snprintf(initial_rom, sizeof initial_rom, "%s", rom_path);
+                else rom_cfg_read(rom_cfg_path, initial_rom, sizeof initial_rom);
                 char ltitle[200];
                 snprintf(ltitle, sizeof ltitle, "%s",
                          g_game_spec.display_name ? g_game_spec.display_name : "Genesis");
@@ -2826,6 +2845,10 @@ int main(int argc, char *argv[])
     }
 
     if (!rom_path) {
+        if (automation) {
+            fprintf(stderr, "[rom] Noninteractive launch has no ROM; file picker suppressed.\n");
+            return 1;
+        }
 #ifdef _WIN32
         static char picked_path[512] = {0};
         {
