@@ -183,7 +183,8 @@ typedef struct GameSpec {
     /* Optional game-owned continuation before entering the saved loop. Some
      * consumers finish an interrupted native fade here. NULL lets the runner
      * dispatch the saved PC in the selected native/interpreter mode. A custom
-     * callback owns equivalent forced-interpreter behavior when required. */
+     * callback owns that choice for its own work. The runner keeps the
+     * selected mode for setup and dispatch after the callback returns. */
     void      (*call_resume)(uint32_t resume_pc);
 
     /* Optional callable setup that runs once after the save-state resume loop

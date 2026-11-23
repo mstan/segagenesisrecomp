@@ -601,14 +601,20 @@ static void game_fiber_func(void *param)
         uint32_t resume_pc = s_game_fiber_resume_pc & 0xFFFFFFu;
         uint32_t resume_a7 = g_cpu.A[7] & 0xFFFFFFu;
         s_game_fiber_resume_pc = 0;
-        if (genesis_force_interp() && !g_game_spec.call_resume) {
+        if (genesis_force_interp()) {
             uint32_t exit_pc = 0;
-            fprintf(stderr, "[FORCE_INTERP] resuming at PC $%06X\n", resume_pc);
-            M68kiStatus st = m68k_interp_run_framed(resume_pc, &exit_pc);
-            if (st != M68KI_OK) {
-                fprintf(stderr, "[FORCE_INTERP] resume HALT st=%d at PC=$%06X op=$%04X\n",
-                        (int)st, g_m68ki_bad_pc, g_m68ki_bad_op);
-                for (;;) yield_to_main(GLUE_YIELD_HALT);
+            if (g_game_spec.call_resume) {
+                fprintf(stderr, "[FORCE_INTERP] game-owned call_resume controls execution at $%06X\n",
+                        resume_pc);
+                g_game_spec.call_resume(resume_pc);
+            } else {
+                fprintf(stderr, "[FORCE_INTERP] resuming at PC $%06X\n", resume_pc);
+                M68kiStatus st = m68k_interp_run_framed(resume_pc, &exit_pc);
+                if (st != M68KI_OK) {
+                    fprintf(stderr, "[FORCE_INTERP] resume HALT st=%d at PC=$%06X op=$%04X\n",
+                            (int)st, g_m68ki_bad_pc, g_m68ki_bad_op);
+                    for (;;) yield_to_main(GLUE_YIELD_HALT);
+                }
             }
             if (g_game_spec.dispatch_main_loop_pc) {
                 uint32_t setup_pc = g_game_spec.resume_dispatch_setup_pc & 0xFFFFFFu;
@@ -616,7 +622,7 @@ static void game_fiber_func(void *param)
                 if (setup_pc) {
                     fprintf(stderr, "[GAME] %s resume loop returned at $%06X with saved A7 $%06X; continuing via setup $%06X and dispatcher $%06X\n",
                             g_game_spec.short_name, resume_pc, resume_a7, setup_pc, dispatch_pc);
-                    st = m68k_interp_run_framed(setup_pc, &exit_pc);
+                    M68kiStatus st = m68k_interp_run_framed(setup_pc, &exit_pc);
                     if (st != M68KI_OK) {
                         fprintf(stderr, "[FORCE_INTERP] dispatch setup HALT st=%d at PC=$%06X op=$%04X\n",
                                 (int)st, g_m68ki_bad_pc, g_m68ki_bad_op);
@@ -630,7 +636,7 @@ static void game_fiber_func(void *param)
                     interp_drive_mainloop(dispatch_pc);
 
                 for (;;) {
-                    st = m68k_interp_run_framed(dispatch_pc, &exit_pc);
+                    M68kiStatus st = m68k_interp_run_framed(dispatch_pc, &exit_pc);
                     if (st != M68KI_OK) {
                         fprintf(stderr, "[FORCE_INTERP] dispatch HALT st=%d at PC=$%06X op=$%04X\n",
                                 (int)st, g_m68ki_bad_pc, g_m68ki_bad_op);
@@ -645,9 +651,6 @@ static void game_fiber_func(void *param)
                     g_game_spec.short_name, exit_pc);
             for (;;) yield_to_main(GLUE_YIELD_HALT);
         }
-        if (genesis_force_interp() && g_game_spec.call_resume)
-            fprintf(stderr, "[FORCE_INTERP] game-owned call_resume controls execution at $%06X\n",
-                    resume_pc);
         if (g_game_spec.call_resume)
             g_game_spec.call_resume(resume_pc);
         else
