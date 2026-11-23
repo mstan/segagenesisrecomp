@@ -92,7 +92,7 @@ int smps_hle_effect(SmpsHle *s,uint32_t offset,int continuous)
             if(hardware!=0x80 && hardware!=0xA0 && hardware!=0xC0)return fail(s,"Unknown PSG effect channel",at);
             channel=7+(hardware-0x80)/32;
         }else{
-            if(hardware!=2 && hardware!=4 && hardware!=5)return fail(s,"Unknown FM effect channel",at);
+            if(hardware!=2 && hardware!=4 && hardware!=5 && hardware!=6)return fail(s,"Unknown FM effect channel",at);
             channel=(hardware&3)+1+(hardware&4?3:0);
         }
         SmpsHleTrack *old=&s->state.music.track[channel];
