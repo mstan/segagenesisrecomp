@@ -2344,6 +2344,9 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         capture_local_session_config(&ls, NULL);
         genesis_netplay_set_local_session_config(local_session_config());
     #endif
+#if defined(__ANDROID__)
+        genesis_android_register_document_picker();
+#endif
         lr = recomp_launcher_run_window(ltitle, &ls, &gi, assets_dir,
                                         initial_rom, picked, picked_cap);
 #ifdef RECOMP_LAUNCHER_HAS_ROM_REVISIONS

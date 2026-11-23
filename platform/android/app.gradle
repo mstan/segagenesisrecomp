@@ -62,9 +62,10 @@ android {
         applicationId g.applicationId + (qa ? '.qa' : '')
         minSdk 24
         targetSdk 35
+        ndk { abiFilters(*abis) }
         versionCode g.versionCode
         versionName g.version
-        manifestPlaceholders = [gameTitle:g.title]
+        manifestPlaceholders = [gameTitle:g.title, gameIcon:g.icon ?: '@android:drawable/sym_def_app_icon']
         buildConfigField 'String','GAME_TITLE','"'+g.title+'"'
         buildConfigField 'String','ROM_CRC','"'+g.romCrc+'"'
         buildConfigField 'int','ROM_SIZE',g.romSize.toString()

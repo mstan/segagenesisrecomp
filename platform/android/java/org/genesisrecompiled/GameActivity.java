@@ -1,6 +1,20 @@
 package org.genesisrecompiled;
 
 import android.os.Bundle;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
+import android.widget.Toast;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 import android.os.Build;
 import android.system.Os;
 import android.view.Gravity;
@@ -19,6 +33,141 @@ public final class GameActivity extends SDLActivity {
     private FrameLayout touchOverlay;
     private volatile boolean touchControlsAvailable;
     private Runnable unregisterBack;
+    private static final int OPEN_DOCUMENT = 7319;
+    private final AtomicReference<DocumentRequest> document = new AtomicReference<>();
+
+    private static final class DocumentRequest {
+        final String[] patterns;
+        final CompletableFuture<byte[]> result = new CompletableFuture<>();
+
+        DocumentRequest(String[] patterns) {
+            this.patterns = patterns;
+        }
+    }
+
+    /** Called on SDL's native thread. Android owns the document UI and reports
+     * the result to the main thread, so a launcher request can wait here. */
+    public byte[] openDocument(String title, String[] patterns) {
+        DocumentRequest request = new DocumentRequest(patterns);
+        if (!document.compareAndSet(null, request)) return null;
+        runOnUiThread(() -> {
+            if (document.get() != request) return;
+            if (isFinishing()) {
+                finishDocument(request, null);
+                return;
+            }
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("*/*")
+                .putExtra(Intent.EXTRA_TITLE, title);
+            try {
+                startActivityForResult(intent, OPEN_DOCUMENT);
+            } catch (RuntimeException error) {
+                documentError(request, "The system file picker is unavailable.");
+            }
+        });
+        try {
+            return request.result.get();
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+            finishDocument(request, null);
+        } catch (ExecutionException error) {
+            finishDocument(request, null);
+        }
+        return null;
+    }
+
+    @Override protected void onActivityResult(int code, int result, Intent intent) {
+        super.onActivityResult(code, result, intent);
+        if (code != OPEN_DOCUMENT) return;
+        DocumentRequest request = document.get();
+        if (request == null) return;
+        Uri uri = result == RESULT_OK && intent != null ? intent.getData() : null;
+        if (uri == null) {
+            finishDocument(request, null);
+            return;
+        }
+        new Thread(() -> {
+            try {
+                String name = documentName(uri);
+                if (!matches(name, request.patterns)) throw new IOException("Choose a supported file.");
+                File file = copyDocument(uri, name);
+                finishDocument(request, file.getAbsolutePath().getBytes(StandardCharsets.UTF_8));
+            } catch (Exception error) {
+                documentError(request, error.getMessage() != null ? error.getMessage() : "The file could not be imported.");
+            }
+        }, "genesis-document-import").start();
+    }
+
+    private void finishDocument(DocumentRequest request, byte[] path) {
+        if (document.compareAndSet(request, null)) request.result.complete(path);
+    }
+
+    private void documentError(DocumentRequest request, String message) {
+        runOnUiThread(() -> {
+            if (document.get() != request) return;
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            finishDocument(request, null);
+        });
+    }
+
+    private String documentName(Uri uri) throws IOException {
+        String name = null;
+        try (Cursor cursor = getContentResolver().query(uri,
+                new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) name = cursor.getString(0);
+        }
+        if (name == null || name.isEmpty() || !new File(name).getName().equals(name) ||
+                ".".equals(name) || "..".equals(name) || name.chars().anyMatch(Character::isISOControl)) {
+            throw new IOException("The document has no usable file name.");
+        }
+        return name;
+    }
+
+    private static boolean matches(String name, String[] patterns) {
+        if (patterns == null || patterns.length == 0) return true;
+        String lower = name.toLowerCase(Locale.ROOT);
+        int dot = lower.lastIndexOf('.');
+        for (String pattern : patterns) {
+            if (pattern == null) continue;
+            if ("*".equals(pattern) || "*.*".equals(pattern)) return true;
+            if (dot >= 0 && pattern.startsWith("*.") &&
+                    lower.substring(dot).equals(pattern.substring(1).toLowerCase(Locale.ROOT))) return true;
+        }
+        return false;
+    }
+
+    private File copyDocument(Uri uri, String name) throws Exception {
+        File imports = new File(getFilesDir(), "imported-documents");
+        if (!imports.isDirectory() && !imports.mkdir())
+            throw new IOException("Cannot open app storage for imports.");
+        File staged = File.createTempFile("document-", ".pending", imports);
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            try (InputStream input = getContentResolver().openInputStream(uri);
+                 FileOutputStream output = new FileOutputStream(staged)) {
+                if (input == null) throw new IOException("Cannot read the selected document.");
+                byte[] buffer = new byte[64 * 1024];
+                for (int size; (size = input.read(buffer)) != -1;) {
+                    output.write(buffer, 0, size);
+                    digest.update(buffer, 0, size);
+                }
+            }
+            StringBuilder identity = new StringBuilder(64);
+            for (byte value : digest.digest()) {
+                identity.append(Character.forDigit((value >> 4) & 15, 16));
+                identity.append(Character.forDigit(value & 15, 16));
+            }
+            File content = new File(imports, identity.toString());
+            if (!content.isDirectory() && !content.mkdir()) throw new IOException("Cannot prepare the imported file.");
+            File output = new File(content, name);
+            if (!output.isFile() && !staged.renameTo(output))
+                throw new IOException("Cannot finish importing the selected file.");
+            return output;
+        } finally {
+            staged.delete();
+        }
+    }
 
     /* Both system Back routes use the same native Escape/menu semantics as
      * the gameplay Menu control. Release held touch keys before transferring
@@ -112,6 +261,8 @@ public final class GameActivity extends SDLActivity {
     private void release() { for(int code:held)onNativeKeyUp(code);held.clear(); }
     @Override protected void onPause() { release();super.onPause(); }
     @Override protected void onDestroy() {
+        DocumentRequest pending = document.getAndSet(null);
+        if (pending != null) pending.result.complete(null);
         if(unregisterBack!=null) { unregisterBack.run();unregisterBack=null; }
         super.onDestroy();
     }
