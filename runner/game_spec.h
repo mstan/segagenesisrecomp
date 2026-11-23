@@ -175,19 +175,32 @@ typedef struct GameSpec {
      * for GM_Level), so a load continues moment-in-time instead of
      * re-running the mode handler's init (zone reload). Return 0 to
      * fall back to resume_main_loop_pc (mode-handler re-entry via the
-     * outer dispatcher) — correct for transition/init modes. Addresses
-     * come from the game's disassembly. */
+     * outer dispatcher) — correct for transition/init modes. Return
+     * GAME_RESUME_PC_UNSUPPORTED to reject a state whose restored mode
+     * cannot be resumed safely. Addresses come from the game's disassembly. */
     uint32_t  (*save_resume_pc)(uint8_t game_mode);
 
     /* Optional game-owned continuation before entering the saved loop. Some
-     * consumers finish an interrupted native fade here. NULL dispatches the
-     * saved PC directly through recomp_call_addr. */
+     * consumers finish an interrupted native fade here. NULL lets the runner
+     * dispatch the saved PC in the selected native/interpreter mode. A custom
+     * callback owns that choice for its own work. The runner keeps the
+     * selected mode for setup and dispatch after the callback returns. */
     void      (*call_resume)(uint32_t resume_pc);
+
+    /* Optional callable setup that runs once after the save-state resume loop
+     * returns and before dispatch_main_loop_pc. Use this when the original
+     * continuation is the interior suffix "JSR setup; JMP main_loop". */
+    uint32_t    resume_dispatch_setup_pc;
 
     /* Outer game-mode dispatcher PC. If the save-state resume loop
      * returns because the game changed modes, the restarted host fiber
      * continues here so normal mode dispatch takes over. */
     uint32_t    dispatch_main_loop_pc;
+
+    /* Optional stable dispatcher used after dispatch_main_loop_pc returns.
+     * This supports games whose first post-resume continuation is an interior
+     * path that must run once before normal outer dispatch resumes. */
+    uint32_t    redispatch_main_loop_pc;
 
     /* Optional per-yield periodic. Sonic 1 calls a UpdateMusic-like
      * routine (func_001642) while the game thread is parked at
@@ -296,6 +309,25 @@ typedef struct GameSpec {
      * one function at a time during divergence hunting. NULL+0 is
      * legal and means "no overrides". */
 } GameSpec;
+
+#define GAME_RESUME_PC_UNSUPPORTED UINT32_MAX
+
+static inline bool game_spec_resolve_save_resume_pc(
+    const GameSpec *spec, bool has_game_mode, uint8_t game_mode,
+    uint32_t *resume_pc)
+{
+    uint32_t pc = spec->resume_main_loop_pc;
+    if (spec->save_resume_pc && has_game_mode) {
+        uint32_t mapped = spec->save_resume_pc(game_mode);
+        if (mapped == GAME_RESUME_PC_UNSUPPORTED)
+            return false;
+        if (mapped)
+            pc = mapped;
+    }
+    if (resume_pc)
+        *resume_pc = pc;
+    return true;
+}
 
 /*
  * The single per-game spec instance. Each game project defines this
