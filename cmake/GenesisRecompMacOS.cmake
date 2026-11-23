@@ -1,6 +1,6 @@
 include_guard(GLOBAL)
 
-set(_GENESIS_RECOMP_MACOS_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set_property(GLOBAL PROPERTY _GENESIS_RECOMP_MACOS_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 option(GENESIS_MACOS_ADHOC_SIGN
     "Ad-hoc sign macOS app bundles after embedding runtime dependencies" ON)
@@ -41,13 +41,23 @@ function(genesisrecomp_macos_bundle target)
         endif()
     endif()
 
+    get_property(_module_dir GLOBAL PROPERTY _GENESIS_RECOMP_MACOS_CMAKE_DIR)
+    foreach(_value IN ITEMS "${GMB_BUNDLE_NAME}" "${GMB_BUNDLE_IDENTIFIER}"
+                            "${GMB_VERSION}" "${GMB_ICON}")
+        string(FIND "${_value}" "]]>" _cdata_end)
+        if(NOT _cdata_end EQUAL -1)
+            message(FATAL_ERROR
+                "genesisrecomp_macos_bundle(${target}): metadata cannot contain ]]>")
+        endif()
+    endforeach()
+
     set_target_properties(${target} PROPERTIES
         MACOSX_BUNDLE TRUE
         OUTPUT_NAME "${GMB_BUNDLE_NAME}"
         MACOSX_BUNDLE_BUNDLE_NAME "${GMB_BUNDLE_NAME}"
         MACOSX_BUNDLE_GUI_IDENTIFIER "${GMB_BUNDLE_IDENTIFIER}"
         MACOSX_BUNDLE_INFO_PLIST
-            "${_GENESIS_RECOMP_MACOS_CMAKE_DIR}/GenesisRecompInfo.plist.in"
+            "${_module_dir}/GenesisRecompInfo.plist.in"
         MACOSX_BUNDLE_INFO_STRING "${GMB_BUNDLE_NAME} ${GMB_VERSION}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${GMB_VERSION}"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${GMB_VERSION}")
@@ -96,7 +106,7 @@ function(genesisrecomp_macos_bundle target)
             "-DGENESIS_APP_BUNDLE=$<TARGET_BUNDLE_DIR:${target}>"
             "-DGENESIS_ADHOC_SIGN=$<BOOL:${GENESIS_MACOS_ADHOC_SIGN}>"
             "-DGENESIS_RUNTIME_LIBRARIES=$<JOIN:${_runtime_libraries},|>"
-            -P "${_GENESIS_RECOMP_MACOS_CMAKE_DIR}/GenesisFixupMacOSBundle.cmake"
+            -P "${_module_dir}/GenesisFixupMacOSBundle.cmake"
         COMMENT "Embedding and signing ${GMB_BUNDLE_NAME}.app"
         VERBATIM)
 endfunction()
