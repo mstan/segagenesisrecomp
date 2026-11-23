@@ -2311,7 +2311,11 @@ static int run_recomp_launcher(const char *ltitle, const char *initial_rom, char
         }
 
         char assets_dir[600];
+#if defined(__APPLE__) && defined(GENESIS_MACOS_BUNDLE)
+        snprintf(assets_dir, sizeof assets_dir, "%s../Resources/assets", s_exe_dir);
+#else
         snprintf(assets_dir, sizeof assets_dir, "%sassets", s_exe_dir);
+#endif
         #if GENESIS_HAS_RECOMP_NET
         /* Soft return: reopen on the waiting room of the match that just ended
          * (recomp-ui HOST_NETPLAY.md: prepare_rematch + resume_netplay_room). */
@@ -2517,6 +2521,25 @@ int main(int argc, char *argv[])
         }
         snprintf(s_data_dir,sizeof s_data_dir,"%s/",user_dir);
     }
+#if defined(__APPLE__) && defined(GENESIS_MACOS_BUNDLE)
+    else {
+        const char *app = g_game_spec.short_name && g_game_spec.short_name[0]
+            ? g_game_spec.short_name : "game";
+        char *pref = SDL_GetPrefPath("GenesisRecomp", app);
+        if (!pref) {
+            fprintf(stderr, "Cannot create the macOS application data directory: %s\n",
+                    SDL_GetError());
+            return 1;
+        }
+        if (strlen(pref) >= sizeof s_data_dir) {
+            fprintf(stderr, "macOS application data directory path is too long\n");
+            SDL_free(pref);
+            return 1;
+        }
+        snprintf(s_data_dir, sizeof s_data_dir, "%s", pref);
+        SDL_free(pref);
+    }
+#endif
     input_map_init_defaults();   /* today's mapping; app_config_load may override */
 #if GENESIS_HAS_RECOMP_NET
     GenesisNetplayConfig netplay_config;
