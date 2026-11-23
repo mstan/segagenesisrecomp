@@ -65,7 +65,7 @@ static int envelope(SmpsHleSynth *s,SmpsHleSynthTrack *t,int modulation,int *res
         else if(value==0x82){if(!range(s,at+1,1))return 0;*index=s->data[at+1];continue;}
         else if(value==0x83){t->active=0;return 1;}
         else if(modulation && value==0x84){
-            if(!range(s,at+1,1))return 0;t->modulation_multiplier=s->data[at+1];*index+=2;continue;
+            if(!range(s,at+1,1))return 0;t->modulation_multiplier=(uint8_t)(t->modulation_multiplier+s->data[at+1]);*index+=2;continue;
         }
         ++*index;*result=modulation?(int8_t)value*t->modulation_multiplier:(int)value*8;return 1;
     }
@@ -149,12 +149,12 @@ int smps_hle_synth_event(void *user,const SmpsHleEvent *event)
     unsigned channel=event->channel;SmpsHleSynthTrack *t=&s->state.track[channel];
     switch(event->kind){
     case SMPS_HLE_BEGIN_TRACK:
-        memset(t,0,sizeof *t);t->pan=0xC0;t->last_volume=255;t->last_frequency=65535;t->modulation_multiplier=1;return 1;
+        memset(t,0,sizeof *t);t->pan=0xC0;t->last_volume=255;t->last_frequency=65535;return 1;
     case SMPS_HLE_NOTE:
         t->active=1;t->note=(uint8_t)event->value;t->detune=(int8_t)event->argument;
         t->base_frequency=note_frequency(channel,event->value);t->last_frequency=65535;
         if(!(event->argument&(256|512))){
-            t->psg_index=t->modulation_index=0;t->modulation=0;
+            t->psg_index=t->modulation_index=0;t->modulation=0;t->modulation_multiplier=0;
             t->raw_delay=t->raw[0];t->raw_speed=t->raw[1];t->raw_delta=(int8_t)t->raw[2];
             t->raw_steps=t->raw_z80?t->raw[3]:(uint8_t)(t->raw[3]/2);
             if(channel<7 && !key(s,channel,0))return 0;
@@ -176,10 +176,11 @@ int smps_hle_synth_event(void *user,const SmpsHleEvent *event)
         if(event->argument==14 || event->argument==33){
             t->raw[0]=(uint8_t)(event->value>>24);t->raw[1]=(uint8_t)(event->value>>16);
             t->raw[2]=(uint8_t)(event->value>>8);t->raw[3]=(uint8_t)event->value;
-            t->raw_z80=event->argument==33;t->modulation_control|=128;
+            t->raw_z80=event->argument==33;
+            if(t->raw_z80){t->modulation_control=128;t->modulation_index=0;}else t->modulation_control|=128;
             t->raw_delay=t->raw[0];t->raw_speed=t->raw[1];t->raw_delta=(int8_t)t->raw[2];
             t->raw_steps=t->raw_z80?t->raw[3]:(uint8_t)(t->raw[3]/2);t->modulation=0;
-        }else if(event->argument==34){t->modulation_control=(uint8_t)event->value;t->modulation_index=0;}
+        }else if(event->argument==34){t->modulation_control=(uint8_t)event->value;}
         else if(event->value)t->modulation_control|=128;else t->modulation_control&=127;
         return 1;
     case SMPS_HLE_SOUND_REQUEST:return s->output.request&&s->output.request(s->output.user,event->value);
@@ -193,7 +194,7 @@ int smps_hle_synth_event(void *user,const SmpsHleEvent *event)
         if(!event->argument)s->state.interrupted=0;
         for(unsigned i=0;i<SMPS_HLE_TRACKS;i++){
             s->state.track[i].pan=0xC0;s->state.track[i].last_volume=255;
-            s->state.track[i].last_frequency=65535;s->state.track[i].modulation_multiplier=1;
+            s->state.track[i].last_frequency=65535;
         }
         return 1;
     case SMPS_HLE_RESTORE:
