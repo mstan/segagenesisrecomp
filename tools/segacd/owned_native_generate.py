@@ -380,7 +380,11 @@ def generate_image(row: dict, image: bytes, output: Path, generator: Path,
                 old.get("generator_sha256") != native_catalog_build.sha256_file(generator)):
             raise RecipeError(f"existing generated input identity differs: {prefix}")
         files = old.get("catalog_files", [])
-        expected = native_catalog_build._expected_catalog_files(cpu, output / "catalog", prefix)
+        expected = {
+            path.resolve()
+            for path in native_catalog_build._expected_catalog_files(
+                cpu, output / "catalog", prefix)
+        }
         if {relative_path(output / "catalog", item["path"]) for item in files} != expected:
             raise RecipeError(f"existing generated file inventory is incomplete: {prefix}")
         for item in files:

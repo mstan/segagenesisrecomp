@@ -18,7 +18,9 @@
 #include <io.h>
 #else
 #include <unistd.h>
-#if defined(__APPLE__) || defined(__ANDROID__)
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#elif defined(__ANDROID__)
 #include <dlfcn.h>
 #endif
 #endif
@@ -129,7 +131,10 @@ static int exe_module_path(char *out, size_t n)
         m = NULL;
     DWORD r = GetModuleFileNameA(m, out, (DWORD)n);
     return r > 0 && r < n;
-#elif defined(__APPLE__) || defined(__ANDROID__)
+#elif defined(__APPLE__)
+    uint32_t size = (uint32_t)n;
+    return _NSGetExecutablePath(out, &size) == 0;
+#elif defined(__ANDROID__)
     Dl_info info;
     if (!dladdr((void *)&genesis_build_exe_fingerprint, &info) || !info.dli_fname)
         return 0;

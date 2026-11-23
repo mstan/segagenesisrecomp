@@ -2607,7 +2607,11 @@ CmdResult cmd_server_poll(void)
     /* Accept new client if none connected */
     if (s_client == SOCK_INVALID) {
         struct sockaddr_in caddr;
+#ifdef _WIN32
         int clen = sizeof(caddr);
+#else
+        socklen_t clen = (socklen_t)sizeof(caddr);
+#endif
         sock_t c = accept(s_listen, (struct sockaddr *)&caddr, &clen);
         if (c != SOCK_INVALID) {
             s_client = c;
