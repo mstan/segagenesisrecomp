@@ -81,6 +81,53 @@ static bool make_output_path(char *dst, size_t dst_size,
     return written >= 0 && (size_t)written < dst_size;
 }
 
+/* Map separately assembled software after the original cartridge bytes.
+ * Keep ROM identity and the on-disk input intact. The extra region exists
+ * in memory for function discovery and native translation only. */
+static bool load_software_overlay(GenesisRom *rom, const char *address_text,
+                                  const char *path)
+{
+    char *end = NULL;
+    errno = 0;
+    unsigned long address = strtoul(address_text, &end, 0);
+    if (errno || end == address_text || *end || address < rom->rom_size ||
+        address >= GENESIS_ROM_MAX_SIZE) {
+        fprintf(stderr, "[GenesisRecomp] Invalid software overlay address: %s\n", address_text);
+        return false;
+    }
+    FILE *file = fopen(path, "rb");
+    if (!file) {
+        fprintf(stderr, "[GenesisRecomp] Cannot open software overlay: %s\n", path);
+        return false;
+    }
+    long size = -1;
+    if (fseek(file, 0, SEEK_END) == 0)
+        size = ftell(file);
+    if (size <= 0 || (unsigned long)size > GENESIS_ROM_MAX_SIZE - address ||
+        fseek(file, 0, SEEK_SET) != 0) {
+        fclose(file);
+        fprintf(stderr, "[GenesisRecomp] Software overlay does not fit: %s\n", path);
+        return false;
+    }
+    uint32_t image_size = (uint32_t)(address + (unsigned long)size);
+    uint8_t *image = realloc(rom->rom_data, image_size);
+    if (!image) {
+        fclose(file);
+        return false;
+    }
+    rom->rom_data = image;
+    memset(image + rom->rom_size, 0xff, address - rom->rom_size);
+    size_t count = fread(image + address, 1, (size_t)size, file);
+    fclose(file);
+    if (count != (size_t)size) {
+        fprintf(stderr, "[GenesisRecomp] Could not read software overlay: %s\n", path);
+        return false;
+    }
+    rom->rom_size = image_size;
+    printf("[GenesisRecomp] Mapped %ld software bytes at $%06lX\n", size, address);
+    return true;
+}
+
 int main(int argc, char *argv[]) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         printf("GenesisRecomp %s\n", GENESIS_RECOMP_VERSION);
@@ -91,13 +138,15 @@ int main(int argc, char *argv[]) {
         fprintf(help ? stdout : stderr,
             "Usage: GenesisRecomp <rom.md|rom.bin> [--game <path/to/game.toml>] "
             "[--output-dir <directory>] [--reverse-debug] "
-            "[--fail-on-unsupported]\n");
+            "[--fail-on-unsupported] [--software-overlay <address> <file>]\n");
         return help ? 0 : 1;
     }
 
     const char *rom_path  = argv[1];
     const char *game_path = NULL;
     const char *output_dir = "generated";
+    const char *overlay_address = NULL;
+    const char *overlay_file = NULL;
     bool reverse_debug = false;
     bool fail_on_unsupported = false;
 
@@ -105,6 +154,14 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[i], "--game") == 0 && i+1 < argc) game_path = argv[++i];
         else if (strcmp(argv[i], "--output-dir") == 0 && i+1 < argc)
             output_dir = argv[++i];
+        else if (strcmp(argv[i], "--software-overlay") == 0) {
+            if (overlay_file || i + 2 >= argc) {
+                fprintf(stderr, "[GenesisRecomp] Supply one software overlay address and file\n");
+                return 1;
+            }
+            overlay_address = argv[++i];
+            overlay_file = argv[++i];
+        }
         else if (strcmp(argv[i], "--reverse-debug") == 0) reverse_debug = true;
         else if (strcmp(argv[i], "--fail-on-unsupported") == 0) fail_on_unsupported = true;
         else if (strcmp(argv[i], "--dump-functions") == 0 && i+1 < argc)
@@ -130,6 +187,11 @@ int main(int argc, char *argv[]) {
            rom.initial_sp, rom.initial_pc);
     printf("[GenesisRecomp] Checksum: $%04X (header), $%04X (computed)\n",
            rom.header_checksum, rom.computed_checksum);
+
+    if (overlay_file && !load_software_overlay(&rom, overlay_address, overlay_file)) {
+        rom_free(&rom);
+        return 1;
+    }
 
     /* Load game config */
     GameConfig cfg = {0};
