@@ -45,6 +45,16 @@ set_target_properties(GenesisRecomp PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
+if(BUILD_TESTING)
+    enable_testing()
+    add_executable(genesis_codegen_buffer_test
+        "${M68K_RECOMP_CORE_DIR}/tests/genesis/codegen_buffer_test.c" src/rom_parser.c
+        ${M68K_RECOMP_CORE_SOURCES} src/game_config.c src/toml.c)
+    target_include_directories(genesis_codegen_buffer_test PRIVATE
+        src ${M68K_RECOMP_CORE_INCLUDE_DIRS})
+    add_test(NAME genesis_codegen_buffer COMMAND genesis_codegen_buffer_test)
+endif()
+
 if(MSVC)
     target_compile_options(GenesisRecomp PRIVATE /W3 /WX-)
     # tomlc99 is vendored unchanged from upstream. Its parser intentionally

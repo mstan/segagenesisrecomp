@@ -27,7 +27,7 @@
 #include <string.h>
 
 /* minicoro configuration: assembly switch everywhere we build (Win64,
- * SysV x86-64, aarch64 — minicoro #errors on anything else), no heap
+ * SysV x86-64, aarch64 and ARM EABI), no heap
  * allocator (we place the coroutine ourselves), errors reported loudly. */
 #define MCO_USE_ASM
 #define MCO_NO_DEFAULT_ALLOCATOR
@@ -206,10 +206,10 @@ static uintptr_t ctx_saved_sp(const _mco_ctxbuf *c)
 {
 #if defined(__x86_64__) || defined(_M_X64)
     return (uintptr_t)c->rsp;
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__ARM_EABI__)
     return (uintptr_t)c->sp;
 #else
-#  error "fiber_compat: unsupported architecture (minicoro asm: x86-64, aarch64)"
+#  error "fiber_compat: unsupported architecture (minicoro asm: x86-64, aarch64, ARM EABI)"
 #endif
 }
 
