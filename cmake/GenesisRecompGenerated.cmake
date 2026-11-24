@@ -2,7 +2,8 @@
 #
 # genesisrecomp_add_generated_sources(
 #     <out-var> <prefix> <game-dir> <rom-name>
-#     [REVERSE_DEBUG <bool>])
+#     [REVERSE_DEBUG <bool>] [ROM_PATH <file>]
+#     [SOFTWARE_OVERLAY_ADDRESS <address> SOFTWARE_OVERLAY_FILE <file>])
 #
 # The ROM is intentionally a build dependency.  This prevents a runner from
 # silently compiling C generated from some older or different ROM image.
@@ -33,7 +34,7 @@ elseif(NOT TARGET GenesisRecomp)
 endif()
 
 function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
-    set(one_value_args REVERSE_DEBUG)
+    set(one_value_args REVERSE_DEBUG ROM_PATH SOFTWARE_OVERLAY_ADDRESS SOFTWARE_OVERLAY_FILE)
     cmake_parse_arguments(GRG "" "${one_value_args}" "" ${ARGN})
 
     # New consumers own their game sources/configuration and pass an absolute
@@ -43,7 +44,20 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
     else()
         set(_game "${RECOMP_ROOT}/${GAME_DIR}")
     endif()
-    set(_rom  "${_game}/${ROM_NAME}")
+    set(_rom "${_game}/${ROM_NAME}")
+    set(_rom_arg "${ROM_NAME}")
+    if(GRG_ROM_PATH)
+        get_filename_component(_rom "${GRG_ROM_PATH}" ABSOLUTE)
+        set(_rom_arg "${_rom}")
+    endif()
+    if((GRG_SOFTWARE_OVERLAY_ADDRESS AND NOT GRG_SOFTWARE_OVERLAY_FILE) OR
+       (GRG_SOFTWARE_OVERLAY_FILE AND NOT GRG_SOFTWARE_OVERLAY_ADDRESS))
+        message(FATAL_ERROR "Software overlay requires an address and file")
+    endif()
+    set(_overlay_input "")
+    if(GRG_SOFTWARE_OVERLAY_FILE)
+        get_filename_component(_overlay_input "${GRG_SOFTWARE_OVERLAY_FILE}" ABSOLUTE)
+    endif()
     # Each configured build owns its generated C. This prevents normal,
     # reverse-debug, and concurrent build trees from overwriting one another.
     set(_gen  "${CMAKE_CURRENT_BINARY_DIR}/generated/${PREFIX}")
@@ -115,8 +129,12 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
         set(_genesis_recomp_cmd "$<TARGET_FILE:GenesisRecomp>")
         set(_genesis_recomp_dep GenesisRecomp)
     endif()
-    set(_recompiler_args "${ROM_NAME}" --game game.toml
+    set(_recompiler_args "${_rom_arg}" --game game.toml
         --output-dir "${_stage}")
+    if(_overlay_input)
+        list(APPEND _recompiler_args --software-overlay
+            "${GRG_SOFTWARE_OVERLAY_ADDRESS}" "${_overlay_input}")
+    endif()
     if(GRG_REVERSE_DEBUG)
         list(APPEND _recompiler_args --reverse-debug)
         set(_reverse_value 1)
@@ -132,7 +150,7 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
     set(_options_file
         "${CMAKE_CURRENT_BINARY_DIR}/${PREFIX}_generation_options.txt")
     file(GENERATE OUTPUT "${_options_file}"
-         CONTENT "pipeline=2\nprefix=${PREFIX}\ngame=${_game}\nrom=${_rom}\nreverse_debug=${_reverse_value}\nrom_present=${_rom_present}\ninput=${_input_paths}\n")
+         CONTENT "pipeline=2\nprefix=${PREFIX}\ngame=${_game}\nrom=${_rom}\nsoftware_overlay_address=${GRG_SOFTWARE_OVERLAY_ADDRESS}\nsoftware_overlay_file=${_overlay_input}\nreverse_debug=${_reverse_value}\nrom_present=${_rom_present}\ninput=${_input_paths}\n")
 
     add_custom_command(
         OUTPUT "${_stamp}"
@@ -160,6 +178,7 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
         DEPENDS
             ${_genesis_recomp_dep}
             ${_rom_input}
+            ${_overlay_input}
             "${_game}/game.toml"
             "${_options_file}"
             ${_config_inputs}

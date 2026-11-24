@@ -1,0 +1,88 @@
+{
+  "repository": "TheBlad768/skdisasm-clone-driver",
+  "commit": "13ca55d1f9bf2268f440616404cc65a3b08a6ad6",
+  "sources": {
+    "sonic3k.macrosetup.asm": {
+      "size": 2660,
+      "sha256": "8fd262533e861607fb7fe9e06f308343130acea1c97fe1d4116577d4877254af"
+    },
+    "Sound/Definitions.asm": {
+      "size": 251,
+      "sha256": "fce9b10c170a49bd2c43ff0e0b070037f8e6be02c3db27c538fadf128c85ce17"
+    },
+    "Sound/Sound IDs.asm": {
+      "size": 8870,
+      "sha256": "309106de4e3193dc907239ef1e23d07fc55a8adf1e4f54c1cb1c3015e532a5c8"
+    },
+    "Sound/Settings.asm": {
+      "size": 3033,
+      "sha256": "b9e6662944bd6c4c41c248e768fb846fb4ee065b6731f79b085c36b2ace8fd9b"
+    },
+    "Sound/SMPS2ASM - PSG Volume Envelope Equates.asm": {
+      "size": 2888,
+      "sha256": "7b5618e4f3c4be919e3d30d646be6bf8f31c7d05e7e173f055e74e3e38183caa"
+    },
+    "Sound/SMPS2ASM - DAC Sample Equates.asm": {
+      "size": 2967,
+      "sha256": "93bb9ce1f83c903c349f0a1b1a81a8b51236119735d8543f0c3740e546bc081d"
+    },
+    "Sound/MegaPCM - DAC Table.asm": {
+      "size": 7014,
+      "sha256": "0044a3a32dc949cb9134621a356cec92fe0f9adda1ba44dca7e93343ee6ead2e"
+    },
+    "Sound/Engine/Constants.asm": {
+      "size": 1637,
+      "sha256": "bc1c729ec3b206bda18894bb9945a36f9180b509fbbc51bc54c3a32c36eb14b4"
+    },
+    "Sound/Engine/Functions.asm": {
+      "size": 5128,
+      "sha256": "84be750f540242e4dfc37d885e2d909094df98afda85d2c1bdf48b464872fcac"
+    },
+    "Sound/Engine/Macros.asm": {
+      "size": 7460,
+      "sha256": "713e307c9a2d5081f5cd569bfde787c88c68970d96f828732fffb9d5506c017c"
+    },
+    "Sound/Engine/MegaPCM.asm": {
+      "size": 34094,
+      "sha256": "adb6638a7d228ef11356a68779146b319f731128a605d25b6be24722f06fb70c"
+    },
+    "Sound/Engine/MegaPCM.Macros.asm": {
+      "size": 16468,
+      "sha256": "96c67c4b4b15555b363aad0e0d1d83215b8031ef7d44f3f2dac7a4490c7caf04"
+    },
+    "Sound/Engine/RAM.asm": {
+      "size": 6355,
+      "sha256": "e0d6076081871412995d53ab14076dd62a33acd063d1a54f35914abb17b442ae"
+    },
+    "Sound/Engine/Sonic 2 Clone Driver v2.asm": {
+      "size": 122817,
+      "sha256": "45d8f952f275402c23414501acb950828d1ebb89b5f5f08e51dc806b727f6615"
+    },
+    "Sound/Engine/_smps2asm_inc.asm": {
+      "size": 16509,
+      "sha256": "c704716a166b7fbd9a412d42f22577f6e7743561ee0d568264512f470c9f10fc"
+    }
+  },
+  "tools": {
+    "repository": "TheBlad768/s1disasm-clone-driver",
+    "commit": "9c6e99358c510fa640868ce21b5fd6aea6cd01f5",
+    "files": {
+      "build_tools/Windows-x86_64/asw.exe": {
+        "size": 3455039,
+        "sha256": "6a3236038c15a16f70d91d12e3f10bf3cb14da6400ac4b73a2da43a3f29031fa"
+      },
+      "build_tools/Windows-x86_64/p2bin.exe": {
+        "size": 28672,
+        "sha256": "1323430afdfa630ab56ce76f0286ccbb05a04566126411d4b7d673f2a08115eb"
+      },
+      "build_tools/Linux-x86_64/asl": {
+        "size": 3393944,
+        "sha256": "cc444bd4e1eccbe9c2d7b69e9e582a2f1310d49b1d548a2e24b1de6459a20e2a"
+      },
+      "build_tools/Linux-x86_64/p2bin": {
+        "size": 31040,
+        "sha256": "969c1df15a15ef32bc25124093228dab3b81906d772f37fc873e00bb70a94459"
+      }
+    }
+  }
+}
