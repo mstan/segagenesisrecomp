@@ -62,6 +62,7 @@ android {
         applicationId g.applicationId + (qa ? '.qa' : '')
         minSdk 24
         targetSdk 35
+        ndk { abiFilters(*abis) }
         versionCode g.versionCode
         versionName g.version
         manifestPlaceholders = [gameTitle:g.title]
