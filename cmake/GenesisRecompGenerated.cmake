@@ -43,13 +43,7 @@ function(genesisrecomp_add_generated_sources OUT_VAR PREFIX GAME_DIR ROM_NAME)
     else()
         set(_game "${RECOMP_ROOT}/${GAME_DIR}")
     endif()
-    # Metadata can live in a build-owned directory while the original image
-    # remains at its read-only source path. Never require a composed ROM.
-    if(IS_ABSOLUTE "${ROM_NAME}")
-        set(_rom "${ROM_NAME}")
-    else()
-        set(_rom "${_game}/${ROM_NAME}")
-    endif()
+    set(_rom  "${_game}/${ROM_NAME}")
     # Each configured build owns its generated C. This prevents normal,
     # reverse-debug, and concurrent build trees from overwriting one another.
     set(_gen  "${CMAKE_CURRENT_BINARY_DIR}/generated/${PREFIX}")
