@@ -1,0 +1,15 @@
+include_guard(GLOBAL)
+if(NOT ANDROID)
+    message(FATAL_ERROR "GenesisRecompAndroid is only for the Android toolchain")
+endif()
+if(NOT EXISTS "${SDL2_SOURCE_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR "Android needs a local SDL2_SOURCE_DIR checkout")
+endif()
+set(SDL_SHARED ON CACHE BOOL "" FORCE)
+set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+add_subdirectory("${SDL2_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/SDL2")
+# Existing consumers include SDL2/SDL.h; SDL's source target exposes SDL.h.
+# Stage just the public headers in this build, without changing the SDL source.
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/sdl-include/SDL2")
+file(COPY "${SDL2_SOURCE_DIR}/include/" DESTINATION "${CMAKE_BINARY_DIR}/sdl-include/SDL2")
+set(SDL2_PARENT_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/sdl-include")

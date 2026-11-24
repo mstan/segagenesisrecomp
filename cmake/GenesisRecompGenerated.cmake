@@ -22,6 +22,30 @@ endif()
 # to run instead of building one in this tree.
 set(GENESIS_RECOMPILER_EXE "" CACHE FILEPATH
     "Prebuilt host GenesisRecomp executable (for cross-compiling)")
+set(GENESIS_M68K_STEP_RECOMPILER_EXE "" CACHE FILEPATH
+    "Prebuilt host M68kStepRecomp executable (for cross-compiling)")
+set(GENESIS_M68K_SPAN_RECOMPILER_EXE "" CACHE FILEPATH
+    "Prebuilt host M68kSpanRecomp executable (for cross-compiling)")
+if(CMAKE_CROSSCOMPILING AND NOT GENESIS_RECOMPILER_EXE)
+    message(FATAL_ERROR "Cross compilation requires a native host GENESIS_RECOMPILER_EXE")
+endif()
+foreach(_kind STEP SPAN)
+    if(GENESIS_M68K_${_kind}_RECOMPILER_EXE)
+        if(_kind STREQUAL "STEP")
+            set(_target M68kStepRecomp)
+        else()
+            set(_target M68kSpanRecomp)
+        endif()
+        if(NOT EXISTS "${GENESIS_M68K_${_kind}_RECOMPILER_EXE}")
+            message(FATAL_ERROR "Host ${_target} does not exist: ${GENESIS_M68K_${_kind}_RECOMPILER_EXE}")
+        endif()
+        if(NOT TARGET ${_target})
+            add_executable(${_target} IMPORTED GLOBAL)
+            set_target_properties(${_target} PROPERTIES
+                IMPORTED_LOCATION "${GENESIS_M68K_${_kind}_RECOMPILER_EXE}")
+        endif()
+    endif()
+endforeach()
 if(GENESIS_RECOMPILER_EXE)
     if(NOT EXISTS "${GENESIS_RECOMPILER_EXE}")
         message(FATAL_ERROR

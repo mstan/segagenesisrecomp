@@ -176,7 +176,7 @@ static int overflow_faults(const char *self, const char *mode)
     memset(&si, 0, sizeof si);
     si.cb = sizeof si;
     memset(&pi, 0, sizeof pi);
-    if (!CreateProcessA(NULL, cmd, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) return 0;
+    if (!CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) return 0;
     WaitForSingleObject(pi.hProcess, 60000);
     DWORD code = 0;
     GetExitCodeProcess(pi.hProcess, &code);

@@ -1,0 +1,4 @@
+# Run with the current build to completion before the load-window check.
+WAIT 10
+SAVE_STATE rb-probe-current.state
+WAIT 230
