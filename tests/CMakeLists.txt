@@ -105,6 +105,7 @@ target_include_directories(audio_event_order_test PRIVATE "${CMAKE_CURRENT_LIST_
 add_test(NAME audio_event_order COMMAND audio_event_order_test)
 
 add_executable(smps_hle_synth_test runtime/smps_hle_synth_test.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/smps_hle.c"
     "${CMAKE_CURRENT_LIST_DIR}/../runner/audio/smps_hle_synth.c")
 target_include_directories(smps_hle_synth_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner/audio")
 add_test(NAME smps_hle_synth COMMAND smps_hle_synth_test)

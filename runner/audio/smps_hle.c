@@ -197,11 +197,16 @@ int smps_hle_frame(SmpsHle *s)
     if(s->state.music.paused)return 1;
     unsigned elapsed=s->state.music.accumulator+s->state.music.tempo;
     s->state.music.accumulator=(uint8_t)elapsed;
-    if(elapsed>255)return 1;
+    /* Tempo carry delays the sequence cursor. Note gates and modulation
+     * still run on the sound clock while the current note is held. */
+    int hold_duration = elapsed > 255;
     for(unsigned channel=0;channel<SMPS_HLE_TRACKS;channel++){
         SmpsHleTrack *t=&s->state.music.track[channel];if(!t->active)continue;
         if(t->gate_remaining && !--t->gate_remaining && !rest(s,channel,t))return 0;
-        if(t->remaining && --t->remaining){if(!send(s,SMPS_HLE_TICK,channel,0,0))return 0;continue;}
+        if(hold_duration || (t->remaining && --t->remaining)){
+            if(!send(s,SMPS_HLE_TICK,channel,0,0))return 0;
+            continue;
+        }
         t->tie=0;unsigned steps=0;
         for(;steps<4096 && t->active;steps++){
             unsigned op;if(!read(s,t,&op))return 0;

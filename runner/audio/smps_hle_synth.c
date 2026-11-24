@@ -41,7 +41,9 @@ static int instrument(SmpsHleSynth *s,unsigned channel,SmpsHleSynthTrack *t)
 {
     if(!range(s,t->voice,25))return 0;
     const uint8_t *voice=s->data+t->voice;
-    if(!key(s,channel,0) || !fm(s,channel,0xB0,voice[0]))return 0;
+    /* Uploading a patch is not a note event. A voice change during a tie
+     * keeps the hardware key live until the sequence actually ends it. */
+    if(!fm(s,channel,0xB0,voice[0]))return 0;
     for(unsigned op=0;op<4;op++)if(!fm(s,channel,0x30+op*4,voice[1+op]))return 0;
     if(!volume(s,channel,t,0))return 0;
     for(unsigned group=0;group<4;group++)for(unsigned op=0;op<4;op++)
@@ -61,7 +63,10 @@ static int envelope(SmpsHleSynth *s,SmpsHleSynthTrack *t,int modulation,int *res
         uint32_t at=start+*index;if(!range(s,at,1))return 0;
         unsigned value=s->data[at];
         if(value==0x80){*index=0;continue;}
-        if(value==0x81){if(*index)--*index;else return 0;value=s->data[start+*index];}
+        if(value==0x81){
+            if(!modulation){*result=-1;return 1;}
+            if(*index)--*index;else return 0;value=s->data[start+*index];
+        }
         else if(value==0x82){if(!range(s,at+1,1))return 0;*index=s->data[at+1];continue;}
         else if(value==0x83){t->active=0;return 1;}
         else if(modulation && value==0x84){
@@ -105,6 +110,7 @@ static int tick(SmpsHleSynth *s,unsigned channel,SmpsHleSynthTrack *t)
     if(channel>=7){
         if(!envelope(s,t,0,&change))return 0;
         if(!t->active)return silence(s,channel,t);
+        if(change<0)return 1; /* $81 holds the previous attenuation. */
         return volume(s,channel,t,(unsigned)change);
     }
     return 1;
@@ -137,10 +143,17 @@ int smps_hle_synth_resume(SmpsHleSynth *s,unsigned channel)
     if(channel>=SMPS_HLE_TRACKS)return 0;
     SmpsHleSynthTrack *t=&s->state.track[channel];
     if(!channel)return 1;
-    if(channel<7 && !instrument(s,channel,t))return 0;
-    if(channel>=7 && t->noise && !psg(s,0xE0|(t->noise&7)))return 0;
+    if(channel<7 && (!key(s,channel,0) || !instrument(s,channel,t)))return 0;
+    if(channel==9 && (!psg(s,t->noise?0xDF:0xFF) ||
+                     (t->noise && !psg(s,0xE0|(t->noise&7)))))return 0;
+    unsigned last_volume=t->last_volume;
     t->last_volume=255;t->last_frequency=65535;
     if(!t->active)return silence(s,channel,t);
+    if(channel>=7 && last_volume<=15){
+        t->last_volume=(uint8_t)last_volume;
+        unsigned reg=channel==9 && t->noise ? 0xF0 : 0x90+((channel-7)<<5);
+        return frequency(s,channel,t,0) && psg(s,reg+last_volume);
+    }
     return frequency(s,channel,t,0) && volume(s,channel,t,0) && (channel>=7 || key(s,channel,1));
 }
 int smps_hle_synth_event(void *user,const SmpsHleEvent *event)
@@ -149,7 +162,9 @@ int smps_hle_synth_event(void *user,const SmpsHleEvent *event)
     unsigned channel=event->channel;SmpsHleSynthTrack *t=&s->state.track[channel];
     switch(event->kind){
     case SMPS_HLE_BEGIN_TRACK:
-        memset(t,0,sizeof *t);t->pan=0xC0;t->last_volume=255;t->last_frequency=65535;return 1;
+        memset(t,0,sizeof *t);t->pan=0xC0;t->last_volume=255;t->last_frequency=65535;
+        /* PSG3 can have been driving noise for the track we just took over. */
+        return channel!=9 || (psg(s,0xDF) && psg(s,0xFF));
     case SMPS_HLE_NOTE:
         t->active=1;t->note=(uint8_t)event->value;t->detune=(int8_t)event->argument;
         t->base_frequency=note_frequency(channel,event->value);t->last_frequency=65535;
@@ -163,12 +178,18 @@ int smps_hle_synth_event(void *user,const SmpsHleEvent *event)
         return channel>=7 || (event->argument&256) || key(s,channel,1);
     case SMPS_HLE_REST:return silence(s,channel,t);
     case SMPS_HLE_VOICE:t->voice=event->value;t->volume=(uint8_t)event->argument;return instrument(s,channel,t);
-    case SMPS_HLE_VOLUME:t->volume=(uint8_t)event->value;return volume(s,channel,t,0);
+    case SMPS_HLE_VOLUME:
+        t->volume=(uint8_t)event->value;
+        if(channel>=7 && t->psg_envelope)return 1;
+        return volume(s,channel,t,0);
     case SMPS_HLE_PAN:
         t->pan=(uint8_t)event->value;
         if(!channel)return s->output.fm&&s->output.fm(s->output.user,1,0xB6,t->pan);
         return channel>=7 || fm(s,channel,0xB4,t->pan);
-    case SMPS_HLE_NOISE:t->noise=(uint8_t)event->value;t->last_volume=255;return !event->value || psg(s,0xE0|(event->value&7));
+    case SMPS_HLE_NOISE:
+        if(channel!=9)return 1;
+        t->noise=(uint8_t)event->value;t->last_volume=255;
+        return psg(s,t->noise?0xDF:0xFF) && (!t->noise || psg(s,0xE0|(t->noise&7)));
     case SMPS_HLE_PCM:return s->output.pcm && s->output.pcm(s->output.user,event->value,t->pan);
     case SMPS_HLE_FM_REGISTER:return s->output.fm && s->output.fm(s->output.user,0,event->value,(unsigned)event->argument);
     case SMPS_HLE_ENVELOPE:t->psg_envelope=(uint8_t)event->value;t->psg_index=0;return 1;
