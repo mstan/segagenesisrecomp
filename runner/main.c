@@ -2595,7 +2595,7 @@ int main(int argc, char *argv[])
     int capture_w = 1920, capture_h = 1080;
     uint32_t capture_from = 0, capture_to = 0xFFFFFFFFu, capture_every = 1;
     uint32_t capture_written = 0, capture_exit_at = 0;
-    int capture_mode = 0, capture_wav_started = 0;
+    int capture_mode = 0, capture_wav_started = 0, capture_failed = 0;
 
     /* --exec-coverage-out PATH â€” at exit, dump the clean-room interpreter's
      * always-on executed-PC set as text. With GENESIS_FORCE_INTERP=1 this is
@@ -3491,8 +3491,10 @@ int main(int argc, char *argv[])
             fprintf(stderr, "[MEM-WRITE-LOG] failed to arm (spec=%s)\n", mem_write_log_spec);
     }
 
-    if (capture_state)
-        if (runner_load_state_file(capture_state) != 0) fprintf(stderr, "[capture] --load-state failed: %s\n", capture_state);
+    if (capture_state && !runner_load_state_file(capture_state)) {
+        fprintf(stderr, "[capture] --load-state failed: %s\n", capture_state);
+        return 2;
+    }
     if (wav_path) {
         extern int audio_wav_start(const char *);
         if (audio_wav_start(wav_path) != 0)
@@ -4151,8 +4153,11 @@ session_begin:;
         FRAME_PHASE(3);
         if (capture_wav && !capture_wav_started && frame_num >= capture_from) {
             extern int audio_wav_start(const char *);
-            if (audio_wav_start(capture_wav) != 0)
+            if (audio_wav_start(capture_wav) != 0) {
                 fprintf(stderr, "[capture] failed to open %s\n", capture_wav);
+                capture_failed = 1;
+                break;
+            }
             capture_wav_started = 1;
         }
         if (capture_wav && capture_wav_started && frame_num > capture_to) {
@@ -4491,17 +4496,24 @@ session_begin:;
                 int ow = 0, oh = 0;
                 SDL_RenderSetLogicalSize(renderer, 0, 0);   /* read physical output */
                 SDL_GetRendererOutputSize(renderer, &ow, &oh);
-                uint32_t *px = (uint32_t *)malloc((size_t)ow * oh * 4);
-                if (px && SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888,
-                                               px, ow * 4) == 0) {
-                    char fp[900];
-                    snprintf(fp, sizeof fp, "%s/frame_%06u.png", capture_out, (unsigned)capture_written);
-                    if (png_write_argb(fp, px, ow, oh, ow) == 0) capture_written++;
-                } else if (px) {
-                    fprintf(stderr, "[capture] RenderReadPixels: %s\n", SDL_GetError());
-                }
+                uint32_t *px = ow > 0 && oh > 0
+                    ? (uint32_t *)malloc((size_t)ow * oh * 4) : NULL;
+                char fp[900];
+                int len = snprintf(fp, sizeof fp, "%s/frame_%06u.png", capture_out,
+                                   (unsigned)capture_written);
+                int wrote = px && len >= 0 && (size_t)len < sizeof fp &&
+                    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888,
+                                         px, ow * 4) == 0 &&
+                    png_write_argb(fp, px, ow, oh, ow) == 0;
                 free(px);
                 update_render_logical_size(renderer);
+                if (!wrote) {
+                    fprintf(stderr, "[capture] failed to write frame %u in %s\n",
+                            (unsigned)idx, capture_out);
+                    capture_failed = 1;
+                    break;
+                }
+                capture_written++;
             }
         }
         SDL_RenderPresent(renderer);++presentation_count;
@@ -4772,6 +4784,7 @@ session_begin:;
     genesis_replay_shutdown();
     SDL_Quit();
     free(rom_buf);
+    if (capture_failed) return 2;
     if(replay_path && (genesis_replay_failed() || !genesis_replay_finished()))return 2;
     return runtime_measure_frames && frame_num != runtime_measure_frames ? 2 : 0;
 }
