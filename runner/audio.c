@@ -291,7 +291,7 @@ void audio_flush(uint32_t wall_frame, int realtime,
                  const int16_t *fm_buf,  size_t fm_frames,
                  const int16_t *psg_buf, size_t psg_frames)
 {
-    if (s_dev == 0 || psg_buf == NULL || psg_frames == 0)
+    if ((s_dev == 0 && !s_wav_file) || psg_buf == NULL || psg_frames == 0)
         return;
 
     if (psg_frames > OUT_BUF_FRAMES)

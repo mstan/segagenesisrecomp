@@ -29,6 +29,8 @@
 
 typedef enum {
     OP_WAIT,
+    OP_AT,             /* block until absolute frame arg32 */
+    OP_SETMASK,        /* replace player arg32's held mask with button_mask */
     OP_HOLD,
     OP_RELEASE,        /* arg=0xFF means RELEASE_ALL */
     OP_PRESS,          /* arg = button, count = frames to hold */
@@ -60,7 +62,7 @@ typedef struct {
 
 /* ---- State ---- */
 
-#define MAX_OPS 4096
+#define MAX_OPS 32768
 #define SCRIPT_PLAYERS 6
 static ScriptOp s_ops[MAX_OPS];
 static int      s_op_count = 0;
@@ -120,6 +122,39 @@ static int parse_line(char *line, int line_no) {
     char *p = line;
     while (*p && isspace((unsigned char)*p)) p++;
     if (*p == '\0') return 1;     /* blank line OK */
+
+    /* Frame-indexed form (shared with nesrecomp): "<frame> [P<n>:]BUTTONS".
+     * BUTTONS is "-" (none) or names joined by '+', e.g. "RIGHT+A". The
+     * listed set REPLACES that player's held buttons at that frame. */
+    if (isdigit((unsigned char)*p)) {
+        char *q = NULL;
+        unsigned long fr = strtoul(p, &q, 10);
+        while (*q && isspace((unsigned char)*q)) q++;
+        unsigned pl = 0;
+        if ((q[0] == 'P' || q[0] == 'p') && q[1] >= '1' && q[1] < '1' + SCRIPT_PLAYERS && q[2] == ':') {
+            pl = (unsigned)(q[1] - '1'); q += 3;
+        }
+        uint8_t mask = 0;
+        if (*q && !(q[0] == '-' && !q[1])) {
+            char buf[128]; snprintf(buf, sizeof buf, "%s", q);
+            for (char *t = strtok(buf, "+"); t; t = strtok(NULL, "+")) {
+                uint8_t m;
+                if (!parse_button(t, &m)) goto bad;
+                mask |= m;
+            }
+        } else if (!*q) goto bad;
+        if (s_op_count + 2 > MAX_OPS) {
+            fprintf(stderr, "input_script: too many directives (>%d)\n", MAX_OPS);
+            return 0;
+        }
+        s_ops[s_op_count].op = OP_AT; s_ops[s_op_count].arg32 = (uint32_t)fr;
+        s_ops[s_op_count].line_no = line_no; s_op_count++;
+        s_ops[s_op_count].op = OP_SETMASK; s_ops[s_op_count].arg32 = pl;
+        s_ops[s_op_count].button_mask = mask; s_ops[s_op_count].line_no = line_no;
+        s_op_count++;
+        s_players_used[pl] = 1;
+        return 1;
+    }
 
     if (s_op_count >= MAX_OPS) {
         fprintf(stderr, "input_script: too many directives (>%d)\n", MAX_OPS);
@@ -283,6 +318,17 @@ void input_script_tick(uint64_t frame,
                 s_wait_until_frame = frame + o->arg32;
                 s_pc++;
                 if (frame < s_wait_until_frame) return;
+                break;
+
+            case OP_AT:
+                if (frame < o->arg32) return;
+                s_pc++;
+                break;
+
+            case OP_SETMASK:
+                s_held_mask[o->arg32] = o->button_mask;
+                for (unsigned b = 0; b < 8; ++b) s_press_until[o->arg32][b] = 0;
+                s_pc++;
                 break;
 
             case OP_HOLD:
