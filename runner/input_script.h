@@ -6,6 +6,8 @@
  *
  * Format (one directive per line, # comments, blank lines OK):
  *
+ *   <frame> [P<n>:]BUTTONS   at absolute frame, set player's held buttons
+ *                        ("-" = none, "RIGHT+A"); same as nesrecomp input files
  *   WAIT N               wait N frames before processing the next line
  *   PLAYER N             target logical player 1..6 (initially 1)
  *   HOLD <BUTTON>        start holding the button (until RELEASE or EXIT)

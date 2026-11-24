@@ -348,6 +348,25 @@ and the 4:3 path reassembles byte-identically to the canonical ROMs):
 
 With thanks to the Sonic Retro community for maintaining these disassemblies.
 
+## Headless capture
+
+Any game built on the runner can record exactly what its window presents, with
+no visible window, audio device or desktop input:
+
+```text
+Game.exe rom.bin --input-script in.txt --capture-out frames --capture-size 1920x1080     --capture-from 600 --capture-to 3299 --capture-wav out.wav --exit-at-frame 3300
+```
+
+- `--capture-out DIR` writes `frame_%06u.png` (numbered from 0) for game frames
+  `--capture-from`..`--capture-to`, every `--capture-every` frames. The hidden window's
+  drawable is `--capture-size WxH`, so widescreen, HD and presentation mods render as in a window.
+- `--capture-wav FILE` writes the mixed output (raw ~223.7 kHz PCM, rate in the header) from
+  `--capture-from`; resample to 48 kHz when packing video.
+- `--input-script FILE` accepts frame-indexed lines `<frame> [P<n>:]BUTTONS` (`-` releases;
+  `RIGHT+A`); each line replaces that player's held buttons. The `WAIT/HOLD/PRESS` forms still work.
+- `--load-state FILE` starts from a saved state. The run is unpaced; `--exit-at-frame N` stops it
+  and a `[capture]` summary line is printed on exit.
+
 ## Key Files
 
 | File | Purpose |

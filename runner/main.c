@@ -2587,6 +2587,16 @@ int main(int argc, char *argv[])
     const char *mem_write_log_spec = NULL;
     const char *wav_path = NULL;
 
+    /* Headless capture contract (E:\Videos\YearInReview2026\HEADLESS_CAPTURE_SPEC.md):
+     * --capture-out DIR --capture-size WxH [--capture-from N --capture-to M
+     * --capture-every K] [--capture-wav FILE] [--exit-at-frame N]
+     * [--load-state FILE]. Hidden window, no audio device, unpaced. */
+    const char *capture_out = NULL, *capture_wav = NULL, *capture_state = NULL;
+    int capture_w = 1920, capture_h = 1080;
+    uint32_t capture_from = 0, capture_to = 0xFFFFFFFFu, capture_every = 1;
+    uint32_t capture_written = 0, capture_exit_at = 0;
+    int capture_mode = 0, capture_wav_started = 0, capture_failed = 0;
+
     /* --exec-coverage-out PATH â€” at exit, dump the clean-room interpreter's
      * always-on executed-PC set as text. With GENESIS_FORCE_INTERP=1 this is
      * whole-program coverage; otherwise it contains only any Tier-3 floor
@@ -2626,7 +2636,29 @@ int main(int argc, char *argv[])
     }
 
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
+        if (strcmp(argv[i], "--capture-out") == 0 && i + 1 < argc) {
+            capture_out = argv[++i]; capture_mode = 1;
+        } else if (strcmp(argv[i], "--capture-size") == 0 && i + 1 < argc) {
+            if (sscanf(argv[++i], "%dx%d", &capture_w, &capture_h) != 2 ||
+                capture_w < 64 || capture_h < 64 || capture_w > 16384 || capture_h > 16384) {
+                fprintf(stderr, "--capture-size requires WxH\n");
+                return 2;
+            }
+            capture_mode = 1;
+        } else if (strcmp(argv[i], "--capture-from") == 0 && i + 1 < argc) {
+            capture_from = (uint32_t)strtoul(argv[++i], NULL, 10);
+        } else if (strcmp(argv[i], "--capture-to") == 0 && i + 1 < argc) {
+            capture_to = (uint32_t)strtoul(argv[++i], NULL, 10);
+        } else if (strcmp(argv[i], "--capture-every") == 0 && i + 1 < argc) {
+            capture_every = (uint32_t)strtoul(argv[++i], NULL, 10);
+            if (!capture_every) capture_every = 1;
+        } else if (strcmp(argv[i], "--capture-wav") == 0 && i + 1 < argc) {
+            capture_wav = argv[++i]; capture_mode = 1;
+        } else if (strcmp(argv[i], "--exit-at-frame") == 0 && i + 1 < argc) {
+            capture_exit_at = (uint32_t)strtoul(argv[++i], NULL, 10);
+        } else if (strcmp(argv[i], "--load-state") == 0 && i + 1 < argc) {
+            capture_state = argv[++i];
+        } else if (strcmp(argv[i], "--max-frames") == 0 && i + 1 < argc) {
             max_frames = (uint32_t)atol(argv[++i]);
         } else if (strcmp(argv[i], "--runtime-uncapped") == 0) {
             runtime_uncapped = 1;
@@ -2740,6 +2772,30 @@ int main(int argc, char *argv[])
         max_frames = benchmark_frames;
         start_turbo = 1;
         no_launcher = 1;
+    }
+    if (capture_mode) {
+        if (benchmark_frames || runtime_measure_frames) {
+            fprintf(stderr, "--capture-* cannot combine with --benchmark/--measure-runtime\n");
+            return 2;
+        }
+        /* Unpaced deterministic stepping, no launcher, no audio device. */
+        start_turbo = 1;
+        no_launcher = 1;
+        if (capture_exit_at) max_frames = capture_exit_at;
+        else if (!max_frames && capture_to != 0xFFFFFFFFu) max_frames = capture_to + 1;
+        else if (!max_frames) {
+            fprintf(stderr, "capture mode needs --exit-at-frame, --capture-to or --max-frames\n");
+            return 2;
+        }
+        if (capture_out) {
+            char mk[700];
+#ifdef _WIN32
+            snprintf(mk, sizeof mk, "mkdir \"%s\" 2>nul", capture_out);
+#else
+            snprintf(mk, sizeof mk, "mkdir -p \"%s\" 2>/dev/null", capture_out);
+#endif
+            (void)system(mk);
+        }
     }
 
     if(replay_path) {
@@ -3112,11 +3168,12 @@ int main(int argc, char *argv[])
     }
     /* Scripted launcher tests must stay hidden after the handoff to gameplay. */
     int test_hidden = getenv("LNG_SCRIPT") && getenv("LNG_TEST_HIDDEN");
-    Uint32 win_flags = ((benchmark_frames || test_hidden) ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
+    if (capture_mode) { win_w = capture_w; win_h = capture_h; }
+    Uint32 win_flags = ((benchmark_frames || test_hidden || capture_mode) ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN)
                      | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     /* Launcher tri-state: 1 = borderless (desktop resolution, letterboxed by
      * SDL_RenderSetLogicalSize), 2 = exclusive (real mode change). */
-    if (!benchmark_frames) {
+    if (!benchmark_frames && !capture_mode) {
         if (g_app_config.fullscreen == 2)      win_flags |= SDL_WINDOW_FULLSCREEN;
         else if (g_app_config.fullscreen == 1) win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
@@ -3153,7 +3210,7 @@ int main(int argc, char *argv[])
      * two simply settle on whichever is slower. Fall back to no-vsync if the
      * driver can't provide it. */
     Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
-    if (!benchmark_frames && !runtime_uncapped)
+    if (!benchmark_frames && !runtime_uncapped && !capture_mode)
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     SDL_Renderer *renderer = genesis_hd_create_renderer(window,renderer_flags,s_hd_scale);
     if (!renderer) {
@@ -3206,7 +3263,7 @@ int main(int argc, char *argv[])
 
     /* Output at PSG rate (~223721 Hz NTSC) â€” matches the reference mixer.
      * PSG never needs resampling; FM is upsampled to this rate. */
-    if (!benchmark_frames) {
+    if (!benchmark_frames && !capture_mode) {
         audio_set_output_rate(g_app_config.audio_freq);
         int audio_status = audio_init(GENESIS_PSG_SAMPLE_RATE_NTSC);
         if (runtime_measure_frames && audio_status != 0) {
@@ -3434,6 +3491,10 @@ int main(int argc, char *argv[])
             fprintf(stderr, "[MEM-WRITE-LOG] failed to arm (spec=%s)\n", mem_write_log_spec);
     }
 
+    if (capture_state && !runner_load_state_file(capture_state)) {
+        fprintf(stderr, "[capture] --load-state failed: %s\n", capture_state);
+        return 2;
+    }
     if (wav_path) {
         extern int audio_wav_start(const char *);
         if (audio_wav_start(wav_path) != 0)
@@ -4090,6 +4151,19 @@ session_begin:;
         }
 
         FRAME_PHASE(3);
+        if (capture_wav && !capture_wav_started && frame_num >= capture_from) {
+            extern int audio_wav_start(const char *);
+            if (audio_wav_start(capture_wav) != 0) {
+                fprintf(stderr, "[capture] failed to open %s\n", capture_wav);
+                capture_failed = 1;
+                break;
+            }
+            capture_wav_started = 1;
+        }
+        if (capture_wav && capture_wav_started && frame_num > capture_to) {
+            extern int audio_wav_active(void); extern void audio_wav_stop(void);
+            if (audio_wav_active()) audio_wav_stop();
+        }
         /* audio_flush is normally gated off in turbo (no SDL playback), but
          * WAV capture lives inside audio_flush â€” keep flushing while a WAV
          * is being recorded so --wav works with --turbo for headless
@@ -4415,7 +4489,34 @@ session_begin:;
             if(!turbo && !runtime_uncapped && now<guest_deadline)
                 genesis_host_wait_until(guest_deadline,perf_frequency);
             draw_load_hold(renderer);
-            SDL_RenderPresent(renderer);++presentation_count;
+        if (capture_out) {
+            uint32_t idx = frame_num - 1;   /* 0-based game frame just rendered */
+            if (idx >= capture_from && idx <= capture_to &&
+                ((idx - capture_from) % capture_every) == 0) {
+                int ow = 0, oh = 0;
+                SDL_RenderSetLogicalSize(renderer, 0, 0);   /* read physical output */
+                SDL_GetRendererOutputSize(renderer, &ow, &oh);
+                uint32_t *px = ow > 0 && oh > 0
+                    ? (uint32_t *)malloc((size_t)ow * oh * 4) : NULL;
+                char fp[900];
+                int len = snprintf(fp, sizeof fp, "%s/frame_%06u.png", capture_out,
+                                   (unsigned)capture_written);
+                int wrote = px && len >= 0 && (size_t)len < sizeof fp &&
+                    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_ARGB8888,
+                                         px, ow * 4) == 0 &&
+                    png_write_argb(fp, px, ow, oh, ow) == 0;
+                free(px);
+                update_render_logical_size(renderer);
+                if (!wrote) {
+                    fprintf(stderr, "[capture] failed to write frame %u in %s\n",
+                            (unsigned)idx, capture_out);
+                    capture_failed = 1;
+                    break;
+                }
+                capture_written++;
+            }
+        }
+        SDL_RenderPresent(renderer);++presentation_count;
         }
         FRAME_PHASE(8);
 #if GENESIS_HAS_RECOMP_NET
@@ -4458,6 +4559,13 @@ session_begin:;
         frame_num,(unsigned long long)presentation_count,(unsigned long long)interpolation_count,(unsigned long long)perf_frequency);
     free(interpolation_image);
     runner_sram_complete(1); /* settle last-frame ACK before final state/report */
+    if (capture_mode) {
+        extern int audio_wav_active(void); extern void audio_wav_stop(void);
+        if (audio_wav_active()) audio_wav_stop();
+        fprintf(stderr, "[capture] frames_written=%u present=%dx%d wav=%s last_frame=%u\n",
+                (unsigned)capture_written, capture_w, capture_h,
+                capture_wav ? capture_wav : "none", (unsigned)frame_num);
+    }
     host_timing_dump(&host_timing, stderr);
     if (!window_close_requested || host_timing_dump_requested())
         fprintf(stderr, "[session] loop ended: running=%d frame=%u\n", running, (unsigned)frame_num);
@@ -4676,6 +4784,7 @@ session_begin:;
     genesis_replay_shutdown();
     SDL_Quit();
     free(rom_buf);
+    if (capture_failed) return 2;
     if(replay_path && (genesis_replay_failed() || !genesis_replay_finished()))return 2;
     return runtime_measure_frames && frame_num != runtime_measure_frames ? 2 : 0;
 }
