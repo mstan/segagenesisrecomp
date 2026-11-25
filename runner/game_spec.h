@@ -134,6 +134,9 @@ typedef struct GameSpec {
      * cart). */
     uint32_t    sram_start;
     uint32_t    sram_end;
+    /* Optional existing shorter save image occupying the same low-address
+     * bytes; accepted only for titles with a verified legacy format. */
+    uint32_t    sram_legacy_size;
     /* Optional basename (no directory) for an incompatible local campaign.
      * Evaluated after launcher configuration; NULL preserves the ROM basename.
      * A game using this seam owns its SRAM import/export UI. */
