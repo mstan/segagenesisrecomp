@@ -661,6 +661,10 @@ long m68k_interp_cov_dump(FILE *f) {
 }
 
 static M68kiStatus exec_one(const M68KInstr *ins, uint32_t *next_pc) {
+#if defined(GENESIS_STRICT_NATIVE) && GENESIS_STRICT_NATIVE
+    fprintf(stderr, "[native 68K] unsupported code at %06X: %04X\n", ins->addr, ins->words[0]);
+    exit(3);
+#endif
     cov_mark(ins->addr);   /* every interpreted instruction, all entry paths */
     ExtR er; er_init(&er, ins);
     uint32_t fall = ins->addr + ins->byte_length;
