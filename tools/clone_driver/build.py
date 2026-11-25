@@ -15,6 +15,8 @@ def digest(data):
 
 def fetch(cache, name, spec, repository, commit, offline):
     p = cache / name
+    if not p.resolve().is_relative_to(cache.resolve()):
+        raise ValueError('Pinned input escapes its cache: ' + name)
     if p.is_file() and p.stat().st_size == spec['size'] and digest(p.read_bytes()) == spec['sha256']:
         return p
     if offline:
@@ -31,6 +33,109 @@ def fetch(cache, name, spec, repository, commit, offline):
 def write(p, text):
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(text, encoding='utf-8')
+
+
+def assemble_image(assembler, p2bin, out, inputs, wrapper, image_name='image.bin'):
+    """Run the common isolated Macroassembler AS and flat-image conversion."""
+    obj = out / 'driver.p'
+    image = out / image_name
+    commands = (
+        ([str(assembler), '-xx', '-n', '-q', '-A', '-L', '-U',
+          '-i', str(inputs), '-o', str(obj), '-olist', str(out/'driver.lst'),
+          '-E', str(out/'driver-errors.log'), str(wrapper)], 'assembler.log'),
+        ([str(p2bin), '-p=FF', str(obj), str(image)], 'p2bin.log'),
+    )
+    for command, log in commands:
+        with (out/log).open('w') as stream:
+            subprocess.run(command, cwd=out, stdout=stream, stderr=subprocess.STDOUT, check=True)
+    return image.read_bytes()
+
+
+def fetch_inputs(lock, cache, assembler=None, p2bin=None, offline=False):
+    """Resolve only pinned software and tools; never fetch a complete game."""
+    source = {
+        name: fetch(cache/'source', name, spec, lock['repository'], lock['commit'], offline)
+        for name, spec in lock['sources'].items()
+    }
+    if bool(assembler) != bool(p2bin):
+        raise ValueError('Supply --assembler and --p2bin together')
+    if assembler:
+        assembler, p2bin = assembler.resolve(strict=True), p2bin.resolve(strict=True)
+    else:
+        host = platform.system() + '-' + platform.machine().lower()
+        host = {'Windows-amd64': 'Windows-x86_64', 'Linux-x86_64': 'Linux-x86_64'}.get(host)
+        if not host:
+            raise ValueError('Supply native AS/p2bin on this build host')
+        names = ('asw.exe', 'p2bin.exe') if host.startswith('Windows') else ('asl', 'p2bin')
+        specs = lock['tools']
+        tools = [
+            fetch(cache/'tools', 'build_tools/'+host+'/'+name,
+                  specs['files']['build_tools/'+host+'/'+name],
+                  specs['repository'], specs['commit'], offline)
+            for name in names
+        ]
+        for tool in tools:
+            if not host.startswith('Windows'):
+                tool.chmod(tool.stat().st_mode | stat.S_IXUSR)
+        assembler, p2bin = tools
+    return source, assembler, p2bin
+
+
+# The older 68k-format upstream family has a different entry table, cartridge
+# reservation, special SFX and PCM descriptor contract. Keep that accepted ABI
+# rather than altering native Sonic 1 playback during a tooling migration.
+LEGACY_FIELDS = (
+    'payload_size', 'initialise', 'update', 'queue_music', 'queue_sfx',
+    'queue_extra', 'ram_address', 'ram_size', 'queue_offset', 'pause_offset',
+    'megapcm_load_driver', 'megapcm_load_table', 'sample_table', 'guarded_update',
+)
+LEGACY_HEADER = struct.Struct('>4s' + 'I' * len(LEGACY_FIELDS))
+
+
+def assemble_legacy(source, assembler, p2bin, out, profile, wrapper, lock):
+    """Assemble a legacy 68k-format software-only profile with empty asset tables."""
+    out.mkdir(parents=True, exist_ok=False)
+    inputs = out / 'inputs'
+    for name, path in source.items():
+        target = inputs / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(path.read_bytes())
+    for table in profile['asset_tables']:
+        labels = [table['prefix'] + f"{index:02X}"
+                  for index in range(table['first'], table['first'] + table['count'])]
+        text = table['label'] + ':\n' + ''.join(f'{label}: dc.l 0\n' for label in labels)
+        if table.get('end'):
+            text += table['end'] + ':\n'
+        write(inputs / table['file'], text)
+    load = profile['load_address']
+    raw = assemble_image(assembler, p2bin, out, inputs, wrapper, 'driver-image.bin')
+    payload = raw[load:]
+    if len(payload) < LEGACY_HEADER.size or len(raw) > 0x400000 or raw[:load] != b'\xff' * load:
+        raise ValueError('Invalid isolated sound image extent')
+    magic, *values = LEGACY_HEADER.unpack_from(payload)
+    info = dict(zip(LEGACY_FIELDS, values))
+    if magic != profile['magic'].encode('ascii') or info['payload_size'] != len(payload):
+        raise ValueError('Invalid legacy sound image header')
+    if info['ram_address'] != profile['ram_address'] or not 0 < info['ram_size'] <= profile['ram_capacity']:
+        raise ValueError('Sound RAM exceeds the legacy layout')
+    for name in ('initialise', 'update', 'queue_music', 'queue_sfx', 'queue_extra',
+                 'megapcm_load_driver', 'megapcm_load_table', 'sample_table', 'guarded_update'):
+        if not load + LEGACY_HEADER.size <= info[name] < len(raw) or info[name] & 1:
+            raise ValueError('Invalid sound image pointer: ' + name)
+    if not 0 <= info['queue_offset'] <= info['ram_size'] - 8 or not 0 <= info['pause_offset'] < info['ram_size']:
+        raise ValueError('Invalid queue or pause offset')
+    (out/'clone-driver.bin').write_bytes(payload)
+    manifest = {
+        'status': 'assembled-only; not a playable or runtime-qualified mod',
+        'source_url': 'https://github.com/' + lock['repository'],
+        'source_commit': lock['commit'], 'asset_mode': 'rom',
+        'wrapper_sha256': digest(wrapper.read_bytes()),
+        'assembler_sha256': digest(assembler.read_bytes()), 'p2bin_sha256': digest(p2bin.read_bytes()),
+        'load_address': load, 'payload_sha256': digest(payload), **info,
+    }
+    write(out/'probe.json', json.dumps(manifest, indent=2) + '\n')
+    return manifest
+
 
 def assemble(source, assembler, p2bin, out, profile):
     load_address = profile["load_address"]
@@ -384,10 +489,7 @@ Clone_FMSetRest:
     write(wrapper, template.replace("@LOAD_ADDRESS@", "$" + f"{load_address:X}")
           .replace("@RAM_ADDRESS@", "$" + f"{ram_address:X}")
           .replace("@RAM_END@", "$" + f"{ram_address + ram_size:X}"))
-    for command, log in [([str(assembler), '-xx', '-n', '-q', '-A', '-L', '-U', '-i', str(inputs), '-o', str(out/'driver.p'), '-olist', str(out/'driver.lst'), '-E', str(out/'driver-errors.log'), str(wrapper)], 'assembler.log'), ([str(p2bin), '-p=FF', str(out/'driver.p'), str(out/'image.bin')], 'p2bin.log')]:
-        with (out/log).open('w') as stream:
-            subprocess.run(command, cwd=out, stdout=stream, stderr=subprocess.STDOUT, check=True)
-    raw = (out/'image.bin').read_bytes()
+    raw = assemble_image(assembler, p2bin, out, inputs, wrapper)
     assert load_address + HEADER.size <= len(raw) < load_address + 0x20000
     assert raw[:load_address] == b'\xff' * load_address
     payload = raw[load_address:]
@@ -422,23 +524,8 @@ def main():
         profile["sound_ids"] = (args.profile.parent / profile["sound_ids"]).read_text(encoding="utf-8")
     lock = json.loads(Path(__file__).with_name('sources.lock.json').read_text())
     assert lock['commit'] == SOURCE_COMMIT
-    cache = args.cache.resolve()
-    source = {name: fetch(cache/'source', name, spec, lock['repository'], lock['commit'], args.offline) for name, spec in lock['sources'].items()}
-    if bool(args.assembler) != bool(args.p2bin):
-        ap.error('Supply --assembler and --p2bin together')
-    if args.assembler:
-        assembler, p2bin = args.assembler.resolve(strict=True), args.p2bin.resolve(strict=True)
-    else:
-        host = platform.system() + '-' + platform.machine().lower()
-        host = {'Windows-amd64': 'Windows-x86_64', 'Linux-x86_64': 'Linux-x86_64'}.get(host)
-        if not host:
-            ap.error('Supply native AS/p2bin on this build host')
-        names = ('asw.exe', 'p2bin.exe') if host.startswith('Windows') else ('asl', 'p2bin')
-        tools = [fetch(cache/'tools', 'build_tools/'+host+'/'+name, lock['tools']['files']['build_tools/'+host+'/'+name], lock['tools']['repository'], lock['tools']['commit'], args.offline) for name in names]
-        for tool in tools:
-            if not host.startswith('Windows'):
-                tool.chmod(tool.stat().st_mode | stat.S_IXUSR)
-        assembler, p2bin = tools
+    source, assembler, p2bin = fetch_inputs(
+        lock, args.cache.resolve(), args.assembler, args.p2bin, args.offline)
     print(json.dumps(assemble(source, assembler, p2bin, args.output.resolve(), profile), indent=2))
 
 if __name__ == '__main__':
