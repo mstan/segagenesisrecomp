@@ -1591,18 +1591,27 @@ static void runner_sram_init_and_load(const char *rom_path)
          * keeps its power-on contents). Game-agnostic: only the size is checked
          * here â€” per-save semantic validity (slot checksums, etc.) is the game's
          * own responsibility, so a correctly-sized but game-"bad" save still
-         * loads (the game must handle that). */
+         * loads (the game must handle that). A title may explicitly declare
+         * a known shorter image using the same low-address layout. */
         fseek(f, 0, SEEK_END);
         long fsz = ftell(f);
         fseek(f, 0, SEEK_SET);
-        if (fsz != (long)n) {
+        size_t legacy=g_game_spec.sram_legacy_size;
+        int legacy_ok=legacy>0 && legacy<n && fsz==(long)legacy;
+        if (fsz != (long)n && !legacy_ok) {
             fprintf(stderr, "[SRAM] IGNORING %s - file %ld B != cart SRAM %zu B "
                     "(truncated/oversized/foreign); starting fresh\n",
                     s_sram_path, fsz, n);
         } else {
-            size_t got = fread(sram_buf(), 1, n, f);
-            loaded=got==n;
-            fprintf(stderr, "[SRAM] loaded %zu/%zu bytes from %s\n", got, n, s_sram_path);
+            size_t bytes=legacy_ok?legacy:n;
+            uint8_t *image=calloc(n,1);
+            size_t got=image?fread(image,1,bytes,f):0;
+            loaded=image && got==bytes && !ferror(f) && fgetc(f)==EOF;
+            if(loaded)memcpy(sram_buf(),image,n);
+            free(image);
+            fprintf(stderr, "[SRAM] %s %zu/%zu bytes from %s%s\n",
+                    loaded?"loaded":"could not load",got,n,s_sram_path,
+                    legacy_ok?" (legacy image)":"");
         }
         fclose(f);
     } else {
