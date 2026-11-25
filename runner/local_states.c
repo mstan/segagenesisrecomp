@@ -340,7 +340,11 @@ int genesis_local_states_overlay(const uint32_t **pixels, int *width, int *heigh
         rect(0, 0, PANEL_W, PANEL_H, 0xFF101A31u);
         rect(0, 0, PANEL_W, 9, 0xFFB66937u);
         label(22, 20, "SAVE STATES", gold, 2);
+#ifdef __SWITCH__
+        label(23, 44, "SELECT A SLOT  |  A LOADS  |  Y SAVES  |  B BACK", white, 1);
+#else
         label(23, 44, "SELECT A SLOT  |  ENTER LOADS  |  S SAVES  |  ESC BACK", white, 1);
+#endif
         for (int i = 0; i < SLOT_COUNT; ++i) {
             int col = i % 3, row = i / 3;
             int x = 20 + col * 207, y = 68 + row * 116;
@@ -375,7 +379,11 @@ int genesis_local_states_overlay(const uint32_t **pixels, int *width, int *heigh
             if (snap) thumb(x, 334, 141, 99, snap->thumb);
             border(x, 334, 141, 99, index == s_selected ? gold : 0xFF7483A0u);
         }
+#ifdef __SWITCH__
+        label(20, 436, "A RESTORE  |  B CANCEL", white, 1);
+#else
         label(20, 436, "ENTER RESTORE  |  ESC CANCEL", white, 1);
+#endif
     }
     *pixels = s_panel;
     *width = PANEL_W;

@@ -54,7 +54,11 @@ void input_map_init_defaults(void)
      * --no-launcher, so nothing could ever flip the device to Gamepad).
      * Keyboard-only users see no change (no pad ⇒ empty pad mask), and a
      * launcher/settings.ini device choice still overrides this default. */
+#ifdef __SWITCH__
+    p1->device       = INPUT_DEV_GAMEPAD;
+#else
     p1->device       = INPUT_DEV_KEYBOARD | INPUT_DEV_GAMEPAD;
+#endif
     p1->pad_type     = PAD_3BUTTON;
     p1->deadzone_pct = 25;
     /* Keyboard arrows + Z/X/C + Return (the existing main.c mapping), plus

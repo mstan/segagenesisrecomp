@@ -37,6 +37,8 @@
 
 #if defined(_WIN32)
 #  include <windows.h>
+#elif defined(__SWITCH__)
+#  include <switch.h>
 #else
 #  include <sys/mman.h>
 #  include <unistd.h>
@@ -108,7 +110,9 @@ static size_t align_up(size_t v, size_t a) { return (v + (a - 1)) & ~(a - 1); }
 
 static size_t os_page_size(void)
 {
-#if defined(_WIN32)
+#if defined(__SWITCH__)
+    return 4096u;
+#elif defined(_WIN32)
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     return si.dwPageSize ? (size_t)si.dwPageSize : 4096u;
@@ -159,9 +163,45 @@ static void fiber_require_no_shadow_stack(void)
 
 /* ---- mapping ------------------------------------------------------------- */
 
+#ifdef __SWITCH__
+/* Map the header and stack separately, leaving a genuinely unmapped guard.
+ * The backing allocation cannot be touched until svcUnmapMemory restores it.
+ * Fibers are cooperative and these records are owned by the main thread. */
+typedef struct NxFiberMap {
+    unsigned char *map, *backing;
+    size_t header, guard, size;
+    VirtmemReservation *reservation;
+    struct NxFiberMap *next;
+} NxFiberMap;
+static NxFiberMap *s_nx_maps;
+#endif
+
 static unsigned char *os_map(size_t size, size_t guard_off, size_t guard_size)
 {
-#if defined(_WIN32)
+#if defined(__SWITCH__)
+    NxFiberMap *rec = calloc(1, sizeof *rec);
+    if (!rec) return NULL;
+    rec->backing = aligned_alloc(4096, size);
+    if (!rec->backing) { free(rec); return NULL; }
+    virtmemLock();
+    rec->map = virtmemFindStack(size, 4096);
+    rec->reservation = rec->map ? virtmemAddReservation(rec->map, size) : NULL;
+    virtmemUnlock();
+    if (!rec->reservation) { free(rec->backing); free(rec); return NULL; }
+    size_t top = guard_off + guard_size;
+    Result rc = svcMapMemory(rec->map, rec->backing, guard_off);
+    if (R_SUCCEEDED(rc)) {
+        rc = svcMapMemory(rec->map + top, rec->backing + top, size - top);
+        if (R_FAILED(rc)) svcUnmapMemory(rec->map, rec->backing, guard_off);
+    }
+    if (R_FAILED(rc)) {
+        virtmemLock(); virtmemRemoveReservation(rec->reservation); virtmemUnlock();
+        free(rec->backing); free(rec); return NULL;
+    }
+    rec->header = guard_off; rec->guard = guard_size; rec->size = size;
+    rec->next = s_nx_maps; s_nx_maps = rec;
+    return rec->map;
+#elif defined(_WIN32)
     unsigned char *m = (unsigned char *)VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT,
                                                      PAGE_READWRITE);
     if (!m) return NULL;
@@ -185,7 +225,20 @@ static unsigned char *os_map(size_t size, size_t guard_off, size_t guard_size)
 static void os_unmap(unsigned char *m, size_t size)
 {
     if (!m) return;
-#if defined(_WIN32)
+#if defined(__SWITCH__)
+    NxFiberMap **link = &s_nx_maps;
+    while (*link && (*link)->map != m) link = &(*link)->next;
+    if (!*link) fiber_fatal("unknown Switch fiber mapping");
+    NxFiberMap *rec = *link;
+    size_t top = rec->header + rec->guard;
+    if (size != rec->size ||
+        R_FAILED(svcUnmapMemory(m + top, rec->backing + top, size - top)) ||
+        R_FAILED(svcUnmapMemory(m, rec->backing, rec->header)))
+        fiber_fatal("Switch fiber unmap failed");
+    virtmemLock(); virtmemRemoveReservation(rec->reservation); virtmemUnlock();
+    *link = rec->next;
+    free(rec->backing); free(rec);
+#elif defined(_WIN32)
     (void)size;
     VirtualFree(m, 0, MEM_RELEASE);
 #else

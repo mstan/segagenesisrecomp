@@ -129,6 +129,12 @@ static int exe_module_path(char *out, size_t n)
         m = NULL;
     DWORD r = GetModuleFileNameA(m, out, (DWORD)n);
     return r > 0 && r < n;
+#elif defined(__SWITCH__)
+    extern const char *genesis_switch_nro_path(void);
+    const char *path = genesis_switch_nro_path();
+    if (!path || !*path) return 0;
+    snprintf(out, n, "%s", path);
+    return 1;
 #elif defined(__APPLE__) || defined(__ANDROID__)
     Dl_info info;
     if (!dladdr((void *)&genesis_build_exe_fingerprint, &info) || !info.dli_fname)

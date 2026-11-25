@@ -18,6 +18,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static SDL_GameController *s_pad[INPUT_MAX_PLAYERS];
 static SDL_JoystickID s_pad_jid[INPUT_MAX_PLAYERS] = { -1, -1, -1, -1, -1, -1 };
@@ -37,6 +38,10 @@ static int shortcut_button(int configured,int original)
 
 static void open_pad_index(int joystick_index)
 {
+#ifdef __SWITCH__
+    extern int genesis_switch_controller_connected(int slot);
+    if(!genesis_switch_controller_connected((int)SDL_JoystickGetDeviceInstanceID(joystick_index)))return;
+#endif
     if (!SDL_IsGameController(joystick_index)) return;
 
     /* Preserve other assignments on disconnect; fill the first empty slot. */
@@ -218,6 +223,13 @@ uint32_t gamepad_overlay_mask(void)
     uint32_t mask = 0;
     for (unsigned i = 0; i < sizeof map / sizeof map[0]; ++i)
         if (SDL_GameControllerGetButton(c, map[i].button)) mask |= map[i].bit;
+    int x=SDL_GameControllerGetAxis(c,SDL_CONTROLLER_AXIS_LEFTX);
+    int y=SDL_GameControllerGetAxis(c,SDL_CONTROLLER_AXIS_LEFTY);
+    int dz=player_deadzone(0);
+    if(x>dz && x>=abs(y))mask|=GP_OVERLAY_RIGHT;
+    else if(x < -dz && -x>=abs(y))mask|=GP_OVERLAY_LEFT;
+    else if(y>dz)mask|=GP_OVERLAY_DOWN;
+    else if(y < -dz)mask|=GP_OVERLAY_UP;
     return mask;
 }
 

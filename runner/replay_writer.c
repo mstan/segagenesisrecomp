@@ -22,6 +22,11 @@ struct GenesisReplayWriter {
   SDL_atomic_t stop, error, read_pos, write_pos;
   unsigned head; /* Producer only. */
   unsigned char bytes[QUEUE_BYTES];
+  /* The disk worker owns these for its whole lifetime. SDL's Switch worker
+   * stack is 128 KiB; its two 64 KiB stdio buffers and begin record must not
+   * be automatic variables. Destroy joins the worker before freeing them. */
+  Begin begin;
+  char text_buffer[FILE_BUFFER_BYTES], state_buffer[FILE_BUFFER_BYTES];
 };
 static void fail(GenesisReplayWriter *w, int error) {
   SDL_AtomicCAS(&w->error, OK, error);
@@ -174,7 +179,6 @@ static bool rotate_history(const char *base) {
 static int SDLCALL worker(void *opaque) {
   GenesisReplayWriter *w = opaque;
   FILE *text = NULL, *states = NULL;
-  char text_buffer[FILE_BUFFER_BYTES], state_buffer[FILE_BUFFER_BYTES];
   unsigned tail = 0;
   size_t offset = 0;
   uint32_t last_flush = (uint32_t)SDL_GetTicks();
@@ -191,44 +195,44 @@ static int SDLCALL worker(void *opaque) {
       bool ok = true;
       switch (c.op) {
       case BEGIN: {
-        Begin b;
-        get(w, at, &b, sizeof(b));
+        Begin *b = &w->begin;
+        get(w, at, b, sizeof(*b));
         char path[1400];
         ok = close_files(&text, &states);
         offset = 0;
         if (!ok)
           break;
-        if (!rotate_history(b.path)) {
+        if (!rotate_history(b->path)) {
           ok = false;
           break;
         }
-        text = fopen(b.path, "wb");
-        snprintf(path, sizeof(path), "%s.sav", b.path);
+        text = fopen(b->path, "wb");
+        snprintf(path, sizeof(path), "%s.sav", b->path);
         states = fopen(path, "wb");
         ok = text && states &&
-             !setvbuf(text, text_buffer, _IOFBF, sizeof(text_buffer)) &&
-             !setvbuf(states, state_buffer, _IOFBF, sizeof(state_buffer));
+             !setvbuf(text, w->text_buffer, _IOFBF, sizeof(w->text_buffer)) &&
+             !setvbuf(states, w->state_buffer, _IOFBF, sizeof(w->state_buffer));
         if (!ok)
           break;
-        ok = fputs(b.header, text) != EOF;
-        snprintf(path, sizeof(path), "%s.config.ini", b.path);
+        ok = fputs(b->header, text) != EOF;
+        snprintf(path, sizeof(path), "%s.config.ini", b->path);
         FILE *config = fopen(path, "wb");
         if (!config)
           ok = false;
         else {
-          if (fputs(b.config, config) == EOF)
+          if (fputs(b->config, config) == EOF)
             ok = false;
           if (fclose(config))
             ok = false;
         }
-        snprintf(path, sizeof(path), "%s.mods.toml", b.path);
-        ok = copy_optional(b.mods, path) && ok;
-        snprintf(path, sizeof(path), "%s.mods.txt", b.path);
+        snprintf(path, sizeof(path), "%s.mods.toml", b->path);
+        ok = copy_optional(b->mods, path) && ok;
+        snprintf(path, sizeof(path), "%s.mods.txt", b->path);
         FILE *selected = fopen(path, "wb");
         if (!selected)
           ok = false;
         else {
-          if (fputs(b.effective, selected) == EOF)
+          if (fputs(b->effective, selected) == EOF)
             ok = false;
           if (fclose(selected))
             ok = false;

@@ -253,7 +253,11 @@ void app_config_reload_preserving_mods(const char *path)
 int app_config_save(const char *path)
 {
     FILE *f = fopen(path, "wb");
-    if (!f) return 0;
+    if (!f) {
+        fprintf(stderr,"[settings] cannot write %s\n",path?path:"(null)");
+        perror("[settings]");
+        return 0;
+    }
 
     fprintf(f, "# segagenesisrecomp launcher settings. Edited by the launcher;\n"
                "# hand-editable. SDL scancodes are numeric (see SDL_scancode.h).\n\n");
@@ -286,7 +290,8 @@ int app_config_save(const char *path)
     for (int p = 0; p < INPUT_MAX_PLAYERS; ++p) write_player(f, p);
 
     int ok=!ferror(f);
-    if(fclose(f)!=0)ok=0;
+    if(!ok)perror("[settings] write failed");
+    if(fclose(f)!=0){perror("[settings] close failed");ok=0;}
     return ok;
 }
 
