@@ -1630,7 +1630,7 @@ static void runner_sram_init_and_load(const char *rom_path)
             size_t bytes=legacy_ok?legacy:n;
             uint8_t *image=calloc(n,1);
             size_t got=image?fread(image,1,bytes,f):0;
-            loaded=image && got==bytes && !ferror(f) && fgetc(f)==EOF;
+            loaded=image && got==bytes && fgetc(f)==EOF && !ferror(f);
             if(loaded)memcpy(sram_buf(),image,n);
             free(image);
             fprintf(stderr, "[SRAM] %s %zu/%zu bytes from %s%s\n",
