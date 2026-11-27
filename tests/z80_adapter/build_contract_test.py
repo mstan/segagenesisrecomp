@@ -21,7 +21,7 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/contract.txt" "${sources}\\n${definition
         ('missing',['-DGENESIS_Z80_RECOMP=ON'],'needs an existing GENESIS_Z80_AOT_SOURCE'),
         ('entry',['-DGENESIS_Z80_RECOMP=ON','-DGENESIS_Z80_AOT_SOURCE='+str(source),'-DGENESIS_Z80_AOT_ENTRY=not a symbol'],'must name one generated C step function')]:
         build=root/name;argv=[cmake,'-S',str(root),'-B',str(build),'-G',generator,*args]
-        if sys.platform=='win32':argv+=['-A','x64']
+        if sys.platform=='win32' and generator.startswith('Visual Studio'):argv+=['-A','x64']
         result=subprocess.run(argv,capture_output=True,text=True)
         if error:assert result.returncode and error in result.stdout+result.stderr,(name,result.stdout,result.stderr);continue
         assert result.returncode==0,(name,result.stdout,result.stderr)
