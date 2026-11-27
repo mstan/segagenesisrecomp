@@ -54,3 +54,14 @@ if(MSVC)
     set_property(SOURCE src/toml.c APPEND PROPERTY COMPILE_OPTIONS
         /wd4244 /wd4267)
 endif()
+
+if(BUILD_TESTING)
+    enable_testing()
+    add_executable(M68kCodegenBufferTest
+        "${M68K_RECOMP_CORE_DIR}/tests/genesis/codegen_buffer_test.c"
+        src/rom_parser.c ${M68K_RECOMP_CORE_SOURCES}
+        src/game_config.c src/toml.c)
+    target_include_directories(M68kCodegenBufferTest PRIVATE
+        src ${M68K_RECOMP_CORE_INCLUDE_DIRS})
+    add_test(NAME m68k_codegen_buffer COMMAND M68kCodegenBufferTest)
+endif()
