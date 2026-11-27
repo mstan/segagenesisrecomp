@@ -184,6 +184,27 @@ void genesis_local_states_save_finished(const char *path,int ok)
     s_pending_slot=0;
 }
 
+static uint32_t thumbnail_pixel(const uint32_t *pixels, int stride,
+                                int x0, int y0, int x1, int y1)
+{
+    uint32_t red=0,green=0,blue=0;
+    unsigned count=(unsigned)(x1-x0)*(unsigned)(y1-y0);
+    for(int y=y0;y<y1;++y) {
+        const uint32_t *row=pixels+(size_t)y*(size_t)stride;
+        for(int x=x0;x<x1;++x) {
+            uint32_t color=row[x];
+            red+=(color>>16)&255u;
+            green+=(color>>8)&255u;
+            blue+=color&255u;
+        }
+    }
+    /* Sample all the contributing pixels so sub-thumbnail stripes keep their
+     * color instead of turning into unrelated larger stripes. */
+    unsigned rounded=count/2;
+    return 0xFF000000u|((red+rounded)/count<<16)|
+        ((green+rounded)/count<<8)|(blue+rounded)/count;
+}
+
 void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
                                      int width, int height)
 {
@@ -193,9 +214,16 @@ void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
     if(th>THUMB_H){th=THUMB_H;tw=(int)((int64_t)width*th/height);}
     if(tw<1)tw=1;if(th<1)th=1;
     for(int i=0;i<THUMB_W*THUMB_H;++i)s_live_thumb[i]=0xFF000000u;
-    for(int y=0;y<th;++y)for(int x=0;x<tw;++x)
-        s_live_thumb[(y+(THUMB_H-th)/2)*THUMB_W+x+(THUMB_W-tw)/2]=
-            pixels[(size_t)(y*height/th)*(size_t)stride+x*width/tw]|0xFF000000u;
+    for(int y=0;y<th;++y) {
+        int y0=y*height/th,y1=(y+1)*height/th;
+        if(y1==y0)++y1;
+        for(int x=0;x<tw;++x) {
+            int x0=x*width/tw,x1=(x+1)*width/tw;
+            if(x1==x0)++x1;
+            s_live_thumb[(y+(THUMB_H-th)/2)*THUMB_W+x+(THUMB_W-tw)/2]=
+                thumbnail_pixel(pixels,stride,x0,y0,x1,y1);
+        }
+    }
     if (!s_ring || ++s_cadence < s_interval) return;
     s_cadence = 0;
     const GameVideo *video=g_game_spec.video;
