@@ -15,6 +15,7 @@
 
 #include "gamepad.h"
 #include "input_map.h"
+#include <recomp_input.h>
 
 #include <SDL2/SDL.h>
 #include <stdio.h>
@@ -134,14 +135,17 @@ static int player_deadzone(int player)
 static int bind_held(SDL_GameController *c, const GamepadBind *bind, int deadzone)
 {
     if (!c) return 0;
-    if (bind->kind == GP_BIND_BUTTON) {
-        return SDL_GameControllerGetButton(c, (SDL_GameControllerButton)bind->code) ? 1 : 0;
+    ri_device snapshot = {0};
+    uint32_t binding = 0;
+    if (bind->kind == GP_BIND_BUTTON && (unsigned)bind->code < 32) {
+        if (SDL_GameControllerGetButton(c, (SDL_GameControllerButton)bind->code))
+            snapshot.buttons = 1u << bind->code;
+        binding = RI_BUTTON(bind->code);
+    } else if (bind->kind == GP_BIND_AXIS && (unsigned)bind->code < RI_MAX_AXES) {
+        snapshot.axes[bind->code] = SDL_GameControllerGetAxis(c, (SDL_GameControllerAxis)bind->code);
+        binding = RI_AXIS(bind->code, bind->axis_dir >= 0);
     }
-    if (bind->kind == GP_BIND_AXIS) {
-        int v = SDL_GameControllerGetAxis(c, (SDL_GameControllerAxis)bind->code);
-        return bind->axis_dir < 0 ? (v < -deadzone) : (v > deadzone);
-    }
-    return 0;
+    return ri_binding_held(&snapshot, binding, deadzone);
 }
 
 uint16_t gamepad_player_mask(int player)

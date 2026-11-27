@@ -1,9 +1,9 @@
 [submodule "external/m68k-recomp-core"]
 	path = external/m68k-recomp-core
-	url = ../m68k-recomp-core.git
+	url = https://github.com/mstan/m68k-recomp-core-candidate-20261124.git
 [submodule "external/z80-recomp-core"]
 	path = external/z80-recomp-core
-	url = ../z80-recomp-core.git
+	url = https://github.com/mstan/z80-recomp-core-candidate-20261124.git
 [submodule "external/recomp-net"]
 	path = external/recomp-net
 	url = https://github.com/RetroPortingToolKit/recomp-net.git
@@ -13,3 +13,24 @@
 [submodule "external/rbengine"]
 	path = external/rbengine
 	url = https://github.com/RetroPortingToolKit/rbengine.git
+[submodule "external/shared-cores/recomp-mod-core"]
+	path = external/shared-cores/recomp-mod-core
+	url = https://github.com/mstan/recomp-mod-core.git
+[submodule "external/shared-cores/recomp-persistence-core"]
+	path = external/shared-cores/recomp-persistence-core
+	url = https://github.com/mstan/recomp-persistence-core-candidate-20261124.git
+[submodule "external/shared-cores/recomp-audio-core"]
+	path = external/shared-cores/recomp-audio-core
+	url = https://github.com/mstan/recomp-audio-core.git
+[submodule "external/shared-cores/recomp-input-core"]
+	path = external/shared-cores/recomp-input-core
+	url = https://github.com/mstan/recomp-input-core-candidate-20261124.git
+[submodule "external/shared-cores/recomp-diagnostics-core"]
+	path = external/shared-cores/recomp-diagnostics-core
+	url = https://github.com/mstan/recomp-diagnostics-core-candidate-20261124.git
+[submodule "external/shared-cores/recomp-presentation-core"]
+	path = external/shared-cores/recomp-presentation-core
+	url = https://github.com/mstan/recomp-presentation-core.git
+[submodule "external/shared-cores/sega-psg-core"]
+	path = external/shared-cores/sega-psg-core
+	url = https://github.com/mstan/sega-psg-core.git

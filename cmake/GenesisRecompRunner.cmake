@@ -26,6 +26,7 @@
 # game repository can migrate.
 
 include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/SharedCoreIntegration.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompZ80.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/GenesisRecompOptimization.cmake")
 option(GENESIS_FM_BLOCK_SAMPLES "Batch faithful FM samples between register writes" ON)
@@ -56,6 +57,7 @@ set(GENESIS_RUNNER_CORE_SOURCES
     host_stream.c
     host_atomic_file.c
     persist_writer.c
+    mod_transaction.c
     rb_state.c
     rb_capture.c
     rb_probe.c
@@ -108,6 +110,7 @@ set(GENESIS_RUNNER_RECONCILED_SOURCES
     host_stream.c
     host_atomic_file.c
     persist_writer.c
+    mod_transaction.c
     rb_state.c
     rb_probe.c
     local_states.c
@@ -156,7 +159,7 @@ function(genesisrecomp_runner_target target)
         return()
     endif()
     set_property(TARGET ${target} PROPERTY GENESIS_RUNNER_REQUIREMENTS ON)
-    target_link_libraries(${target} PRIVATE retcomm_rbengine)
+    target_link_libraries(${target} PRIVATE retcomm_rbengine recomp-audio::core recomp-persistence-core::core recomp-input::core sega-psg::core retro-runtime::presentation recomp-diagnostics-core::core recomp-mod-core::core)
     if(WIN32)
         target_link_libraries(${target} PRIVATE ws2_32)
     endif()

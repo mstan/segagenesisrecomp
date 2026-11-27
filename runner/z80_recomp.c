@@ -13,6 +13,8 @@
 #include "external/superzazu/z80.h"
 
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 Z80State g_z80;
 #ifdef GENESIS_CONFIGURED_Z80_STEP
@@ -106,6 +108,14 @@ int g_diff_active;
 
 void sms_dispatch_miss(uint16_t addr)
 {
+#if defined(GENESIS_STRICT_NATIVE) && GENESIS_STRICT_NATIVE
+    fprintf(stderr,"[native Z80] unsupported code at %04X: %02X %02X %02X %02X\n",addr,
+        sms_read8(addr),sms_read8((uint16_t)(addr+1)),sms_read8((uint16_t)(addr+2)),sms_read8((uint16_t)(addr+3)));
+    const char* dump=getenv("GENESIS_Z80_MISS_DUMP");
+    if(dump&&*dump){FILE*f=fopen(dump,"wb");if(f){fwrite(g_machine.bus.z80_ram,1,sizeof g_machine.bus.z80_ram,f);fclose(f);}}
+    exit(3);
+#endif
+
     z80 *fallback = &g_machine.z80;
     z80_recomp_mirror_to_interpreter(fallback);
     /* One real interpreted instruction, with interrupt acceptance still owned

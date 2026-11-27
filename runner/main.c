@@ -1,3 +1,4 @@
+#include "mod_transaction.h"
 #include "video/genesis_frame_pixels.h"
 #include "video/genesis_hd_gpu.h"
 #include "video/genesis_raster_jobs.h"
@@ -3374,6 +3375,9 @@ int main(int argc, char *argv[])
 #if GENESIS_HAS_RECOMP_NET
     genesis_identity_sha256(rom_raw, rom_raw_len, s_rom_sha256);
 #endif
+    if(!genesis_mod_initialize(g_game_spec.short_name,rom_raw,rom_raw_len)) {
+        fputs("Cannot bind guarded mods to the verified original ROM\n",stderr);return 1;
+    }
     free(rom_raw);   /* glue_init copied what it needs */
 
     /* TCP debug server â€” only if debug.ini exists next to the exe.

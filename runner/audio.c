@@ -10,7 +10,6 @@
  * ±0.5% servo (which crackled because every correction dropped/duplicated
  * samples) and the >8-frame hard-drop. See recomp_audio_drc.h. This is the only
  * TU that pulls in the implementation. */
-#define RECOMP_AUDIO_DRC_IMPL
 #include "recomp_audio_drc.h"
 
 /* Volume divisors from the reference mixer (clownmdemu-frontend-common/mixer.h).
