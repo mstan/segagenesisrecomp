@@ -210,6 +210,7 @@ void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
 {
     if (!pixels || stride < width || width <= 0 || height <= 0 || s_mode)
         return;
+    int capture_history=s_ring && ++s_cadence>=s_interval;
     int tw=THUMB_W,th=(int)((int64_t)height*tw/width);
     if(th>THUMB_H){th=THUMB_H;tw=(int)((int64_t)width*th/height);}
     if(tw<1)tw=1;if(th<1)th=1;
@@ -221,10 +222,11 @@ void genesis_local_states_note_frame(const uint32_t *pixels, int stride,
             int x0=x*width/tw,x1=(x+1)*width/tw;
             if(x1==x0)++x1;
             s_live_thumb[(y+(THUMB_H-th)/2)*THUMB_W+x+(THUMB_W-tw)/2]=
-                thumbnail_pixel(pixels,stride,x0,y0,x1,y1);
+                capture_history?thumbnail_pixel(pixels,stride,x0,y0,x1,y1):
+                    pixels[(size_t)y0*(size_t)stride+x0]|0xFF000000u;
         }
     }
-    if (!s_ring || ++s_cadence < s_interval) return;
+    if(!capture_history)return;
     s_cadence = 0;
     const GameVideo *video=g_game_spec.video;
     size_t presentation_size=video && video->presentation_state_save?

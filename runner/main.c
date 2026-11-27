@@ -4266,7 +4266,6 @@ session_begin:;
                 ui_width, s_screen_height, MAX_SCREEN_WIDTH * 4);
 #endif
         update_render_logical_size(renderer);
-        SDL_RenderClear(renderer);
 
         /* Nearest-filtered presentation uploads only the active area the VDP
          * reported. Linear filtering keeps the full upload so edge sampling
@@ -4279,6 +4278,7 @@ session_begin:;
         const SDL_Rect *base_upload_rect =
             s_frame_texture_filtered ? NULL : &upload_rect;
         SDL_Texture *frame_texture = texture;
+        int base_upload_pending=0;
         if(s_hd_requested&&!ui_open&&!netplay_peer_view_active()&&!s_video_frame.owner) {
             if(!hd_checked){hd_gpu=genesis_hd_gpu_create(renderer,texture);hd_checked=1;
                 if(!hd_gpu)fprintf(stderr,"[HD_GPU] unavailable; native presentation retained\n");}
@@ -4328,12 +4328,10 @@ session_begin:;
                             slot, src.x, peer_source_y, src.w, src.h);
 #endif
             } else {
-                SDL_UpdateTexture(texture, base_upload_rect, present_src,
-                                  MAX_SCREEN_WIDTH * (int)sizeof(uint32_t));
+                base_upload_pending=1;
             }
             peer_view_was_active = peer_view_is_active;
         }
-        SDL_RenderCopy(renderer, frame_texture, &src, NULL);
 #if GENESIS_HAS_RECOMP_NET
         /* Process the peer INPUT and emit our CONFIRM before the blocking
          * present, so confirmation delivery overlaps vsync as well. */
@@ -4371,10 +4369,10 @@ session_begin:;
                 if(next){interpolation_image=next;interpolation_capacity=need;}else high_refresh=0;
             }
         }
+        int submitted=0;
         if(high_refresh) {
             Uint64 now=SDL_GetPerformanceCounter();
             Uint64 guest_work=now-frame_start;
-            int submitted=0;
             presentation_clock_begin(&presentation_clock,perf_frequency,display_rate,guest_deadline);
             Uint64 at;double phase;
             while(presentation_clock_next(&presentation_clock,guest_deadline,
@@ -4413,8 +4411,15 @@ session_begin:;
                     png_write_argb(presentation_snap,pixels,s_screen_width,s_screen_height,s_frame_stride);
                 now=SDL_GetPerformanceCounter();
             }
-        } else {
-            presentation_clock_reset(&presentation_clock);
+        }
+        if(!submitted) {
+            if(!high_refresh)presentation_clock_reset(&presentation_clock);
+            /* A fractional submission owns its complete upload. The base
+             * frame is needed only for ordinary playback or a missed deadline. */
+            SDL_RenderClear(renderer);
+            if(base_upload_pending)
+                SDL_UpdateTexture(texture,base_upload_rect,present_src,s_frame_stride*(int)sizeof(uint32_t));
+            SDL_RenderCopy(renderer,frame_texture,&src,NULL);
             Uint64 now=SDL_GetPerformanceCounter();
             if(!turbo && !runtime_uncapped && now<guest_deadline)
                 genesis_host_wait_until(guest_deadline,perf_frequency);

@@ -64,9 +64,8 @@ def assemble(source, assembler, p2bin, out, profile):
         if name == 'Sound/Engine/Sonic 2 Clone Driver v2.asm':
             # Imported S3 music keeps advancing while an SFX borrows FM.
             # Returning that channel must restore its current pitch/key,
-            # rather than force a rest until the next sequence note. The
-            # immutable song header already selects the S3 driver contract;
-            # retain the legacy return behavior for S1/S2 arrangements.
+            # unless the sequence is resting or holding a note without an
+            # attack. The song header selects the S3 FM return contract.
             marker = ("\tbclr\t#2,SMPS_Track.PlaybackControl(a5)\t; Clear 'SFX overriding' bit\n"
                       "\tbset\t#1,SMPS_Track.PlaybackControl(a5)\t; Set 'track at rest' bit\n"
                       '\tbsr.w\tSetVoice\n')
@@ -76,6 +75,8 @@ def assemble(source, assembler, p2bin, out, profile):
 \tbeq.s .legacyFMReturn
 \tbsr.w SetVoice
 \tbtst #1,SMPS_Track.PlaybackControl(a5)
+\tbne.s .novoiceupd
+\tbtst #4,SMPS_Track.PlaybackControl(a5)
 \tbne.s .novoiceupd
 \tbsr.w FMPrepareNote
 \tbsr.w FMNoteOn
