@@ -1,0 +1,283 @@
+/*
+ * game_spec.h — single source of truth for everything the runner
+ * needs to know about a specific game ROM.
+ *
+ * The runner is game-agnostic. Each game project provides exactly one
+ * translation unit that defines `const GameSpec g_game_spec`, and the
+ * runner reads from that struct rather than hard-coding func_NNNNNN
+ * calls, expected CRCs, RAM offsets, or per-game native overrides.
+ *
+ * Design notes:
+ *
+ *   - Runtime lifecycle, frame/debug, and generated dispatch call sites use
+ *     this struct. There is no parallel free-function hook interface.
+ *
+ *   - Function-pointer fields are NULL when the game doesn't need
+ *     that hook. The runner checks before dispatching so a minimal
+ *     spec can boot with just entry/vblank/hblank populated.
+ *
+ *   - Debug-command handlers receive raw JSON strings; no cJSON dependency.
+ *
+ */
+#pragma once
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include "game_video.h"
+struct RecompLauncherCModProvider;
+
+/*
+ * One per-game TCP debug command. The handler receives the request id
+ * (echo it back in responses) and the raw JSON line. Send replies via
+ * cmd_send_response / cmd_send_err declared in cmd_server.h.
+ */
+typedef struct {
+    const char *name;       /* matched against the request "cmd" field */
+    void      (*handler)(int id, const char *json_line);
+} GameDebugCommand;
+
+typedef struct GameSpec {
+    const GameVideo *video;          /* NULL = native VDP presentation only */
+    /* Custom-video mode for a fresh install (no saved [mods.widescreen]
+     * enabled key): NULL or "off" keeps the renderer opt-in; "fit", "16:9",
+     * "21:9" or "32:9" enables it. A saved choice, including off, still wins. */
+    const char *video_default;
+    unsigned logical_players;       /* 0 = native two ports; host input/UI capacity */
+    void (*load_settings)(const char *settings_path);
+    /* Game-owned additive features may compose with the common video provider. */
+    const struct RecompLauncherCModProvider *(*mods)(
+        const struct RecompLauncherCModProvider *base);
+    /* Optional local-only enhancement guard, also checked for CLI netplay. */
+    int (*netplay_allowed)(void);
+    /* NULL/NULL result = supported. Host enhancements may reject raw machine
+     * snapshots until their extra state has a compatible serialization format. */
+    const char *(*state_unavailable_reason)(void);
+    /* Opt-in, build-bound host snapshots. Validate (apply=0) must not mutate
+     * simulation state. NULL leaves the legacy machine-only format intact. */
+    const char *state_build_id;
+    size_t (*state_size)(void);
+    int (*state_save)(void *data, size_t size);
+    int (*state_load)(const void *data, size_t size, int apply);
+    /* At the game's real WaitForVint: is its caller a resumable loop? */
+    int (*state_at_boundary)(void);
+    /* ---- Identity ---- */
+    /* Clean game name for gameplay and launcher captions, e.g. "Sonic the
+     * Hedgehog". Build/backend/debug identity belongs in logs and About. */
+    const char *display_name;
+    const char *short_name;          /* "Sonic1" — shows up in info / ping */
+    /* Box-art file staged next to the exe under assets/img/, e.g.
+     * "boxart-sonic3.tga". NULL => the shared "boxart.tga" (single-boxart
+     * repos). Needed when several game modes build into ONE exe dir (the
+     * Sonic3AndKnucklesRecomp repo's 3 modes) so each shows its own art —
+     * the pre-boot launcher reads this into RecompLauncherCGameInfo.boxart_path. */
+    const char *boxart;
+
+    /* Expected CRC32 of the raw ROM (0 = skip verification). The
+     * launcher checks this before starting the game and re-prompts
+     * the user if the file doesn't match. */
+    uint32_t    expected_rom_crc32;
+
+    /* Expected ROM size in bytes (0 = skip the check). Sonic 1 is
+     * 0x80000, Sonic 2 is 0x100000, Sonic 3K is 0x400000. */
+    uint32_t    expected_rom_size;
+
+    /* Tier-3 interpreter floor default for THIS game (0 = off). When on,
+     * every computed-dispatch miss executes CORRECTLY on the A7-neutral
+     * interpreter capsule instead of silently no-op'ing, and the executed
+     * subtree is written to floor_coverage.toml as [functions].extra leads for
+     * the next regen — the psxrecomp-style fallback + feedback loop. The
+     * GENESIS_FLOOR env var still overrides in either direction. Enable
+     * per game once validated (RKA: on; Sonics ship with full disasm
+     * coverage and keep it off so a miss stays a loud regression). */
+    int         tier3_floor_default;
+
+    /* Optional statically-recompiled Z80 coprocessor backend. The generated
+     * function executes exactly one instruction from the explicit Z80 PC and
+     * returns; the shared Genesis scheduler remains responsible for cycle
+     * slices, reset, BUSREQ, and interrupts. NULL uses the optional shared-build
+     * configured entry, otherwise SuperZazu. This is per game because every
+     * cartridge uploads a different sound-driver image into Z80 RAM. */
+    void      (*z80_step)(void);
+
+    /* ---- Battery SRAM override ---- */
+    /* Explicit SRAM geometry for carts whose standard header ($1B0 "RA"
+     * + BE start/end longwords) does NOT declare it. The Sonic 3 &
+     * Knuckles lock-on cart is the case: its main header is S&K's, whose
+     * CartRAM_Type reads "No SRAM", yet the board carries battery SRAM at
+     * $200001-$203FFF (odd bytes), gated by the $A130F1 overlay bit and
+     * overlapping the locked-on Sonic 3 ROM bank. Standalone S&K is the
+     * same (blank header, but saves the lock-on Knuckles game).
+     *
+     * 0/0 = rely on the ROM header (the normal path — standalone Sonic 3
+     * declares "RA" $200001-$2003FF there and needs no override). When
+     * sram_start is non-zero AND the header carries no "RA", the runtime
+     * maps SRAM over this inclusive byte range [sram_start & ~1, sram_end].
+     * A header "RA" marker always wins (never override a self-describing
+     * cart). */
+    uint32_t    sram_start;
+    uint32_t    sram_end;
+    /* Optional basename (no directory) for an incompatible local campaign.
+     * Evaluated after launcher configuration; NULL preserves the ROM basename.
+     * A game using this seam owns its SRAM import/export UI. */
+    const char *(*sram_filename)(void);
+    /* Optional notifications; data is read-only and remains runner-owned.
+     * Load reports the resolved path even when no valid-sized file exists.
+     * Flushed fires only after the complete atomic replacement succeeds. */
+    void (*sram_loaded)(const char *path, const uint8_t *data, size_t size, int loaded);
+    void (*sram_flushed)(const char *path, const uint8_t *data, size_t size);
+    /* Optional build-specific startup persistence used by feedback replays.
+     * NULL/zero queries the byte count; save/load returns that count on success.
+     * Called after sram_loaded, before the first game tick. Playback must only
+     * restore into its isolated profile and reject existing destination files. */
+    size_t (*feedback_context)(void *data, size_t size, int load);
+
+    /* ---- Entry points (recompiled C) ---- */
+    /* Called once on the game thread. Must contain the game's main
+     * loop and not return — typically wraps func_NNNNNN(). NULL means
+     * the runner should refuse to start a native build (oracle builds
+     * don't need this). */
+    void      (*call_entry_point)(void);
+
+    /* IRQ6 / IRQ4 handlers, called from glue.c during VBlank/HBlank
+     * service. NULL = no handler (the runner just sets the flag). */
+    void      (*call_vblank)(void);
+    void      (*call_hblank)(void);
+
+    /* Save-state resume loop PC. Native save-state loads restart the
+     * host game fiber here after restoring RAM/CPU state, because the
+     * host C stack itself is not portable save-state data. This should
+     * be a stable post-init per-frame loop for the state shape normally
+     * saved by the game. 0 preserves the old fiber continuation
+     * behavior. */
+    uint32_t    resume_main_loop_pc;
+
+    /* Mode-aware save-state resume (preferred over resume_main_loop_pc
+     * when present). Receives the RESTORED Game_Mode byte and returns
+     * the per-frame loop-top PC for that mode (e.g. Sonic 3's LevelLoop
+     * for GM_Level), so a load continues moment-in-time instead of
+     * re-running the mode handler's init (zone reload). Return 0 to
+     * fall back to resume_main_loop_pc (mode-handler re-entry via the
+     * outer dispatcher) — correct for transition/init modes. Addresses
+     * come from the game's disassembly. */
+    uint32_t  (*save_resume_pc)(uint8_t game_mode);
+
+    /* Outer game-mode dispatcher PC. If the save-state resume loop
+     * returns because the game changed modes, the restarted host fiber
+     * continues here so normal mode dispatch takes over. */
+    uint32_t    dispatch_main_loop_pc;
+
+    /* Optional per-yield periodic. Sonic 1 calls a UpdateMusic-like
+     * routine (func_001642) while the game thread is parked at
+     * WaitForVBlank. NULL = nothing to do. */
+    void      (*call_periodic)(void);
+
+    /* ---- Lifecycle hooks ---- */
+    /* Called once after runtime_init() and ROM load, before the game
+     * thread starts. Use for RAM seeding (e.g., Sonic 1 sets
+     * g_ram[0xF009] = 0x80 so UpdateMusic exits cleanly given the
+     * Z80 stub never runs the SMPS init). NULL = nothing. */
+    void      (*on_post_reset)(void);
+
+    /* Clear presentation-only caches after a file load or local rewind.
+     * Guest memory and deterministic adapter state have already restored. */
+    void      (*on_state_loaded)(void);
+
+    /* Called every VBlank, before/after the VBlank handler. The
+     * frame counter is the runner's internal frame number, not the
+     * game's. NULL = nothing. */
+    void      (*on_frame_pre)(uint64_t frame_count);
+    void      (*on_frame_post)(uint64_t frame_count);
+
+    /* Called every HBlank with the line number. Almost always NULL —
+     * games that need per-line state should poke their own state
+     * inside call_hblank instead. */
+    void      (*on_hblank)(uint32_t line);
+
+    /* ---- CLI args ---- */
+    /* Called once per unrecognized argv pair during startup. Return 1
+     * if the key was consumed (val too if applicable), 0 to let the
+     * runner report it as unknown. NULL = no game-specific args. */
+    int       (*handle_arg)(const char *key, const char *val);
+
+    /* One-line help text appended to --help output, or NULL. */
+    const char *arg_usage;
+
+    /* ---- Dispatch override ---- */
+    /* Called when call_by_address has no entry for an addr. Return 1
+     * if the game handled it, 0 to fall through to the dispatch-miss
+     * log. NULL = always fall through. */
+    int       (*dispatch_override)(uint32_t addr);
+
+    /* Opt-in, audited pre-instruction sites from game.toml. Returning 0
+     * continues normal generated code; returning 1 replaces this routine.
+     * A replacing hook owns the routine's register/stack contract. Games
+     * without configured sites incur no calls or behavior changes. */
+    int       (*instruction_hook)(uint32_t pc);
+
+    /* Opt-in main-program CPU headroom, queried at each scheduler slice.
+     * NULL / <=1 = exact native timing. IRQ, DMA, raster and sound clocks
+     * stay native. A game must retain its real VBlank wait as the tick gate.
+     * Use only for enhanced simulation, never as a native accuracy fix. */
+    unsigned  (*main_cpu_divisor)(void);
+
+    /* ---- Frame-record packing (debug ring buffer) ---- */
+    /* Pack game-specific telemetry into the 256-byte tail of each
+     * FrameRecord. Called from cmd_server_record_frame() once per
+     * frame. Must not block, must not allocate. NULL = leave it
+     * zeroed (frame_range will return empty game_data views). */
+    void      (*fill_frame_record)(uint8_t game_data[256]);
+
+    /* Version stamp for the layout fill_frame_record writes. Bump
+     * when the per-game struct shape changes so consumers can detect
+     * stale captures. */
+    uint16_t    frame_record_version;
+
+    /* ---- Debug-server commands ---- */
+    /* Per-game TCP commands. The runner first checks built-in
+     * commands (read_mem, frame_range, etc.); if no built-in matches
+     * it walks this array. Set commands=NULL / command_count=0 if
+     * the game has no extras. */
+    const GameDebugCommand *commands;
+    int                     command_count;
+
+    /* ---- Rollback state (runner/rb_state.c, section "game") ----
+     * Everything the game adapter keeps OUTSIDE guest memory that a tick
+     * reads or writes: reentrancy flags (inside_*), hoisted function-local
+     * statics, party/character runtime tables. Unlike state_save above,
+     * these are called at ANY tick boundary (mid-frame, menus, loading,
+     * lag frames) -- the game fiber may be suspended inside an adapter hook,
+     * so reentrancy flags are routinely non-zero and must round-trip.
+     * rb_state_save returns bytes written (dst NULL = bytes needed); the
+     * bytes are also the digest domain, so they must be pointer-free and
+     * deterministic (no padding garbage). rb_state_load returns 1 on
+     * success. NULL = the adapter keeps no simulation state of its own. */
+    size_t    (*rb_state_save)(void *dst, size_t cap);
+    int       (*rb_state_load)(const void *src, size_t len);
+
+    /* ---- Netplay session config seal ----
+     * Write the game's simulation-affecting configuration (roster, character
+     * set, custom-video width, enabled mods...) as text lines into out. The
+     * engine prepends its own lines and the result is the session config
+     * image every peer must match exactly (runner/netplay/genesis_netplay.h).
+     * NULL = nothing game-specific affects the simulation. */
+    void      (*netplay_config_image)(char *out, size_t cap);
+    /* Adopt a configuration line (the lobby host's, or this build's own to
+     * restore it) for the next session, WITHOUT persisting it. Return 0, or
+     * non-zero when this build cannot run it (missing owner assets...): the
+     * launch is then refused. NULL = nothing to adopt. */
+    int       (*netplay_config_adopt)(const char *line);
+
+    /* Verified-clean native overrides. Native builds typically run
+     * with size=0 (everything stays as recompiled C); oracle builds
+     * use this to swap interpreter execution for native execution
+     * one function at a time during divergence hunting. NULL+0 is
+     * legal and means "no overrides". */
+} GameSpec;
+
+/*
+ * The single per-game spec instance. Each game project defines this
+ * exactly once in the consuming game's adapter. The runner picks it up at
+ * link time; game-specific implementation belongs in the game repository.
+ */
+extern const GameSpec g_game_spec;

@@ -1,0 +1,62 @@
+/*
+ * event_queue.h — cycle-stamped audio-event queue.
+ *
+ * Single-producer (68K game fiber) / single-consumer (main fiber drain at
+ * frame end) ring buffer. Both run on the same OS thread and the producer
+ * yields before the consumer runs, so no locking is needed.
+ *
+ * Every 68K write to FM ($A04000-$A04006) or PSG ($C00011) pushes an
+ * AudioEvent onto this queue with a cycle stamp from g_audio_cycle_counter.
+ * audio_drain() walks the queue in order, feeding the YM2612 / PSG models
+ * which advance sample-accurately between events.
+ */
+#ifndef AUDIO_EVENT_QUEUE_H
+#define AUDIO_EVENT_QUEUE_H
+
+#include <stdint.h>
+#include <stddef.h>  /* size_t */
+
+enum {
+    AUDIO_PORT_FM1_ADDR = 0,   /* $A04000 write */
+    AUDIO_PORT_FM1_DATA = 1,   /* $A04002 write */
+    AUDIO_PORT_FM2_ADDR = 2,   /* $A04004 write */
+    AUDIO_PORT_FM2_DATA = 3,   /* $A04006 write */
+    AUDIO_PORT_PSG      = 4,   /* $C00011 write */
+};
+
+typedef struct AudioEvent {
+    uint32_t cycle_stamp;   /* g_audio_cycle_counter at time of write */
+    uint8_t  port;
+    uint8_t  value;
+} AudioEvent;
+
+/* Push one event. Safe to call from anywhere inside the game fiber. */
+void audio_event_push(uint32_t cycle_stamp, uint8_t port, uint8_t value);
+
+/* Drain iterator. Returns 1 if *out was filled, 0 if queue empty.
+ * Call repeatedly until it returns 0 to walk the frame's events in order. */
+int  audio_event_pop(AudioEvent *out);
+
+/* Reset the queue — called at end-of-wall-frame after drain completes, or
+ * on lifecycle init. */
+void audio_event_queue_reset(void);
+
+/* Re-queue events deferred past the drained frame (mixer.c multi-frame
+ * spreading — see the giant-handler note there). Caller has already
+ * subtracted the drained frame's span from each stamp. */
+void audio_event_requeue(const AudioEvent *evs, size_t n);
+
+/* Diagnostic: current fill level. */
+size_t audio_event_queue_count(void);
+/* Opt-in host quickstates. Fixed capacity, pointer-free, validate-before-apply. */
+size_t audio_event_state_size(void);
+int audio_event_state_save(void *data,size_t size);
+int audio_event_state_load(const void *data,size_t size,int apply);
+/* Rollback snapshots (runner/rb_state.c): COMPACT form, only the queued
+ * events (a count + n events), not the 2 MB fixed-capacity image. save: dst
+ * NULL -> bytes needed. load: 1 on success (validated before applying). The
+ * write-stream history hash is observation, not state, and is not included. */
+size_t audio_event_rb_save(void *dst, size_t cap);
+int    audio_event_rb_load(const void *src, size_t len);
+
+#endif

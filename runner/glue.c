@@ -1,0 +1,2588 @@
+/*
+ * glue.c — generated-code and clean-room Genesis runtime integration.
+ *
+ * Provides the genesis_runtime.h ABI, cooperative game fiber, interrupt
+ * delivery, bus access, dispatch fallback, cycle accounting, and diagnostics
+ * shared by every game-specific GameSpec.
+ */
+
+#include "glue.h"
+#if GENESIS_HD_JOBS
+#include "video/genesis_raster_jobs.h"
+#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+
+/* Cross-platform cooperative fibers (Win32 Fibers / POSIX ucontext) +
+ * the FIBER_NORETURN attribute used by the trap-die helper below. */
+#include "fiber_compat.h"
+
+/* genesis_runtime.h interface */
+#include "genesis_runtime.h"
+
+/* Tier-3 clean-room 68000 interpreter — the runtime correctness floor. On a
+ * dispatch miss the native build used to silently no-op the missed function;
+ * the floor runs it correctly instead. It reuses the shared clean-room decoder
+ * and is cross-checked against generated execution through cosim. */
+#include "m68k_interp.h"
+
+/* clownmdemu bus layer (oracle/hybrid builds only — native has no
+ * clownmdemu include paths; the own backend routes the bus through
+ * genesis_bus.c instead) */
+
+/* clowncommon types */
+#include "clowncommon.h"
+
+/* Audio event queue (cycle-stamped FM/PSG writes) */
+#include "audio/event_queue.h"
+
+
+#include "frame_record.h"
+#include "game_layout.h"
+#include "game_spec.h"
+#include "runtime_evidence.h"
+
+int genesis_game_instruction_hook(uint32_t pc)
+{
+    return g_game_spec.instruction_hook ? g_game_spec.instruction_hook(pc) : 0;
+}
+
+void recomp_push_return(uint32_t ret_addr)
+{
+    if (g_game_layout.initial_ssp && g_cpu.A[7] > g_game_layout.initial_ssp)
+        g_cpu.A[7] = g_game_layout.initial_ssp;
+
+    g_cpu.A[7] -= 4;
+    m68k_write32(g_cpu.A[7], ret_addr & 0xFFFFFFu);
+}
+
+/* =========================================================================
+ * Global state required by genesis_runtime.h
+ * ========================================================================= */
+
+M68KState g_cpu;
+uint8_t   g_rom[0x400000];   /* 4 MB ROM shadow — ROM bytes (big-endian, byte-addressed) */
+/* Opt-in expansion ROM mapped at $400000-$7FFFFF (game-owned buffer, even
+ * size, at most 4 MB). Default none: the region keeps its open-bus behavior. */
+uint8_t  *g_rom_ext      = NULL;
+uint32_t  g_rom_ext_size = 0;
+uint8_t   g_ram[0x10000];    /* 64 KB work RAM shadow (not authoritative in Step 2) */
+int       g_ws_margin = 0;   /* widescreen extra px/side (set per-frame by main.c gate; 0 = 4:3) */
+
+uint64_t  g_frame_count       = 0;
+uint8_t   g_controller1_buttons = 0;
+uint8_t   g_controller2_buttons = 0;
+
+/* Contextual recompiler cycle tracking */
+uint32_t  g_cycle_accumulator  = 0;
+uint64_t  g_native_span_count  = 0;
+uint32_t  g_vblank_threshold   = 109312;  /* scanline 224 × 488 cycles */
+
+/* Audio event-queue cycle stamp: 68K cycles since wall-frame start. Bumped
+ * per-instruction by the generator (same cycle-table source as
+ * g_cycle_accumulator). Does NOT reset at game-frame yield — resets only at
+ * wall-frame boundary in glue_end_of_wall_frame. Monotonic within each wall,
+ * so FM/PSG writes during the VBla handler get cycle stamps that reflect
+ * their actual spacing in the handler's ~20k-cycle span. That's what lets
+ * the new audio backend (runner/audio/) render samples *between* writes
+ * instead of collapsing the handler's register burst onto a single
+ * FM-sample boundary (the "boop/squelch" artifact). */
+uint32_t  g_audio_cycle_counter = 0;
+/* NTSC wall-frame cycle budget — used in CYCLE_ACCURATE mode to cap
+ * game-fiber work at hardware rate. 262 scanlines × 488 cycles each. */
+#define NTSC_CYCLES_PER_WALL_FRAME GENESIS_NATIVE_WALL_FRAME_CYCLES
+static int s_vblank_fired_this_frame   = 0;  /* cycle-budget latch: 1 means
+                                                * the wall frame's VBla budget
+                                                * has been consumed (whether or
+                                                * not the handler body ran). */
+static int s_vblank_executed_this_frame = 0; /* did the recompiled VBla body
+                                                * actually run this wall
+                                                * frame. False when imask>=6
+                                                * suppressed the call. */
+
+/* Instruction-count telemetry (Stage C). Incremented by generated C
+ * once per decoded 68K instruction via the generator's cycle-bump
+ * emission. Used by rdb_insn_counts TCP command + rdb_insn_diff.py to
+ * compare native per-wall-frame instruction throughput against oracle.
+ * Stays 0 on oracle builds (generated func_* bodies never run there). */
+uint64_t g_native_insn_count = 0;
+uint64_t g_native_direct_calls = 0,g_native_direct_tails = 0;
+
+/* Cycle-pacing telemetry. Updated once per wall frame in
+ * glue_end_of_wall_frame. cmd_server_record_frame copies this into
+ * the FrameRecord ring so frame_timeseries can serve it retroactively
+ * (replaces the legacy [FPACE] stderr line). */
+PaceSnap g_pace_snap = {0};
+
+/* Recompiler emits calls to these for any opcode that doesn't decode
+ * as a known 68K instruction (canonical ILLEGAL $4AFC, A-line, F-line,
+ * or just unknown bytes mid-stream when codegen seeded a label that
+ * happens to be data). On real hardware these would push an exception
+ * frame and vector through $00010-$00040; in the recomp model we just
+ * loud-abort with the PC and opcode so the cause is obvious. Without
+ * this Sonic 2's broader function set fails to link at every address
+ * whose label-seed pulled in non-code bytes. */
+FIBER_NORETURN static void s_m68k_trap_die(unsigned vec, uint32_t pc, unsigned opcode)
+{
+    fprintf(stderr, "[ILLEGAL] m68k trap vec=%u pc=%06X opcode=%04X — abort\n",
+            vec, pc, opcode);
+    fflush(stderr);
+    abort();
+}
+void m68k_trap_vector(uint8_t vec)              { s_m68k_trap_die(vec, g_cpu.PC, 0); }
+void m68k_illegal_trap(uint32_t pc, uint16_t op) {
+    int top4 = (op >> 12) & 0xF;
+    unsigned vec = (op == 0x4AFC) ? 4u :
+                   (top4 == 0xA)  ? 10u :
+                   (top4 == 0xF)  ? 11u : 4u;
+    s_m68k_trap_die(vec, pc, op);
+}
+
+/* Pacing mode (see glue.h). Default stays FIBER_FULL because
+ * CYCLE_ACCURATE measurement (Stage B, this branch) shows the cap
+ * eliminates multi-fire (1.074 → 1.000 fires/wall) but also halves
+ * native's FM-write count (~50% tempo slowdown). The cap mechanism
+ * itself is correct; the slowdown means the cycle-cost signal still
+ * has a bias somewhere. CYCLE_ACCURATE remains opt-in via
+ * --pacing=accurate while we hunt the bias. */
+GluePacingMode g_pacing_mode = GLUE_PACING_FIBER_FULL;
+
+uint32_t  g_miss_count_any    = 0;
+int       g_step2_active      = 0;  /* set to 1 in Step 2 mode */
+uint32_t  g_miss_last_addr    = 0;
+uint64_t  g_miss_last_frame   = 0;
+uint32_t  g_miss_unique_addrs[MAX_MISS_UNIQUE];
+int       g_miss_unique_count  = 0;
+
+/* g_rte_pending via pointer indirection (see genesis_runtime.h).
+ * During VBlank service, we redirect to s_rte_dummy so RTE propagation
+ * inside the handler chain is suppressed — the handler's stack management
+ * is handled by force-restoring A7. */
+static int s_rte_real  = 0;
+static int s_rte_dummy = 0;
+int *g_rte_pending_ptr = &s_rte_real;
+
+/* Interrupt handlers enter the recompiler from the scheduler while the main
+ * game fiber can be suspended in the middle of a split-function chain.
+ * g_cpu/A7 and the RTE signal already have IRQ-local save/restore handling;
+ * isolate the split-stack counter as well so handler tail calls cannot erase
+ * the interrupted chain's pending stack adjustments. */
+static int recomp_interrupt_context_enter(void)
+{
+    int saved = g_split_sp_popped;
+    g_split_sp_popped = 0;
+    return saved;
+}
+
+static void recomp_interrupt_context_leave(int saved)
+{
+    g_split_sp_popped = saved;
+}
+
+int       g_early_return      = 0;
+
+int       g_dbg_b64_count     = 0;
+int       g_dbg_b5e_count     = 0;
+int       g_dbg_b88_count     = 0;
+
+/* =========================================================================
+ * Bus access watchdog
+ *
+ * Counts bus accesses between yields.  If the game fiber does > N million
+ * accesses without calling glue_yield_for_vblank(), something is stuck in
+ * an infinite loop.  We log full CPU state and exit cleanly instead of
+ * hanging forever.
+ * ========================================================================= */
+
+#define WATCHDOG_LIMIT  10000000u  /* 10M bus ops ≈ way too many for one frame */
+static uint32_t s_watchdog_counter = 0;
+
+#if SONIC_REVERSE_DEBUG
+extern uint32_t g_rdb_current_func;
+#else
+/* Stub so interior-label miss diagnostics in genesis_log_dispatch_miss
+ * compile in builds without reverse_debug (Sonic 1 default). The value
+ * stays 0 there — the addr + frame fields still pinpoint the failure. */
+static uint32_t g_rdb_current_func = 0;
+#endif
+
+#include "crash_report.h"
+
+#include "genesis_machine.h"
+/* Debug write-trace hooks (--mem-write-log, FM trace) are normally defined in
+ * the clownmdemu fork's bus / FM code. The own backend links no clownmdemu, so
+ * define them here to satisfy cmd_server's assignments. They default NULL and
+ * stay inert until gbus/ym2612 are wired to call them (own-backend trace is a
+ * follow-up; this keeps the AGPL-free link resolved). */
+void (*g_fm_write_trace_fn )(uint32_t address,      uint8_t value, uint32_t target_cycle) = NULL;
+void (*g_mem_write_trace_fn)(uint32_t byte_address, uint8_t value, uint32_t target_cycle) = NULL;
+
+#define INSN_WATCHDOG_LIMIT GENESIS_NATIVE_WATCHDOG_LIMIT
+GenesisNativeRegisterBudget g_native_register_budget={0,0,0,1,0,0};
+#define s_insn_watchdog_base g_native_register_budget.watchdog_base
+#define s_interleave_active g_native_register_budget.interleave_active
+#define s_in_vblank_service g_native_register_budget.in_vblank_service
+#define s_main_cpu_divisor g_native_register_budget.main_cpu_divisor
+#define s_cycle_budget g_native_register_budget.cycle_budget
+#define s_budget_cyc_seen g_native_register_budget.budget_cyc_seen
+static void dump_bus_ring(void);   /* defined after the bus ring below; both watchdogs use it */
+
+static void instruction_watchdog_reset(void)
+{
+    s_insn_watchdog_base = g_native_insn_count;
+}
+
+static void instruction_watchdog_check(void)
+{
+    if (g_native_insn_count - s_insn_watchdog_base < INSN_WATCHDOG_LIMIT)
+        return;
+
+    char reason[160];
+#if SONIC_REVERSE_DEBUG
+    snprintf(reason, sizeof(reason),
+             "instruction watchdog: %llu native insns without yielding (func=$%06X)",
+             (unsigned long long)(g_native_insn_count - s_insn_watchdog_base),
+             (unsigned)(g_rdb_current_func & 0xFFFFFFu));
+#else
+    snprintf(reason, sizeof(reason),
+             "instruction watchdog: %llu native insns without yielding",
+             (unsigned long long)(g_native_insn_count - s_insn_watchdog_base));
+#endif
+    {
+        int nz_z80ram = 0;
+        for (int i = 0; i < 0x2000; i++) if (g_machine.bus.z80_ram[i]) nz_z80ram++;
+        fprintf(stderr,
+            "[OWN-DIAG] cpuPC=$%06X z80pc=$%04X z80_run=%d busreq=%d reset_off=%d "
+            "bank=$%03X nz_z80ram=%d ram_F00D=$%02X ram_F00A=$%02X%02X\n",
+            (unsigned)g_cpu.PC, (unsigned)g_machine.z80.pc,
+            (g_machine.bus.z80_reset_off && !g_machine.bus.z80_busreq) ? 1 : 0,
+            g_machine.bus.z80_busreq, g_machine.bus.z80_reset_off,
+            (unsigned)g_machine.bus.z80_bank, nz_z80ram,
+            g_ram[0xF00D], g_ram[0xF00A], g_ram[0xF00B]);
+        /* Z80 driver entry bytes — decode why z80pc is stuck. */
+        fprintf(stderr, "[OWN-DIAG] z80_ram[0..0x1F]:");
+        for (int i = 0; i < 0x20; i++) fprintf(stderr, " %02X", g_machine.bus.z80_ram[i]);
+        fprintf(stderr, "  | around z80pc[$%04X-8..+8]:", (unsigned)g_machine.z80.pc);
+        for (int i = (int)g_machine.z80.pc - 8; i <= (int)g_machine.z80.pc + 8; i++)
+            if (i >= 0 && i < 0x2000) fprintf(stderr, " %02X", g_machine.bus.z80_ram[i]);
+        fprintf(stderr, "\n");
+    }
+    crash_report_dump_persistent(reason, &g_cpu, 0, 0, g_frame_count);
+    dump_bus_ring();   /* last 64 bus accesses — pins what a non-yielding spin is polling */
+    exit(2);
+}
+
+/* VDP control-port capture used to live here as a separate
+ * file-backed printf log (--vdp-ctrl-log PATH). Retired in favor of
+ * the always-on Tier 1 store ring: arm `rdb_range 0xC00000 0xC00007`
+ * via TCP and dump it with `rdb_dump`. The ring has the same write
+ * coverage plus per-entry attribution (frame, vint_runcount, func,
+ * caller) and works retroactively without rebuilding or restarting.
+ * Reads of $C00004 (VDP status) are reconstructable from the
+ * FrameRecord vdp snapshot. */
+
+/* Ring buffer of the last N bus accesses, populated by every
+ * m68k_read / m68k_write call. Dumped by the watchdog so we can see
+ * exactly what address sequence the game thread is touching when it
+ * stalls — particularly useful for spin-loop diagnosis where the
+ * spin_check counter shows 0 (something is interleaving). */
+#define BUS_RING_SIZE 64
+typedef struct { uint32_t addr; uint8_t kind; } BusRingEntry;
+static BusRingEntry s_bus_ring[BUS_RING_SIZE];
+static uint32_t     s_bus_ring_head = 0;     /* next write slot */
+static uint64_t     s_bus_ring_total = 0;    /* total events ever recorded */
+
+static inline void bus_ring_push(uint32_t addr, uint8_t kind) {
+    s_bus_ring[s_bus_ring_head & (BUS_RING_SIZE - 1)].addr = addr;
+    s_bus_ring[s_bus_ring_head & (BUS_RING_SIZE - 1)].kind = kind;
+    s_bus_ring_head++;
+    s_bus_ring_total++;
+}
+/* kind: 0=R8 1=R16 2=R32 3=W8 4=W16 5=W32 */
+
+/* Dump the always-on bus-access ring (low-level access pattern) — the post-hoc
+ * view of what a stall is touching. Called by BOTH watchdogs (bus + instruction)
+ * so a non-yielding spin reveals exactly what it is polling. */
+static void dump_bus_ring(void)
+{
+    static const char *kind_str[] = {"R8","R16","R32","W8","W16","W32"};
+    uint64_t total = s_bus_ring_total;
+    uint32_t window = (total < BUS_RING_SIZE) ? (uint32_t)total : BUS_RING_SIZE;
+    fprintf(stderr, "\n  Bus ring (last %u of %llu accesses):\n",
+            window, (unsigned long long)total);
+    for (uint32_t i = 0; i < window; i++) {
+        uint32_t idx = (s_bus_ring_head - window + i) & (BUS_RING_SIZE - 1);
+        const BusRingEntry *e = &s_bus_ring[idx];
+        const char *k = (e->kind < 6) ? kind_str[e->kind] : "??";
+        fprintf(stderr, "    [%2u] %s $%06X\n", i, k, e->addr);
+    }
+}
+
+static void watchdog_check(uint32_t addr, int is_write, uint32_t val)
+{
+    (void)val;
+    if (++s_watchdog_counter != WATCHDOG_LIMIT)
+        return;
+
+    char reason[128];
+    snprintf(reason, sizeof(reason),
+             "watchdog: %u bus accesses without yield", s_watchdog_counter);
+
+    crash_report_dump_persistent(reason, &g_cpu, addr, is_write, g_frame_count);
+    dump_bus_ring();
+    exit(2);
+}
+
+/* =========================================================================
+ * Internal glue state
+ * ========================================================================= */
+
+
+/* Bus cycle counter, bumped per bus access by HYBRID_BUMP_CYCLES() to pace the
+ * interleave chunks (see check_cycle_budget). The "hybrid" in the name is
+ * historical — it once fed clownmdemu's scheduler and was defined in
+ * hybrid_global.c so the interpreter could share it. That file is gone with the
+ * oracle; this is now ordinary own-backend state and lives here. */
+cc_u32f g_hybrid_cycle_counter;
+
+/* Reset bus sync state to frame start. Called at frame boundaries
+ * so that cycle-based VDP/Z80/FM/PSG sync stays within one frame. */
+static uint16_t recomp_ram_read16_direct(uint32_t addr)
+{
+    uint16_t off = (uint16_t)(addr & 0xFFFFu);
+    /* g_ram IS the authoritative work RAM (
+     * reading through it returned $FFFF, so RAM JMP trampolines like S3's
+     * H-int stub at $FFF608 never resolved and the handler dispatch missed). */
+    return (uint16_t)(((uint16_t)g_ram[off] << 8) | g_ram[(uint16_t)(off + 1u)]);
+}
+
+static uint32_t recomp_ram_read32_direct(uint32_t addr)
+{
+    return ((uint32_t)recomp_ram_read16_direct(addr) << 16) |
+           (uint32_t)recomp_ram_read16_direct(addr + 2u);
+}
+
+uint32_t recomp_resolve_ram_trampoline(uint32_t addr)
+{
+    uint32_t resolved = addr & 0xFFFFFFu;
+
+    for (int guard = 0; guard < 4; guard++) {
+        if (resolved < RAM_BASE)
+            break;
+
+        uint16_t opcode = recomp_ram_read16_direct(resolved);
+        uint32_t next;
+
+        if (opcode == 0x4EF9u || opcode == 0x4EB9u) {
+            next = recomp_ram_read32_direct(resolved + 2u) & 0xFFFFFFu;
+        } else if (opcode == 0x4EF8u || opcode == 0x4EB8u) {
+            uint16_t aw = recomp_ram_read16_direct(resolved + 2u);
+            next = (aw & 0x8000u) ? (0xFF0000u | (uint32_t)aw) : (uint32_t)aw;
+        } else {
+            break;
+        }
+
+        next &= 0xFFFFFFu;
+        if (next == resolved)
+            break;
+        resolved = next;
+    }
+
+    return resolved;
+}
+
+/* Dispatch target is RAM-resident code. Execute it on the tier-3 interpreter
+ * DIRECTLY FROM LIVE WORK RAM (m68k_interp_run_ram_handler). Games install
+ * short interrupt handlers and helper stubs by copying — and then PATCHING —
+ * code in RAM: RKA's H-int raster handler advances its own MOVE source
+ * operand every HBlank, and its per-scene installer parameterizes that
+ * operand at copy time. Any static redirection to a ROM master (the old
+ * copied-ROM-stub resolver) executes FROZEN operands and silently breaks the
+ * effect; the live-fetch capsule is correct by construction and also
+ * subsumes the old hand-decoded RTS / shift-helper stubs ($FFB1F2).
+ *
+ * ABI: identical to a generated function call — the capsule is A7-neutral at
+ * its depth-0 RTS (the generated caller performs the single pop), and an RTE
+ * body sets g_rte_pending and returns, exactly like generated RTE code.
+ * Cycle accounting runs per interpreted instruction. */
+int recomp_dispatch_ram_stub(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    if (addr < RAM_BASE)
+        return 0;
+
+    static uint32_t s_reported_addr;
+    uint32_t exit_pc = 0;
+    M68kiStatus st = m68k_interp_run_ram_handler(addr, &exit_pc);
+    if (st == M68KI_OK)
+        return 1;
+
+    if (s_reported_addr != addr) {
+        s_reported_addr = addr;
+        fprintf(stderr,
+                "[dispatch][RAM] unrunnable RAM code $%06X status=%d words=%04X %04X "
+                "%04X %04X bad_pc=$%06X bad_op=$%04X\n",
+                addr, (int)st,
+                recomp_ram_read16_direct(addr),
+                recomp_ram_read16_direct(addr + 2u),
+                recomp_ram_read16_direct(addr + 4u),
+                recomp_ram_read16_direct(addr + 6u),
+                g_m68ki_bad_pc, g_m68ki_bad_op);
+    }
+    return 0;
+}
+
+void glue_reset_frame_sync(void)
+{
+    g_hybrid_cycle_counter = 0;
+}
+
+/* Hybrid verifier sync snapshot/restore — saves s_cpu_data sync state */
+
+/* =========================================================================
+ * VBlank / single-threaded fiber sync (Step 2)
+ *
+ * Game code and VDP rendering alternate on the same thread using Windows
+ * Fibers.  WaitForVBla (pattern-detected per-game in code_generator.c —
+ * any function matching `move #imm,sr; tst.b mem; bne self; rts`) yields
+ * to the main fiber; the main loop runs Iterate + VBlank handlers, then
+ * resumes the game fiber. No threads, no semaphores, no races.
+ * ========================================================================= */
+
+/* Re-entrancy guard (used by glue_check_vblank, must be in global scope) */
+
+#include "game_spec.h"      /* g_game_spec.call_entry_point / vblank / hblank / periodic */
+
+
+void glue_log_frame_state(uint64_t frame);  /* defined below */
+
+static fiber_t s_main_fiber = NULL;
+static fiber_t s_game_fiber = NULL;
+static int    s_game_running = 0;   /* 1 once the game fiber has started */
+static uint32_t s_game_fiber_resume_pc = 0;
+
+/* Last game->main yield reason (see GlueYieldSite in glue.h). Every switch
+ * from the game fiber to the scheduler goes through yield_to_main so the
+ * suspended fiber's resume point is always named. */
+static GlueYieldSite s_yield_site = GLUE_YIELD_NONE;
+GlueYieldSite glue_yield_site(void) { return s_yield_site; }
+
+static void yield_to_main(GlueYieldSite site)
+{
+    s_yield_site = site;
+    fiber_switch(s_main_fiber);
+}
+
+/* Engine-owned game fiber stack: fully committed, guard page below, never
+ * moved or reallocated for the life of the process (fiber_compat.h). */
+#define GAME_FIBER_STACK_SIZE    (32u * 1024u * 1024u)
+#define GAME_FIBER_STACK_WARN_STEP (1024u * 1024u)
+#define GAME_FIBER_STACK_ABORT     (28u * 1024u * 1024u)
+
+static uintptr_t s_game_stack_top = 0;
+static size_t    s_game_stack_last_report = 0;
+
+static void game_stack_note(const char *reason, const void *stack_marker)
+{
+    if (!s_game_stack_top || !stack_marker || fiber_current() != s_game_fiber)
+        return;
+
+    uintptr_t marker = (uintptr_t)stack_marker;
+    size_t used = (s_game_stack_top >= marker)
+        ? (size_t)(s_game_stack_top - marker)
+        : (size_t)(marker - s_game_stack_top);
+
+    if (used >= s_game_stack_last_report + GAME_FIBER_STACK_WARN_STEP ||
+        used >= GAME_FIBER_STACK_ABORT) {
+        fprintf(stderr,
+                "[STACK] reason=%s used=%zu frame=%" PRIu64
+                " a7=%06X vblank_service=%d\n",
+                reason, used, g_frame_count, (unsigned)(g_cpu.A[7] & 0xFFFFFFu),
+                s_in_vblank_service);
+        s_game_stack_last_report = used;
+    }
+
+    if (used >= GAME_FIBER_STACK_ABORT) {
+        char crash_reason[160];
+        snprintf(crash_reason, sizeof(crash_reason),
+                 "game fiber stack runaway: %zu bytes used at %s",
+                 used, reason);
+        crash_report_dump_persistent(crash_reason, &g_cpu, 0, 0, g_frame_count);
+        exit(2);
+    }
+}
+
+static void check_cycle_budget(void);   /* fwd: defined below, drains the chunk budget */
+
+/* GENESIS_FORCE_INTERP (env): make the game fiber interpret the WHOLE program
+ * via m68k_interp. In a co-sim build this is pairing #1 B-side; in a normal
+ * native build it provides clean-room whole-program execution and coverage. */
+int genesis_force_interp(void) {
+    static int v = -1;
+    if (v < 0) {
+        const char *e = getenv("GENESIS_FORCE_INTERP");
+        v = (e && *e && *e != '0') ? 1 : 0;
+        if (v) fprintf(stderr, "[FORCE_INTERP] enabled — m68k_interp drives the game\n");
+    }
+    return v;
+}
+
+/* WaitForVBla entry PC (env GENESIS_COSIM_WAITVBL_PC, hex). The recompiler
+ * pattern-detects the vblank spin (move/tst.b/bne self/rts) and replaces the
+ * whole function with `SR=0x2300; glue_yield_for_vblank(); <return>`. For
+ * CONVERGENCE, the interp must do the IDENTICAL thing at that PC instead of
+ * spinning the real loop — otherwise the two backends drift to different
+ * program positions and cpu68k/timing/z80 falsely diverge at the frame
+ * checkpoint. Per-game value supplied at runtime (dev harness), so no per-game
+ * literal lands in the shared runner. 0 = disabled (interp spins). */
+static uint32_t interp_waitvbl_pc(void) {
+    static uint32_t v = 0xFFFFFFFFu;
+    if (v == 0xFFFFFFFFu) {
+        const char *e = getenv("GENESIS_COSIM_WAITVBL_PC");
+        v = (e && *e) ? (uint32_t)strtoul(e, 0, 16) & 0xFFFFFFu : 0;
+    }
+    return v;
+}
+
+/* Main-loop driver: interpret from the reset entry forever, yielding to the
+ * scheduler when the per-scanline cycle budget is spent — the interp analog of
+ * the recompiled code's check_cycle_budget() bus-macro yield. The interpreted
+ * V-int/H-int handlers are delivered by glue_own_interrupt exactly as for the
+ * recomp (only the handler BODY differs). Halts LOUDLY on an unimplemented
+ * instruction (never silently mis-executes) and parks. */
+static void interp_drive_mainloop(uint32_t entry_pc) {
+    g_cpu.PC = entry_pc & 0xFFFFFFu;
+    uint32_t wpc = interp_waitvbl_pc();
+    for (;;) {
+        /* Converge with the recompiled WaitForVBla stub: set SR + yield the frame
+         * + RTS, exactly as func_XXXX() does, instead of interpreting the spin. */
+        if (wpc && (g_cpu.PC & 0xFFFFFFu) == wpc) {
+            g_cpu.SR = 0x2300u;
+            glue_yield_for_vblank();
+            g_cpu.PC = m68k_read32(g_cpu.A[7]) & 0xFFFFFFu;   /* RTS: pop return */
+            g_cpu.A[7] += 4;
+            continue;
+        }
+        M68kiStatus st = m68k_interp_step();
+        if (st != M68KI_OK) {
+            fprintf(stderr, "[FORCE_INTERP] HALT st=%d at PC=$%06X op=$%04X — parking "
+                    "(unimplemented instruction: complete the interpreter)\n",
+                    (int)st, g_m68ki_bad_pc, g_m68ki_bad_op);
+            for (;;) yield_to_main(GLUE_YIELD_HALT);
+        }
+        /* NOTE: no per-instruction check_cycle_budget() here. The native recomp
+         * does NOT yield per-scanline — it yields only at WaitForVBla
+         * (glue_yield_for_vblank) plus the 2-wall-frame safety net inside
+         * glue_check_vblank (reached via interp_account_cycles). Adding a
+         * per-instruction yield gave the interp a different raster-interleave
+         * cadence than the recomp (off-by-one scanline). Matching the recomp's
+         * cadence keeps the two backends' VDP raster phase aligned. */
+    }
+}
+
+/* Game fiber entry point. */
+static void game_fiber_func(void *param)
+{
+    (void)param;
+    char stack_top_marker;
+    s_game_stack_top = (uintptr_t)&stack_top_marker;
+    s_game_stack_last_report = 0;
+    if (s_game_fiber_resume_pc) {
+        uint32_t resume_pc = s_game_fiber_resume_pc & 0xFFFFFFu;
+        s_game_fiber_resume_pc = 0;
+        g_cpu.A[7] = g_game_layout.initial_ssp;
+        recomp_call_addr(resume_pc);
+        if (g_game_spec.dispatch_main_loop_pc) {
+            uint32_t dispatch_pc = g_game_spec.dispatch_main_loop_pc & 0xFFFFFFu;
+            fprintf(stderr, "[GAME] %s resume loop returned at $%06X; continuing at dispatcher $%06X\n",
+                    g_game_spec.short_name, resume_pc, dispatch_pc);
+            recomp_call_addr(dispatch_pc);
+        }
+        fprintf(stderr, "[GAME] %s resume/dispatch returned unexpectedly!\n",
+                g_game_spec.short_name);
+        for (;;) yield_to_main(GLUE_YIELD_HALT);
+    }
+
+    g_cpu.A[7] =   ((uint32_t)g_rom[0] << 24)
+                  | ((uint32_t)g_rom[1] << 16)
+                  | ((uint32_t)g_rom[2] <<  8)
+                  |  (uint32_t)g_rom[3];
+    g_cpu.SR  = 0x2700u;
+
+    if (genesis_force_interp()) {
+        uint32_t entry = m68k_read32(4) & 0xFFFFFFu;   /* 68K reset vector */
+        fprintf(stderr, "[FORCE_INTERP] driving from reset PC $%06X\n", entry);
+        interp_drive_mainloop(entry);   /* never returns */
+    }
+
+    g_game_spec.call_entry_point();
+
+    /* call_entry_point should never return — it contains the main game loop.
+     * If it does, just yield back to main forever. */
+    fprintf(stderr, "[GAME] %s entry point returned unexpectedly!\n",
+            g_game_spec.short_name);
+    for (;;) yield_to_main(GLUE_YIELD_HALT);
+}
+
+static int create_game_fiber(uint32_t resume_pc)
+{
+    s_game_fiber_resume_pc = resume_pc & 0xFFFFFFu;
+    s_game_fiber = fiber_create(GAME_FIBER_STACK_SIZE,
+                                GAME_FIBER_STACK_SIZE,
+                                game_fiber_func,
+                                NULL);
+    if (!s_game_fiber) {
+        fprintf(stderr, "glue: fiber_create failed\n");
+        s_game_fiber_resume_pc = 0;
+        s_game_running = 0;
+        return 0;
+    }
+
+    s_game_running = 1;
+    return 1;
+}
+
+/* Scanline interleave state */
+#include "main_cpu_clock.h"
+static MainCpuClock s_main_cpu_clock;
+static uint32_t s_main_cpu_stalls;
+static int s_irq_in_progress = 0; /* also excludes interleaved IRQs from acceleration */
+static int     s_game_yielded_vblank = 0;
+static int s_state_requested,s_state_parked;
+void glue_state_boundary_request(int requested)
+{ s_state_requested=requested; if (!requested) s_state_parked=0; }
+int glue_state_boundary_ready(void) { return s_state_parked; }
+/* 68K cycles spent inside an interrupt handler (V-int/H-int), still owed to
+ * the raster. own_deliver_vint runs the whole handler atomically at the
+ * vblank scanline with budget yields gated (s_in_vblank_service), so without
+ * this the handler consumes ZERO raster time and the main loop resumes at
+ * line ~225 — tens of lines earlier than hardware, where the level V-int
+ * (DMA + decompression) occupies the CPU well into the next frame. That
+ * early resume put a Z80 mailbox write (Play_SFX) BEFORE a driver tick's
+ * queue-read where hardware places it AFTER, splitting sfx_EnterSS and the
+ * following cmd_Stop across two ticks and killing the S3 giant-ring entry
+ * sound. glue_run_game_chunk drains this debt at M68K_PER_LINE per scanline
+ * before resuming main-loop work. Only ever nonzero on the own backend. */
+static uint32_t s_irq_cycle_debt = 0;
+/* Interrupt level whose atomically-executed handler owns the outstanding
+ * raster debt. A second level-6 interrupt cannot be accepted while the real
+ * 68000 would still be inside the previous level-6 handler. */
+static int s_irq_cycle_debt_level = 0;
+/* g_audio_cycle_counter value at the last budget drain (see
+ * check_cycle_budget — the budget drains by real elapsed 68K cycles). */
+#if SONIC_REVERSE_DEBUG
+/* Tier-2 reverse debugger: set by glue_yield_for_break when the game
+ * fiber parks at a block-entry hook. Main loop reads via
+ * glue_game_yielded_for_break() after each SwitchToFiber return and
+ * drains cmd_server until a resume command clears it. */
+static int     s_game_yielded_break = 0;
+#endif
+
+/* Called from DoCycles (inside Iterate). Runs game code for a chunk. */
+static cc_u32f s_chunk_cycles = 0;  /* budget for current chunk */
+
+void glue_run_game_chunk(uint32_t cycles)
+{
+    /* An opt-in quicksave completes the native tick, then keeps its WaitForVint
+     * parked until this wall frame's VDP/Z80/audio drain has completed. */
+    if (s_state_parked) return;
+    if (!s_game_running || !s_game_fiber)
+        return;
+    if (s_game_yielded_vblank)
+        return;
+#if SONIC_REVERSE_DEBUG
+    /* Tier 2: game fiber has parked at a breakpoint. Keep DoCycles
+     * no-opping until Iterate returns to main.c, where rdb_park_drain
+     * polls cmd_server until a resume command arrives. Without this
+     * gate the yield is effectively a no-op — DoCycles would switch
+     * right back into the game fiber on the next chunk. */
+    if (s_game_yielded_break)
+        return;
+#endif
+
+    /* Pay down interrupt-handler raster debt first: while the 68K is
+     * (logically) still inside the V-int/H-int handler, the main loop does
+     * not advance — matching hardware, where the handler occupies the CPU
+     * for those scanlines. */
+    if (s_irq_cycle_debt) {
+        if (s_irq_cycle_debt >= cycles) {
+            s_irq_cycle_debt -= (uint32_t)cycles;
+            if (s_irq_cycle_debt == 0)
+                s_irq_cycle_debt_level = 0;
+            return;
+        }
+        cycles -= s_irq_cycle_debt;
+        s_irq_cycle_debt = 0;
+        s_irq_cycle_debt_level = 0;
+    }
+
+    s_chunk_cycles = cycles;
+    unsigned divisor = g_game_spec.main_cpu_divisor ? g_game_spec.main_cpu_divisor() : 1;
+    if (!divisor) divisor = 1;
+    if (divisor != s_main_cpu_divisor) s_main_cpu_clock.remainder = 0;
+    s_main_cpu_divisor = divisor;
+    s_main_cpu_stalls = 0;
+    s_cycle_budget = (int32_t)cycles;
+    s_budget_cyc_seen = g_audio_cycle_counter;  /* drain from here (see check_cycle_budget) */
+    s_interleave_active = 1;
+    instruction_watchdog_reset();
+    fiber_switch(s_game_fiber);
+    instruction_watchdog_reset();
+    s_interleave_active = 0;
+}
+
+/* Called from bus access macro to check the interleave budget (separate
+ * from g_hybrid_cycle_counter, which is now bumped per-instruction by
+ * the generator). Budget drives WHEN to yield back to the scheduler; cycle
+ * counter drives WHAT cycle timestamps to report.
+ *
+ * The budget drains by REAL elapsed 68K cycles: the generated code bumps
+ * g_audio_cycle_counter per instruction with PRM-accurate costs (plus DMA
+ * freeze charges via glue_charge_68k_stall), so the delta since the last
+ * check is the true cycle cost of the code just executed. The old scheme
+ * (flat 10 per data access) ignored instruction-fetch time entirely and ran
+ * the main loop ~2.5x faster than hardware against the raster — early enough
+ * that a Play_SFX mailbox write could land BEFORE a Z80 driver tick's
+ * queue-read where hardware places it after (the S3 giant-ring entry-sound
+ * kill). */
+uint64_t g_chunk_yield_count = 0;
+static void check_cycle_budget(void)
+{
+    if (s_interleave_active && !s_in_vblank_service) {
+        uint32_t now = g_audio_cycle_counter;
+        if (s_main_cpu_divisor > 1 && !s_irq_in_progress && now > s_budget_cyc_seen) {
+            uint32_t elapsed = now - s_budget_cyc_seen;
+            uint32_t scaled = main_cpu_elapsed(&s_main_cpu_clock, elapsed,
+                                               s_main_cpu_stalls, s_main_cpu_divisor);
+            /* Normalize BEFORE the bus operation stamps sound writes. Merely
+             * enlarging the budget would send audio events into future frames. */
+            g_audio_cycle_counter -= elapsed - scaled;
+            now = g_audio_cycle_counter;
+        }
+        s_main_cpu_stalls = 0;
+        if (now > s_budget_cyc_seen)
+            s_cycle_budget -= (int32_t)(now - s_budget_cyc_seen);
+        s_budget_cyc_seen = now;   /* also re-syncs after the per-frame reset */
+        if (s_cycle_budget <= 0) {
+            /* This is a real cooperative yield to the scanline scheduler.
+             * Keep the bus watchdog's "without yield" window aligned with
+             * the instruction watchdog, which glue_run_game_chunk resets on
+             * every fiber return. Games such as RKA advance exclusively via
+             * this budget path rather than a recognized WaitForVBlank hook;
+             * without this reset, normal bus traffic accumulates over
+             * thousands of frames and eventually produces a false hang. */
+            s_watchdog_counter = 0;
+            g_chunk_yield_count++;
+            { char stack_marker; game_stack_note("cycle-budget", &stack_marker); }
+            yield_to_main(GLUE_YIELD_BUDGET);
+        }
+    }
+}
+
+/* Charge 68K freeze cycles (a 68K->VDP DMA transfer) to the recompiled CPU's
+ * accounting by advancing the cycle counter: that advances the audio-stamp
+ * axis (hardware time passes during the freeze), drains the interleave budget
+ * via check_cycle_budget's delta on the next bus access (main-loop DMA), and
+ * is picked up as raster debt by the own-backend handler paths (V-int DMA). */
+void glue_charge_68k_stall(uint32_t cycles)
+{
+    g_audio_cycle_counter += cycles;
+    if (s_interleave_active && !s_in_vblank_service)
+        s_main_cpu_stalls += cycles;
+}
+
+/* Called from Clown68000_Interrupt during Iterate when VBlank/HBlank fires. */
+
+#include "genesis_machine.h"
+
+/* V-int raised while the 68K had IRQs masked (imask >= 6, e.g. the
+ * move #$2700,sr the game runs across screen transitions). On hardware / in the
+ * clownmdemu interpreter the VDP holds the V-int line asserted and the CPU takes
+ * it the instant the mask drops; the own backend used to DROP it outright,
+ * losing one v_vblank_count per masked transition. That one-frame skew sent the
+ * attract demo down a different branch (GM_Demo vs the oracle's GM_Level) and
+ * desynced VRAM. We now LATCH it and deliver at the next scanline whose mask
+ * permits — see glue_own_vint_service_latched(). */
+static int s_own_vint_latched = 0;
+
+/* --- STAGE 1: interleaved interrupt delivery (behind GENESIS_INTERLEAVE_IRQ) --
+ * The atomic model runs a V-int/H-int handler to completion on the MAIN fiber
+ * (yields gated), then fakes its duration with s_irq_cycle_debt. A multi-frame
+ * handler (the Sega-scream PCM V-int, ~16.5M cycles) therefore executes with the
+ * VDP/Z80 FROZEN, forking machine state from the cycle-accurate oracle at the
+ * scream (co-sim: runner first-diverges ~frame 54). Interleaved delivery instead
+ * runs the handler ON THE GAME FIBER, so its bus accesses drain the cycle budget
+ * -> check_cycle_budget yields to the scanline scheduler -> VDP renders + Z80
+ * steps -> the game fiber resumes back into the handler. Same interleave the
+ * main program already uses; matches hardware/clownmdemu. Default OFF. */
+static int s_interleave_irq  = -1;   /* -1 = unread env; 0/1 after */
+static int s_pending_irq     = 0;    /* level (4/6) flagged by scheduler, run by game fiber */
+static int interleave_irq_on(void) {
+    if (s_interleave_irq < 0) {
+        const char *e = getenv("GENESIS_INTERLEAVE_IRQ");
+        s_interleave_irq = (e && *e && *e != '0') ? 1 : 0;
+    }
+    return s_interleave_irq;
+}
+
+/* Run the game's V_Int(6) handler atomically against OUR work RAM + VDP. Saves
+ * /restores g_cpu and gates budget yields (s_in_vblank_service), so it is safe
+ * to fire while the fiber is parked mid-instruction at a budget yield. */
+/* Audio-stamp re-base for interrupt handlers (see genesis_bus.c STAMP_68K):
+ * the handler runs at its delivery raster line, but the 68K instruction
+ * counter sits wherever the main loop parked (typically ~line 60) or
+ * mid-frame on a lag frame. Stamping handler chip writes from the raw
+ * counter placed the whole 68K SMPS driver tick 100+ lines away from its
+ * true raster position — same VALUES, wrong position on the frame's
+ * timeline relative to the Z80 DAC stream. Re-base so the handler's first
+ * write stamps at the raster cursor of delivery, advancing per-instruction
+ * from there, exactly like hardware. */
+uint32_t g_68k_stamp_rebase = 0;
+extern uint32_t machine_z80_stamp(void);   /* raster cursor, master cycles */
+
+static void own_deliver_vint(GVDP *vdp)
+{
+    const uint32_t STK = g_game_layout.intr_stack;
+    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+    uint8_t save[256];
+    M68KState saved = g_cpu;
+    int saved_split_sp_popped = recomp_interrupt_context_enter();
+    for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+    g_cpu.A[7] = STK;
+    s_in_vblank_service = 1;
+    uint32_t saved_rebase = g_68k_stamp_rebase;
+    g_68k_stamp_rebase = machine_z80_stamp() - g_audio_cycle_counter * 7u;
+    g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+    uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+    /* Charge the handler's executed 68K cycles to the raster debt (the
+     * generated code bumps g_audio_cycle_counter per instruction, including
+     * through the handler). See s_irq_cycle_debt. */
+    uint32_t cyc_before = g_audio_cycle_counter;
+#ifdef GEN_DEV_TRACE
+    /* Snapshot the VBlank routine byte BEFORE the handler consumes it — the
+     * giant-spin probe needs to know whether the dispatch input was valid. */
+    uint8_t vbla_routine_at_entry =
+        glue_peek8(g_game_layout.vint_routine_addr & 0xFFFFFF);
+#endif
+    if (genesis_force_interp()) {
+        /* Interpret the V-int handler body from the level-6 autovector; delivery
+         * (A7/stack save-restore, stamp rebase, cycle charging) is identical. */
+        m68k_interp_run_handler(m68k_read32(0x78) & 0xFFFFFFu);
+    } else
+    if (g_game_spec.call_vblank) g_game_spec.call_vblank();
+    s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+    if (s_irq_cycle_debt)
+        s_irq_cycle_debt_level = 6;
+#ifdef GEN_DEV_TRACE
+    /* [IRQ-DEBT] a V-int handler owing more than one full frame of raster
+     * debt freezes the main loop for multiple wall frames (and with it the
+     * SMPS driver if the next V-ints get latched away) — dump it. For the
+     * multi-million-cycle pathological case, also dump the crash-report
+     * block ring: the recent recompiled function entries localize WHERE
+     * the handler spun. */
+    if (s_irq_cycle_debt > 127856u) {
+        extern unsigned long g_snd_frame;
+        uint32_t hc = (uint32_t)(g_audio_cycle_counter - cyc_before);
+        fprintf(stderr, "[IRQ-DEBT] wf=%lu handler_cycles=%u debt=%u (~%u frames) vbla_routine=$%02X gmode=$%02X\n",
+                g_snd_frame, hc,
+                (unsigned)s_irq_cycle_debt, (unsigned)(s_irq_cycle_debt / 127856u),
+                vbla_routine_at_entry,
+                glue_peek8(g_game_layout.game_mode_addr & 0xFFFFFF));
+        /* The one KNOWN legit multi-million-cycle handler is the Sega-screen
+         * PCM scream (routine $14) — real hardware busy-feeds the DAC for
+         * ~2s inside the V-int with everything else frozen. Only dump the
+         * block ring for giants that are NOT that. */
+        if (hc > 1000000u && vbla_routine_at_entry != 0x14u) {
+            extern void crash_report_dump(FILE *, const char *, const M68KState *,
+                                          uint32_t, int, uint64_t);
+            crash_report_dump(stderr, "giant V-int handler (IRQ-DEBT probe)",
+                              &g_cpu, 0, 0, g_frame_count);
+        }
+    }
+#endif
+    g_68k_stamp_rebase = saved_rebase;
+    vdp->in_vblank = saved_vb;
+    g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+    s_in_vblank_service = 0;
+    for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+    g_cpu = saved;
+    recomp_interrupt_context_leave(saved_split_sp_popped);
+    s_game_yielded_vblank = 0;
+}
+
+/* STAGE 1: run the V-int/H-int handler ON THE GAME FIBER, budget-interleaved
+ * with the scanline scheduler (NOT atomically on the main fiber). Called from
+ * the game fiber's WaitForVBla resume point (glue_yield_for_vblank) when the
+ * scheduler flagged s_pending_irq. The handler's bus accesses drain the cycle
+ * budget; check_cycle_budget then fiber_switches to the scheduler, which renders
+ * a scanline + steps the Z80 and resumes the game fiber back into the handler.
+ * No s_irq_cycle_debt (real interleaved cycles are consumed) and no
+ * s_in_vblank_service (so check_cycle_budget is NOT gated -> the handler yields).
+ * SR interrupt mask is raised to `level` like the CPU does on interrupt entry,
+ * so a V-int crossing during the handler LATCHES (see glue_own_interrupt) rather
+ * than re-entering. */
+static void own_run_handler_interleaved(int level, GVDP *vdp)
+{
+    const uint32_t STK = g_game_layout.intr_stack;
+    uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+    uint8_t save[256];
+    M68KState saved = g_cpu;
+    int saved_split_sp_popped = recomp_interrupt_context_enter();
+    for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+    g_cpu.A[7] = STK;
+    g_cpu.SR = (uint16_t)((g_cpu.SR & ~0x0700u) | ((uint16_t)(level & 7) << 8));
+    s_irq_in_progress = 1;
+    uint8_t saved_vb = vdp->in_vblank; vdp->in_vblank = 1;
+    g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+    if (genesis_force_interp()) {
+        m68k_interp_run_handler(m68k_read32(level == 6 ? 0x78 : 0x70) & 0xFFFFFFu);
+    } else
+    if (level == 6) { if (g_game_spec.call_vblank) g_game_spec.call_vblank(); }
+    else            { if (g_game_spec.call_hblank) g_game_spec.call_hblank(); }
+    g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+    vdp->in_vblank = saved_vb;
+    for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+    g_cpu = saved;
+    recomp_interrupt_context_leave(saved_split_sp_popped);
+    s_irq_in_progress = 0;
+    s_game_yielded_vblank = 0;
+}
+
+/* Own-backend interrupt delivery — the clownmdemu-free twin of
+ * glue_handle_interrupt: runs the game's V-int(6)/H-int(4) handler using OUR
+ * work RAM (g_ram) for the IRQ-stack save/restore and OUR VDP's vblank flag. */
+void glue_own_interrupt(int level, GVDP *vdp)
+{
+    if (!s_game_running) return;
+    /* An interleaved handler is already running on the game fiber (the scheduler
+     * is crossing raster lines DURING it). Do not start another delivery — latch
+     * a crossing V-int and let it deliver after the current handler RTEs. (SR
+     * mask=level usually makes imask>=6 below anyway; this guards the case where
+     * the handler itself drops the mask mid-run.) */
+    if (s_irq_in_progress) { if (level == 6) s_own_vint_latched = 1; return; }
+    int imask = (g_cpu.SR >> 8) & 7;
+
+    if (level == 6) {
+        /* Fire V_Int once per wall frame, exactly like hardware — NOT only when
+         * the game has parked at WaitForVBlank. If the 68K currently has IRQs
+         * masked, latch it and deliver when the mask drops instead of losing it.
+         *
+         * We deliver even when a prior handler's raster debt is still outstanding
+         * (s_irq_cycle_debt > 0): deferring on debt deadlocks a game that busy-
+         * waits on V-int-driven state (Sonic 1's SEGA screen runs a ~1-frame
+         * V_Int PCM-feed handler, so debt is >=1 frame every fire; latching the
+         * next V-int behind it stalled Sega_WaitEnd's $F614 countdown forever and
+         * ran the fiber stack away). Debt is still charged/drained for cycle
+         * stamping; it no longer gates delivery. Masked-span merging is preserved
+         * by the imask>=6 latch path below. */
+        if (imask < 6) {
+            s_own_vint_latched = 0;
+            /* STAGE 1: if interleaved delivery is on AND the game is parked at
+             * WaitForVBla, run the handler on the GAME FIBER (budget-interleaved)
+             * instead of atomically here. Flag it and wake the fiber; the handler
+             * runs at the glue_yield_for_vblank resume point. Mid-run delivery
+             * (game not parked) still uses the atomic path below — no regression
+             * for lag-frame V-ints. */
+            if (interleave_irq_on() && s_game_yielded_vblank) {
+                s_pending_irq = 6;
+                s_game_yielded_vblank = 0;   /* let glue_run_game_chunk resume the fiber */
+            } else {
+                own_deliver_vint(vdp);
+            }
+        }
+        else           {
+#ifdef GEN_DEV_TRACE
+            /* [VINT-MASK] V-int latched because the main-context 68K has IRQs
+             * masked at the vblank line. Consecutive masked frames merge into
+             * ONE delivery (hardware semantics) — so long masked spans are
+             * where v_vblank_count freezes and the SMPS driver stalls. Rare
+             * event print: each occurrence is one lost-or-merged V-int. */
+            { extern unsigned long g_snd_frame;
+              fprintf(stderr, "[VINT-MASK] wf=%lu SR=%04X PC=%08X latched=%d\n",
+                      g_snd_frame, (unsigned)g_cpu.SR, (unsigned)g_cpu.PC,
+                      s_own_vint_latched); }
+#endif
+            s_own_vint_latched = 1;
+        }
+    } else if (level == 4 && imask < 4) {
+        const uint32_t STK = g_game_layout.intr_stack;
+        uint32_t byteoff = (STK - 256u) & 0xFFFFu;
+        uint8_t save[256];
+        M68KState saved = g_cpu;
+        int saved_split_sp_popped = recomp_interrupt_context_enter();
+        for (int i = 0; i < 256; i++) save[i] = g_ram[(byteoff + i) & 0xFFFFu];
+        g_cpu.A[7] = STK;
+        s_in_vblank_service = 1;
+        /* Same audio-stamp re-base as own_deliver_vint: H-int handler chip
+         * writes stamp at the delivery raster, not the parked counter. */
+        uint32_t saved_rebase = g_68k_stamp_rebase;
+        g_68k_stamp_rebase = machine_z80_stamp() - g_audio_cycle_counter * 7u;
+        g_rte_pending = 0; g_rte_pending_ptr = &s_rte_dummy; g_rte_pending = 0;
+        /* H-int handler cycles owe raster time too (same rule as V-int). */
+        uint32_t cyc_before = g_audio_cycle_counter;
+        if (genesis_force_interp()) {
+            /* Interpret the H-int handler body from the level-4 autovector. */
+            m68k_interp_run_handler(m68k_read32(0x70) & 0xFFFFFFu);
+        } else
+        if (g_game_spec.call_hblank) g_game_spec.call_hblank();
+        s_irq_cycle_debt += g_audio_cycle_counter - cyc_before;
+        if (s_irq_cycle_debt && s_irq_cycle_debt_level < 4)
+            s_irq_cycle_debt_level = 4;
+        g_rte_pending_ptr = &s_rte_real; g_rte_pending = 0;
+        g_68k_stamp_rebase = saved_rebase;
+        s_in_vblank_service = 0;
+        for (int i = 0; i < 256; i++) g_ram[(byteoff + i) & 0xFFFFu] = save[i];
+        g_cpu = saved;
+        recomp_interrupt_context_leave(saved_split_sp_popped);
+    }
+}
+
+/* Deliver a previously-latched V-int if the 68K mask now permits. Called by the
+ * scheduler at each scanline boundary (after the 68K has advanced and may have
+ * dropped its mask). Returns 1 if it fired. Delivers at most one — matching the
+ * single level-triggered VDP V-int line (a masked span across >1 vblank still
+ * yields exactly one V-int when unmasked, same as hardware/clownmdemu). */
+int glue_own_vint_service_latched(GVDP *vdp)
+{
+    if (!s_own_vint_latched || !s_game_running) return 0;
+    /* Deliver as soon as the mask drops; do NOT hold behind outstanding raster
+     * debt (that indefinitely-deferred S1's SEGA-screen V-int — see
+     * glue_own_interrupt). Debt is still charged/drained for cycle stamping. */
+    if (((g_cpu.SR >> 8) & 7) >= 6) return 0;   /* still masked — keep latched */
+    s_own_vint_latched = 0;
+    own_deliver_vint(vdp);
+    return 1;
+}
+
+/* Non-clearing read of the masked-V-int latch for full-state hashing
+ * (glue_own_vint_service_latched() would consume it — must not, during a
+ * side-effect-free snapshot). */
+int glue_cosim_vint_latched(void) { return s_own_vint_latched; }
+
+/* Yield-site cycle-accumulator log.  Each line records the state of
+ * g_cycle_accumulator at the moment the game fiber yields for VBlank.
+ * This captures native's belief about how many 68K cycles it spent
+ * executing since the last frame reset — including any sub-VBla work
+ * before the game's own WaitForVBlank call.  Paired oracle run writes
+ * equivalent data (interpreter master_cycle counter at same yield).
+ * Column layout:
+ *   frame cycle_acc v_vblank_count vbla_routine
+ */
+FILE *g_yield_log_file = NULL;
+extern uint16_t m68k_read16(uint32_t);
+extern uint8_t  m68k_read8(uint32_t);
+extern uint32_t m68k_read32(uint32_t);
+
+/* Called from each game's WaitForVBla function (pattern-detected in
+ * code_generator.c; see Sonic 1 $0029A8, Sonic 2 $003384, etc.):
+ * yield to main loop for one frame. */
+void glue_yield_for_vblank(void)
+{
+    if (s_in_vblank_service || s_irq_in_progress)
+        return;   /* inside a handler (atomic or interleaved) — don't re-park */
+    s_watchdog_counter = 0;
+#ifdef GENESIS_COSIM
+    /* Cross-backend work-cycle ruler: g_cycle_accumulator is this logical
+     * frame's 68K work (summed from the same clown-measured cost table the
+     * oracle uses), captured at the WaitForVBla park. See cosim_cycles.c. */
+    { extern void cosim_cycles_note_park(void); cosim_cycles_note_park(); }
+#endif
+    if (g_yield_log_file) {
+        uint32_t vbc = glue_peek32(g_game_layout.vint_runcount_addr & 0xFFFF);
+        uint8_t  vr  = glue_peek8 (g_game_layout.vint_routine_addr  & 0xFFFF);
+        fprintf(g_yield_log_file,
+                "%llu %u %u %u\n",
+                (unsigned long long)g_frame_count,
+                g_cycle_accumulator,
+                vbc,
+                vr);
+    }
+    /* At yield, the game is inside WaitForVBla (pattern-detected in
+     * code_generator.c), which was called via JSR from the main loop.
+     * Expected A7 at yield is initial_SSP - 8: one return address for
+     * the JSR to WaitForVBla, plus 4 more for the dispatch JSR. But
+     * A7 can drift above initial_SSP if a mode handler's internal
+     * restart bypasses the dispatch's A7 pop, accumulating +4 per
+     * restart. Clamp to prevent stack/variable collision. */
+    if (g_cpu.A[7] > g_game_layout.initial_ssp)
+        g_cpu.A[7] = g_game_layout.initial_ssp;
+    s_game_yielded_vblank = 1;
+    if (s_state_requested && g_game_spec.state_at_boundary && g_game_spec.state_at_boundary())
+        s_state_parked=1;
+    { char stack_marker; game_stack_note("WaitForVint", &stack_marker); }
+    yield_to_main(GLUE_YIELD_VBLANK);
+    /* STAGE 1 interleaved IRQ: the scheduler flagged a V-int/H-int while we were
+     * parked here. Run its handler NOW, on this (game) fiber — its bus accesses
+     * yield via check_cycle_budget so it interleaves with the scanline scheduler
+     * (VDP/Z80 advance mid-handler), instead of the scheduler running it in one
+     * atomic lump. The handler wakes the wait (bumps v_vblank_count) so the game
+     * loop below exits. Loops in case another IRQ is flagged before we return. */
+    while (s_pending_irq) {
+        int lvl = s_pending_irq; s_pending_irq = 0;
+        own_run_handler_interleaved(lvl, &g_machine.vdp);
+    }
+    /* Resumed here when next frame's DoCycles calls glue_run_game_chunk.
+     *
+     * Simulate WaitForVBlank polling overhead: the real 68K spins in a
+     * tst.b/bne.s loop (~18 cycles per iteration) until VBlank fires.
+     * This consumes ~10,000-20,000 cycles of the frame budget.  Without
+     * this penalty, the game gets extra cycles → runs too fast →
+     * transitions too quick → more BSRs per frame than real hardware.
+     *
+     * Set accumulator to simulate that VBlank fired at scanline 224
+     * and the game wasted cycles polling until the handler cleared $F62A. */
+    /* If VBlank hasn't fired yet this frame (game yielded early, e.g. during
+     * init when frames are very short), fire it now.  This matches the
+     * interpreter where WaitForVBlank polls until VBlank fires — the game
+     * doesn't continue until the handler has run.
+     *
+     * glue_check_vblank now requires accumulator >= threshold to fire, so
+     * bump the accumulator just past threshold to force one fire here. */
+    if (!s_vblank_fired_this_frame) {
+        if (g_cycle_accumulator < g_vblank_threshold)
+            g_cycle_accumulator = g_vblank_threshold;
+        glue_check_vblank();
+        s_vblank_fired_this_frame = 1;  /* ensure it's marked */
+    }
+
+    /* In FIBER_FULL: reset accumulator at game-frame boundary so the next
+     * game frame starts with a fresh cycle budget. Do NOT reset the
+     * s_vblank_fired_this_frame latch here — it's a per-WALL-frame latch
+     * (wall frame != game frame; a game can yield multiple times per wall
+     * frame under heavy compute). Only glue_end_of_wall_frame resets it. */
+    if (g_pacing_mode == GLUE_PACING_FIBER_FULL) {
+        g_cycle_accumulator = 0;
+    }
+
+    /* PLC tile processing — periodic hook (Sonic 1: RunPLC).
+     * Gated on the PLC pending counter being non-zero so games that
+     * don't run the SMPS-style PLC system pay nothing. plc_pending=0
+     * disables the gate and the hook never fires (Sonic 2 path). */
+    {
+        if (g_game_spec.call_periodic && g_game_layout.plc_pending_addr &&
+            /* Host peeks use full bus addresses; truncating to a RAM offset
+             * would read ROM at the same offset instead of the PLC counter. */
+            glue_peek16(g_game_layout.plc_pending_addr) != 0) {
+            M68KState plc_save = g_cpu;
+            g_game_spec.call_periodic();
+            g_cpu = plc_save;
+        }
+    }
+}
+
+/* Yield from a short hardware-polling loop without declaring a game-frame
+ * boundary. This lets clownmdemu advance to the next scanline and deliver
+ * IRQ4/HBlank or update device status while the game remains in the same
+ * frame. True WaitForVint sites still use glue_yield_for_vblank(). */
+void glue_yield_for_interrupt_poll(void)
+{
+    if (s_in_vblank_service || !s_main_fiber)
+        return;
+
+    s_watchdog_counter = 0;
+    { char stack_marker; game_stack_note("irq-poll", &stack_marker); }
+    yield_to_main(GLUE_YIELD_IRQPOLL);
+}
+
+/* Called from main loop: start the game frame. With interleave mode,
+ * the game runs in small chunks during Iterate's DoCycles calls.
+ * Without interleave, it runs until WaitForVBlank as before. */
+void glue_run_game_frame(void)
+{
+    /* Own backend: the game fiber is woken exactly ONCE per wall frame, by the
+     * V-int at the vblank scanline (glue_own_interrupt) — like hardware, where
+     * V-int is what releases the WaitForVBlank spin. Clearing the yield flag
+     * here too would add a SECOND wake per frame (frame-start AND vblank), so a
+     * light main-loop iteration (Sega screen, "Sonic Team presents", title
+     * finger-wag) would complete ~2x per wall frame while heavy gameplay frames
+     * stayed ~1x — the "intros/finger-wag run fast, gameplay looks right"
+     * symptom. The first frame still runs: s_game_yielded_vblank starts 0. */
+}
+
+/* Service VBlank: called from main loop AFTER Iterate.
+ * Resumes game fiber so handlers + PLC run, then does joypad + bookkeeping. */
+void glue_service_vblank(void)
+{
+    /* Handlers now fire from glue_check_vblank (contextual recompiler)
+     * at the exact cycle count. No handler here — just bookkeeping. */
+
+
+    glue_reset_frame_sync();
+
+    /* Joypad copy REMOVED — the VBlank handler's ReadJoypads handles
+     * $F602/$F603 natively. Our manual copy was overwriting $F603
+     * (pressed-this-frame) after the handler set it, causing a
+     * one-frame delay in button edge detection. */
+
+    glue_log_frame_state(g_frame_count);
+    g_frame_count++;
+    runtime_evidence_tick();   /* frame counter; periodic, rate-bounded flush */
+}
+
+#if SONIC_REVERSE_DEBUG
+void glue_yield_for_break(void)
+{
+    /* Block-entry hook in the game fiber decided to park. We're at a
+     * label boundary, so g_cpu and g_ram are consistent. Yield to main
+     * fiber — main loop will drain cmd_server until a resume command
+     * arrives, then fiber_switch(s_game_fiber) re-enters here and we
+     * continue the interrupted function. Clear the flag on return so
+     * the next yield can be detected. */
+    s_game_yielded_break = 1;
+    yield_to_main(GLUE_YIELD_BREAK);
+    s_game_yielded_break = 0;
+}
+
+int glue_game_yielded_for_break(void)
+{
+    return s_game_yielded_break;
+}
+
+void glue_resume_from_break(void)
+{
+    if (!s_game_running || !s_game_fiber) return;
+    fiber_switch(s_game_fiber);
+    /* Returns here when the game fiber yields again (any reason). */
+}
+#endif
+
+
+/* In hybrid mode, VBlank is handled by the interpreter — yield is a no-op. */
+
+/* Hybrid dispatch is now handled via the pre-instruction hook in
+ * clown68000.c.  See hybrid.c / HybridInit(). */
+
+/* =========================================================================
+ * glue_init / glue_signal_* / glue_wait_vblank_done / glue_shutdown
+ * ========================================================================= */
+
+void glue_init(const cc_u8l *rom_bytes, cc_u32l rom_byte_len)
+{
+    /* Runtime evidence (dispatch misses, floor coverage, interior-label
+     * misses, floor-declined misses) accumulates across launches of this exact
+     * build: load it, count this session, and rewrite the stamped headers. A
+     * different build's evidence is rotated to <name>.prev.toml. See
+     * runtime_evidence.h. */
+    runtime_evidence_init(g_game_spec.short_name, g_game_spec.display_name,
+                          (const uint8_t *)rom_bytes, (size_t)rom_byte_len);
+    /* interp_fallbacks.log was the append-mode predecessor of
+     * dispatch_misses.toml (one "extra_func 0x..." line per true miss, never
+     * reset, no build stamp). Nothing has written it since 49afcfa; its
+     * content is a subset of the persistent dispatch-miss evidence, so a
+     * leftover copy from an older runner is only misleading. */
+    {
+        extern const char *exe_relative(const char *);
+        remove(exe_relative("interp_fallbacks.log"));
+    }
+
+    /* Copy ROM bytes into g_rom so recompiled code can inspect ROM data
+     * directly (e.g. tables copied from ROM to RAM at startup). */
+    if (rom_bytes && rom_byte_len) {
+        cc_u32l copy_len = rom_byte_len < sizeof(g_rom) ? rom_byte_len : sizeof(g_rom);
+        memcpy(g_rom, rom_bytes, copy_len);
+    }
+
+
+    g_step2_active = 1;
+    s_main_fiber = fiber_convert_thread();
+    if (!s_main_fiber) {
+        fprintf(stderr, "glue: fiber_convert_thread failed\n");
+        return;
+    }
+    if (!create_game_fiber(0)) {
+        return;
+    }
+    {
+        uintptr_t lo = 0, top = 0;
+        fiber_stack_range(s_game_fiber, &lo, &top);
+        fprintf(stderr, "[fiber] game stack %zu bytes (engine-owned, committed, guard page)\n",
+                (size_t)(top - lo));
+    }
+}
+
+void glue_signal_vblank(void)
+{
+    /* In single-threaded Step 2, VBlank is delivered explicitly
+     * by the main loop — this function is no longer needed. */
+}
+
+void glue_signal_hblank(void)
+{
+    /* HBlank is handled via the interrupt mask check inside service_vblank().
+     * No additional signalling needed here. */
+    (void)0;
+}
+
+/* Contextual recompiler: called from generated code when cycle accumulator
+ * crosses the VBlank threshold.  Fires VBlank handler between instructions
+ * on the game fiber — matching the interpreter's interrupt behavior.
+ *
+ * Previously gated by s_vblank_fired_this_frame, causing native to fire at
+ * most ONE VBla per wall frame.  Measured consequence: heavy boot / init
+ * blocks that execute N × threshold cycles of 68K work in a single wall
+ * frame generated 1 VBla fire on native vs N fires on hardware/oracle,
+ * making native's game_state-per-VBla-count overshoot.  ISSUE-003 round 6.
+ *
+ * New behavior: consume threshold-worth of cycles per fire.  Re-fire while
+ * accumulator still has threshold-worth available.  s_in_vblank_service
+ * prevents recursion from handler-internal accumulator crosses. */
+uint64_t g_cvblank_fires_total = 0;
+
+/* Fire the VBla handler once. Caller manages g_cycle_accumulator per
+ * mode (FIBER_FULL subtracts threshold per fire; CYCLE_ACCURATE leaves
+ * the accumulator running until the wall-frame cap is hit). The
+ * Stage-A instrumentation hook records the fire for telemetry.
+ * Hybrid/oracle only: the own backend fires V-int from the scanline
+ * scheduler (glue_own_interrupt) and never takes this path. */
+
+void glue_check_vblank(void)
+{
+    instruction_watchdog_check();
+
+    /* Own backend: the scanline scheduler (machine_run_frame) is the SOLE
+     * V-int driver, via glue_own_interrupt() — which uses our g_ram for the
+     * handler stack save/restore. Per-scanline and per-frame fiber yielding
+     * is handled by check_cycle_budget() and glue_yield_for_vblank(). Firing
+     * the handler here too would run V_Int twice per wall frame (this
+     * threshold path PLUS the scheduler path), doubling everything the
+     * handler drives — music tempo, sprite-animation timers, v_vblank_count —
+     * while main-loop object physics stays 1x. That mismatch is the
+     * "some animations run too fast, some look right" symptom. It would also
+     * run V_Int against the wrong RAM buffer (fire_vblank_handler_once saves
+     * s_emu->state.m68k.ram, but recompiled code mutates g_ram here). So under
+     * the own backend this routine does watchdog bookkeeping only —
+     *
+     * EXCEPT the non-yielding-loop safety: the own backend yields the 68K fiber
+     * only at recompiler-emitted yield sites (WaitForVBlank). A tight loop with
+     * no such site — e.g. Rocket Knight's sound-init busy-wait for the Z80 to
+     * raise its ready flag — would never let the scanline scheduler run, so the
+     * Z80 never steps, the flag never sets, and the loop deadlocks until the
+     * instruction watchdog kills it. If the game has burned more than two wall
+     * frames of 68K cycles without yielding, force the DESIGNED cycle-budget
+     * yield (check_cycle_budget -> fiber_switch to the scheduler), which steps
+     * the Z80 and lets the scheduler fire V-int via its own path (no doubling).
+     * Well-behaved games yield every frame (g_cycle_accumulator resets in
+     * glue_end_of_wall_frame) and never reach this. */
+    if (s_interleave_active && !s_in_vblank_service
+        && g_cycle_accumulator >= 2u * NTSC_CYCLES_PER_WALL_FRAME) {
+        check_cycle_budget();
+    }
+    return;
+}
+
+
+void glue_end_of_wall_frame(void)
+{
+    /* Hardware fires VBla every wall frame regardless of what 68K code
+     * is doing. If nothing has fired the handler this wall frame (game
+     * accumulator didn't reach threshold AND the yield path didn't
+     * trigger — e.g., boot ROM copy or a pathological non-yielding
+     * loop), force one fire now. Works in both pacing modes; ensures
+     * v_vblank_count and any other VBla-handler side effects advance
+     * every wall frame. */
+    if (!s_vblank_fired_this_frame) {
+        if (g_cycle_accumulator < g_vblank_threshold)
+            g_cycle_accumulator = g_vblank_threshold;
+        glue_check_vblank();
+    }
+    /* Per-frame cycle-pacing telemetry. Captured into the always-on
+     * FrameRecord ring (PaceSnap) so divergence_diff queries it
+     * retroactively via frame_timeseries — no per-frame fprintf. The
+     * "insns_delta vs audio_cyc" ratio surfaces slow-music symptoms
+     * cleanly when comparing native and oracle. */
+    {
+        static uint64_t s_prev_insns     = 0;
+        static uint64_t s_prev_bus_total = 0;
+        uint64_t insns_now = g_native_insn_count;
+        uint64_t bus_now   = s_bus_ring_total;
+        g_pace_snap.insns_delta  = insns_now - s_prev_insns;
+        g_pace_snap.bus_delta    = bus_now   - s_prev_bus_total;
+        g_pace_snap.audio_cyc    = g_audio_cycle_counter;
+        g_pace_snap.vblanks_fired = (uint8_t)s_vblank_executed_this_frame;
+        s_prev_insns     = insns_now;
+        s_prev_bus_total = bus_now;
+    }
+    /* Reset the per-wall-frame latches for the next wall frame. */
+    s_vblank_fired_this_frame    = 0;
+    s_vblank_executed_this_frame = 0;
+
+    /* audio_mixer_drain consumes events stamped within the frame and now
+     * legitimately LEAVES deferred events queued (multi-frame spreading of
+     * giant-handler bursts like the Sega scream — see mixer.c). The old
+     * "sanity" reset here would wipe them; the only remaining full reset
+     * is save-state load (main.c), which really does want to drop the
+     * interrupted frame's writes. */
+
+    /* Reset audio cycle stamp for next wall frame. After Phase 5 switchover,
+     * audio_mixer_drain() is called right before this so the queue has
+     * already been consumed with the old stamps. */
+    g_audio_cycle_counter = 0;
+}
+
+void glue_set_callbacks(const void *callbacks)
+{
+    /* The callbacks pointer that clownmdemu passed to Clown68000_DoCycles.
+     * In Step 2 we use M68kReadCallback / M68kWriteCallback directly, so we
+     * don't need these.  Stored for completeness. */
+    (void)callbacks;
+}
+
+void glue_wait_vblank_done(void)
+{
+    /* In single-threaded Step 2, not needed — main loop drives everything. */
+}
+
+void glue_shutdown(void)
+{
+    runtime_evidence_flush();   /* final session counters (also via atexit) */
+    if (s_game_fiber) {
+        fiber_destroy(s_game_fiber);
+        s_game_fiber = NULL;
+    }
+    /* s_main_fiber is the thread itself — revert it to clean up. */
+    if (s_main_fiber) {
+        fiber_revert_thread();
+        s_main_fiber = NULL;
+    }
+    s_game_running = 0;
+}
+
+/* =========================================================================
+ * Save state helpers — called from main.c F6/F7 handlers.
+ * Saves/restores recompiled game state that lives outside the machine.
+ * ========================================================================= */
+
+void glue_save_state(FILE *sf)
+{
+    fwrite(&g_cpu, 1, sizeof(g_cpu), sf);
+    fwrite(&g_frame_count, 1, sizeof(g_frame_count), sf);
+    fwrite(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
+    fwrite(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
+    /* A V-int latched across the save point (masked transition) must survive
+     * the restore or the game loses one v_vblank_count. */
+    { uint8_t latched = (uint8_t)s_own_vint_latched;
+      fwrite(&latched, 1, 1, sf); }
+}
+
+void glue_load_state(FILE *sf)
+{
+#if GENESIS_HD_JOBS
+    gvdp_hd_reset();
+#endif
+    fread(&g_cpu, 1, sizeof(g_cpu), sf);
+    fread(&g_frame_count, 1, sizeof(g_frame_count), sf);
+    fread(&g_cycle_accumulator, 1, sizeof(g_cycle_accumulator), sf);
+    fread(&g_vblank_threshold, 1, sizeof(g_vblank_threshold), sf);
+    { uint8_t latched = 0;
+      fread(&latched, 1, 1, sf);
+      s_own_vint_latched = latched ? 1 : 0; }
+}
+
+void glue_restart_game_fiber(uint32_t resume_pc)
+{
+    if (!s_main_fiber)
+        return;
+    if (fiber_current() != s_main_fiber) {
+        fprintf(stderr, "glue: glue_restart_game_fiber called off the scheduler fiber\n");
+        abort();
+    }
+
+    s_game_running = 0;
+    s_game_yielded_vblank = 0;
+#if SONIC_REVERSE_DEBUG
+    s_game_yielded_break = 0;
+#endif
+    s_interleave_active = 0;
+    s_cycle_budget = 0;
+    s_main_cpu_divisor = 1;
+    s_main_cpu_clock.remainder = s_main_cpu_stalls = 0;
+    s_chunk_cycles = 0;
+    s_irq_cycle_debt = 0;
+    s_irq_cycle_debt_level = 0;
+    s_watchdog_counter = 0;
+    s_vblank_fired_this_frame = 0;
+    s_vblank_executed_this_frame = 0;
+    g_cycle_accumulator = 0;
+    g_audio_cycle_counter = 0;
+    s_game_stack_top = 0;
+    s_game_stack_last_report = 0;
+    g_rte_pending = 0;
+    s_yield_site = GLUE_YIELD_NONE;
+
+    /* Reset in place: same engine-owned stack mapping, so the fiber's stack
+     * range never changes for the life of the process (fiber snapshots are
+     * only valid against the stack they were taken from). */
+    if (s_game_fiber) {
+        if (fiber_reset(s_game_fiber, game_fiber_func, NULL) != 0) {
+            fprintf(stderr, "glue: game fiber reset failed\n");
+            return;
+        }
+        s_game_fiber_resume_pc = resume_pc & 0xFFFFFFu;
+        s_game_running = 1;
+    } else if (!create_game_fiber(resume_pc)) {
+        return;
+    }
+    fprintf(stderr, "[fiber] restarted game fiber at $%06X\n",
+            (unsigned)(resume_pc & 0xFFFFFFu));
+}
+
+/* =========================================================================
+ * Memory access — route through clownmdemu's bus layer (M68kReadCallback /
+ * M68kWriteCallback), which handles ROM, work RAM, VDP, IO, Z80 bus, etc.
+ * ========================================================================= */
+
+/* Cycle counter for bus timing.
+ *
+ * clownmdemu's M68kRead/WriteCallback receives current_cycle (68K cycles)
+ * and computes target_cycle = base_cycle + current_cycle * 7 (master cycles).
+ * This drives VDP/Z80/FM/PSG sync — realistic timing is critical for:
+ *   - DMA completion (collision data, art loading)
+ *   - Z80 sound driver advancement (audio quality)
+ *   - FM/PSG sample generation (audio timing)
+ *
+ * The 68K runs at ~7.67 MHz (master / 7).  A typical instruction takes
+ * 4-20 cycles with ~1.5 bus accesses.  Average cycles per bus access ≈ 8.
+ * We reset to 0 at frame boundaries so cycle values stay within one frame. */
+/* Cycle tracking for clownmdemu sync timing.
+ *
+ * Iterate calls DoCycles(N) per scanline (~488 68K cycles).  We distribute
+ * these cycles across bus accesses proportionally: each access advances
+ * g_hybrid_cycle_counter by (budget / expected_accesses_per_chunk).
+ *
+ * With ~48 bus accesses per 488-cycle chunk (68K averages ~10 cycles per
+ * access including non-bus instructions), we use budget/48 ≈ 10 per access.
+ * This keeps g_hybrid_cycle_counter aligned with Iterate's scanline timing. */
+#define CYCLES_PER_BUS_ACCESS 10u
+#define HYBRID_BUMP_CYCLES() do { g_hybrid_cycle_counter += CYCLES_PER_BUS_ACCESS; check_cycle_budget(); } while(0)
+
+/* Audio event-queue detour.
+ *
+ * All audio-bus writes are captured inside clownmdemu (bus-z80.c for FM,
+ * bus-main-m68k.c for PSG) where target_cycle is available as a single
+ * consistent timestamp (68K-equivalent cycles since Iterate start).
+ * That path catches 68K-bus FM writes (which clownmdemu internally routes
+ * through the Z80 bus), Z80-native FM writes (SMPS Z80 driver for DAC +
+ * part-2 channels), AND PSG writes. No m68k_write detour needed here. */
+static inline void audio_detour_write(uint32_t byte_addr, uint8_t value)
+{
+    (void)byte_addr; (void)value;
+}
+
+/*
+ * Spin-detect-and-yield: when the game fiber reads the same address
+ * repeatedly without either writing, reading a different address, or
+ * yielding for VBlank, force a fiber yield so the main loop can
+ * advance clownmdemu (which may then update the value the spin is
+ * waiting on — VDP DMA-busy clears, Z80 bus-request resolves, etc.).
+ *
+ * This catches any busy-wait pattern in recompiled code without
+ * needing a per-pattern detector. Invariant: a legitimate access
+ * sequence reads multiple addresses or interleaves reads with
+ * writes; only true spin loops repeat the same address indefinitely.
+ *
+ * The threshold balances false positives (too low — yields during
+ * legit hot loops touching one address) against latency (too high
+ * — game spends millions of bus accesses spinning before unjamming).
+ * Set high enough to clear normal data-shuffling loops, low enough
+ * to react before the watchdog kills us.
+ */
+#define SPIN_YIELD_THRESHOLD 256
+static uint32_t s_spin_addr = 0;
+static int      s_spin_count = 0;
+
+static inline void spin_check(uint32_t byte_addr, int is_write)
+{
+    if (is_write || s_in_vblank_service) {
+        s_spin_addr  = 0;
+        s_spin_count = 0;
+        return;
+    }
+    if (byte_addr == s_spin_addr) {
+        if (++s_spin_count > SPIN_YIELD_THRESHOLD) {
+            /* Yield to the main fiber so DoCycles ticks clownmdemu;
+             * resume returns here and the subsequent read sees a
+             * possibly-updated value. Reset the streak so we don't
+             * yield on every single read once over threshold — the
+             * yield itself is the act we want, not a repeated one.
+             * s_main_fiber is the file-static set in glue_install_*. */
+            if (s_main_fiber)
+                { char stack_marker; game_stack_note("spin-read", &stack_marker); }
+            if (s_main_fiber)
+                { extern unsigned long g_spin_yields; g_spin_yields++; }
+            if (s_main_fiber)
+                yield_to_main(GLUE_YIELD_SPIN);
+            s_spin_count = 0;
+        }
+    } else {
+        s_spin_addr  = byte_addr;
+        s_spin_count = 1;
+    }
+}
+
+
+uint16_t m68k_read16(uint32_t byte_addr)
+{
+    byte_addr &= 0xFFFFFFu;
+    watchdog_check(byte_addr, 0, 0);
+    bus_ring_push(byte_addr, 1);
+    if (byte_addr == 0xA11100u) {
+        uint16_t ack = gbus_read16(&g_machine.bus, byte_addr);
+        HYBRID_BUMP_CYCLES();
+        return ack;
+    }
+    spin_check(byte_addr, 0);
+    HYBRID_BUMP_CYCLES();
+    return gbus_read16(&g_machine.bus, byte_addr);
+}
+
+/* IO port access logging for joypad debugging */
+int s_io_log_enabled = 0;  /* set via TCP command */
+int s_io_log_count   = 0;
+
+unsigned long g_spin_yields = 0;          /* [POLL-DIAG] spin_check yields */
+unsigned long g_z80poll_fallback_hits = 0; /* [POLL-DIAG] 256-poll bound fired */
+unsigned long g_z80poll_yields = 0;        /* [POLL-DIAG] total z80-poll yields */
+/* Z80 sync-poll streak (m68k_read8). Scheduler state that decides when the
+ * 68K yields, so it lives at file scope with the other scheduler statics
+ * (rollback snapshots/digests must be able to reach it). */
+static uint32_t s_z80poll_last_addr = 0;
+static int      s_z80poll_streak    = 0;
+uint8_t m68k_read8(uint32_t byte_addr)
+{
+    byte_addr &= 0xFFFFFFu;
+    watchdog_check(byte_addr, 0, 0);
+    bus_ring_push(byte_addr, 0);
+    /* This bus model grants BUSREQ synchronously in gbus_write16. Latch
+     * its acknowledgement before any scheduler yield. Unconditionally
+     * yielding here let a lag-frame V-int do its own stop/startZ80, release
+     * the main loop's request, and strand Play_Music/Play_SFX in their wait
+     * forever. Z80 RAM ready flags below still need the Z80 to advance. */
+    if (byte_addr == 0xA11100u) {
+        uint8_t ack = (uint8_t)(gbus_read16(&g_machine.bus, byte_addr) >> 8);
+        s_z80poll_last_addr = 0;
+        s_z80poll_streak = 0;
+        HYBRID_BUMP_CYCLES();
+        return ack;
+    }
+    /* Z80 RAM sync polls — the SMPS sound driver must actually advance
+     * before changing its ready flags. In native
+     * mode the game fiber can run thousands of instructions without
+     * yielding, so Z80 never gets cycles inside a polling loop.
+     *
+     * Old behavior: return constant 0 → 68K loop exits immediately,
+     * but never actually waits for Z80 → SMPS commands queue up faster
+     * than Z80 can drain them → notes drop ("squelching").
+     *
+     * New behavior: yield game fiber → Iterate's next DoCycles advances
+     * Z80 by one scanline → resume → re-read the real Z80 RAM / bus
+     * register. Loop self-paces against actual Z80 throughput.
+     *
+     * Bounded fallback: if a single read polls > 256 times without
+     * resolving (corrupted Z80 state, dead driver), return 0 so we
+     * don't hang. Counter resets across distinct read addresses. */
+    if (byte_addr == 0xA01FFDu || byte_addr == 0xA01FFFu) {
+        if (s_interleave_active && !s_in_vblank_service) {
+            if (byte_addr == s_z80poll_last_addr) {
+                if (++s_z80poll_streak > 256) {
+                    extern unsigned long g_z80poll_fallback_hits; /* [POLL-DIAG] */
+                    g_z80poll_fallback_hits++;
+                    return 0x00u;
+                }
+            } else {
+                s_z80poll_last_addr = byte_addr;
+                s_z80poll_streak    = 1;
+            }
+            { extern unsigned long g_z80poll_yields; g_z80poll_yields++; } /* [POLL-DIAG] */
+            { char stack_marker; game_stack_note("z80-poll", &stack_marker); }
+            yield_to_main(GLUE_YIELD_Z80POLL);
+            /* fall through to real read */
+        } else {
+            return 0x00u;  /* outside interleave: keep old shortcut */
+        }
+    } else {
+        s_z80poll_last_addr = 0;
+        s_z80poll_streak    = 0;
+    }
+    HYBRID_BUMP_CYCLES();
+    cc_bool hi = (byte_addr & 1) == 0;
+    cc_bool lo = !hi;
+    cc_u16f word = gbus_read16(&g_machine.bus, byte_addr & ~1u);
+    (void)lo;
+    uint8_t result = hi ? (uint8_t)(word >> 8) : (uint8_t)(word & 0xFF);
+    if (s_io_log_enabled && byte_addr >= 0xA10000u && byte_addr <= 0xA1001Fu) {
+        if (s_io_log_count < 200) {
+            fprintf(stderr, "[IO-R] $%06X => 0x%02X (vblk=%d frame=%"PRIu64")\n",
+                    byte_addr, result, s_in_vblank_service, g_frame_count);
+            s_io_log_count++;
+        }
+    }
+    return result;
+}
+
+uint32_t m68k_read32(uint32_t byte_addr)
+{
+    byte_addr &= 0xFFFFFFu;
+    watchdog_check(byte_addr, 0, 0);
+    bus_ring_push(byte_addr, 2);
+    spin_check(byte_addr, 0);
+    /* Bump once for the whole 32-bit op — both halves at same cycle.
+     * Prevents VDP/Z80 sync between the two 16-bit reads. */
+    HYBRID_BUMP_CYCLES();
+    uint16_t hi = gbus_read16(&g_machine.bus, byte_addr);
+    uint16_t lo = gbus_read16(&g_machine.bus, byte_addr + 2);
+    return ((uint32_t)hi << 16) | (uint32_t)lo;
+}
+
+void m68k_write16(uint32_t byte_addr, uint16_t val)
+{
+    byte_addr &= 0xFFFFFFu;
+    watchdog_check(byte_addr, 1, val);
+    bus_ring_push(byte_addr, 4);
+    /* 16-bit FM writes land one byte per port per cycle on hardware. The
+     * YM2612 only takes 8-bit data; SMPS always uses 8-bit writes. Be
+     * defensive: if a 16-bit write hits the FM bus, treat the low byte
+     * as the meaningful one (matches clownmdemu's bus routing). */
+    audio_detour_write(byte_addr, (uint8_t)val);
+    HYBRID_BUMP_CYCLES();
+    if (g_mem_write_trace_fn) {
+        g_mem_write_trace_fn(byte_addr,      (uint8_t)(val >> 8), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)val,        g_audio_cycle_counter);
+    }
+    gbus_write16(&g_machine.bus, byte_addr, val);
+}
+
+void m68k_write8(uint32_t byte_addr, uint8_t val)
+{
+    byte_addr &= 0xFFFFFFu;
+    watchdog_check(byte_addr, 1, val);
+    bus_ring_push(byte_addr, 3);
+    audio_detour_write(byte_addr, val);
+    if (s_io_log_enabled && byte_addr >= 0xA10000u && byte_addr <= 0xA1001Fu) {
+        if (s_io_log_count < 200) {
+            fprintf(stderr, "[IO-W] $%06X <= 0x%02X (vblk=%d frame=%"PRIu64")\n",
+                    byte_addr, val, s_in_vblank_service, g_frame_count);
+            s_io_log_count++;
+        }
+    }
+    HYBRID_BUMP_CYCLES();
+    if (g_mem_write_trace_fn)
+        g_mem_write_trace_fn(byte_addr, val, g_audio_cycle_counter);
+    gbus_write8(&g_machine.bus, byte_addr, val);
+}
+
+void m68k_write32(uint32_t byte_addr, uint32_t val)
+{
+    byte_addr &= 0xFFFFFFu;
+    watchdog_check(byte_addr, 1, (uint32_t)(val >> 16));
+    bus_ring_push(byte_addr, 5);
+    /* 32-bit write = two consecutive 16-bit writes. Only matters for FM
+     * bus; SMPS never uses 32-bit to write FM regs so this is defensive
+     * only. */
+    audio_detour_write(byte_addr,       (uint8_t)(val >> 16));
+    audio_detour_write(byte_addr + 2,   (uint8_t)val);
+    /* Bump once for the whole 32-bit op — both halves at same cycle.
+     * Critical for VDP control port: the VDP latches a 32-bit command
+     * from two consecutive 16-bit writes. If VDP sync runs between
+     * them, the half-written command corrupts VDP state. */
+    HYBRID_BUMP_CYCLES();
+    if (g_mem_write_trace_fn) {
+        g_mem_write_trace_fn(byte_addr,      (uint8_t)(val >> 24), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 1u, (uint8_t)(val >> 16), g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 2u, (uint8_t)(val >> 8),  g_audio_cycle_counter);
+        g_mem_write_trace_fn(byte_addr + 3u, (uint8_t)val,         g_audio_cycle_counter);
+    }
+    gbus_write16(&g_machine.bus, byte_addr,     (uint16_t)(val >> 16));
+    gbus_write16(&g_machine.bus, byte_addr + 2, (uint16_t)(val & 0xFFFF));
+}
+
+/* Scheduler rule: busy-wait detectors restart at every wall-frame boundary.
+ *
+ * spin_check's same-address streak (s_spin_addr/s_spin_count) and the Z80
+ * sync-poll streak (s_z80poll_last_addr/s_z80poll_streak) decide WHEN the
+ * 68K yields to the raster scheduler. Until 2026-09-25 they were reset at
+ * every frame boundary only as a SIDE EFFECT of the frame loop's host reads
+ * (main.c read $FFFE0C/$FFF600 through m68k_read32/m68k_read8, i.e. through
+ * the emulated bus). Converting those host reads to side-effect-free peeks
+ * let the streaks carry across frames: S3K and S&K then took 33/39 spin
+ * yields instead of 22 over the 18000-frame attract run and their audio and
+ * state fingerprints changed (framebuffers identical). Resetting the spin
+ * streak here restores every fingerprint; resetting only the Z80 poll streak
+ * does not (docs/NETPLAY.md, finding A).
+ *
+ * So the reset is now an explicit rule, called by the tick driver
+ * immediately before machine_run_frame(), and the four variables are part of
+ * the rollback scheduler section (glue_rb_*). The Z80 poll streak is reset
+ * with it because the baseline's post-frame m68k_read8 reset it too. */
+void glue_sched_frame_begin(void)
+{
+    s_spin_addr         = 0;
+    s_spin_count        = 0;
+    s_z80poll_last_addr = 0;
+    s_z80poll_streak    = 0;
+}
+
+/* =========================================================================
+ * Host-side memory access (see genesis_runtime.h). No watchdog_check,
+ * bus_ring_push, spin_check, HYBRID_BUMP_CYCLES / check_cycle_budget, Z80
+ * poll-streak update or write-trace hook: none of those may observe host
+ * activity, or observing the machine would change its schedule.
+ * ========================================================================= */
+
+uint8_t glue_peek8(uint32_t addr)
+{
+    return gbus_peek8(&g_machine.bus, addr & 0xFFFFFFu);
+}
+
+uint16_t glue_peek16(uint32_t addr)
+{
+    return gbus_peek16(&g_machine.bus, addr & 0xFFFFFFu);
+}
+
+uint32_t glue_peek32(uint32_t addr)
+{
+    addr &= 0xFFFFFFu;
+    return ((uint32_t)gbus_peek16(&g_machine.bus, addr) << 16) |
+           (uint32_t)gbus_peek16(&g_machine.bus, (addr + 2u) & 0xFFFFFFu);
+}
+
+static int host_is_z80_ram(uint32_t addr)
+{
+    return addr >= 0xA00000u && addr < 0xA10000u && (addr & 0xFFFFu) < 0x2000u;
+}
+
+void glue_poke8(uint32_t addr, uint8_t val)
+{
+    addr &= 0xFFFFFFu;
+    if (addr >= 0xFF0000u) { g_ram[addr & 0xFFFFu] = val; return; }
+    if (host_is_z80_ram(addr)) { g_machine.bus.z80_ram[addr & 0x1FFFu] = val; return; }
+    /* SRAM (exact byte), ROM (ignored) and device ports: the bus's own write
+     * semantics, which touch no 68K scheduler state. */
+    gbus_write8(&g_machine.bus, addr, val);
+}
+
+void glue_poke16(uint32_t addr, uint16_t val)
+{
+    addr &= 0xFFFFFFu;
+    if (addr >= 0xFF0000u) {
+        uint16_t o = (uint16_t)(addr & 0xFFFFu);
+        g_ram[o] = (uint8_t)(val >> 8);
+        g_ram[(uint16_t)(o + 1u)] = (uint8_t)val;
+        return;
+    }
+    if (host_is_z80_ram(addr)) {
+        /* Z80 RAM is byte-wide: the word's high byte lands at addr (as the
+         * bus does for 68K word writes). */
+        g_machine.bus.z80_ram[addr & 0x1FFFu] = (uint8_t)(val >> 8);
+        return;
+    }
+    gbus_write16(&g_machine.bus, addr, val);
+}
+
+void glue_poke32(uint32_t addr, uint32_t val)
+{
+    glue_poke16(addr, (uint16_t)(val >> 16));
+    glue_poke16((addr + 2u) & 0xFFFFFFu, (uint16_t)val);
+}
+
+/* =========================================================================
+ * Dispatch
+ * ========================================================================= */
+
+static void log_true_miss(uint32_t target_pc);  /* forward decl — defined below */
+
+/* Check if addr falls inside an existing compiled function's range.
+ * Uses the dispatch table exported by game_dispatch_get_table(). */
+static int is_interior_label(uint32_t addr)
+{
+    uint32_t rom_limit = g_game_spec.expected_rom_size
+        ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+    if (addr >= rom_limit) return 0;
+    /* game_dispatch_get_table returns a NULL-terminated array of
+     * {addr, fn} pairs sorted by address.  Check if addr falls
+     * between two consecutive entries. */
+    extern int game_dispatch_table_size(void);
+    extern uint32_t game_dispatch_table_addr(int i);
+
+    int count = game_dispatch_table_size();
+    if (count == 0) return 0;
+
+    /* Binary search for the largest entry <= addr */
+    int lo = 0, hi = count - 1;
+    while (lo < hi) {
+        int mid = (lo + hi + 1) / 2;
+        if (game_dispatch_table_addr(mid) <= addr)
+            lo = mid;
+        else
+            hi = mid - 1;
+    }
+
+    uint32_t func_start = game_dispatch_table_addr(lo);
+    if (func_start == addr)
+        return 0;  /* exact match = it IS a function, not interior */
+    if (func_start < addr) {
+        /* addr is between func_start and the next function — interior label */
+        return 1;
+    }
+    return 0;
+}
+
+/* Is the 68K instruction at `addr` a `bra.w` trampoline?  bra.w is encoded
+ * as 0x6000 <disp16>; it has zero prerequisite state and zero fall-through,
+ * so seeding its address as an extra_func always produces a correct
+ * single-tail-call function body.  This distinguishes real jmp-table
+ * trampolines (which MUST be callable) from true interior labels (loop
+ * tops, conditional-branch joins) that are never valid JSR targets. */
+static int is_bra_w_trampoline(uint32_t addr)
+{
+    /* m68k_read16 goes through the bus callback so this works for ROM
+     * (< $800000) as well as RAM. */
+    uint16_t opcode = m68k_read16(addr);
+    return opcode == 0x6000u;
+}
+
+/* Re-entrancy guard for the floor. The interpreter is self-contained (it does
+ * not re-enter dispatch), but never recurse the floor defensively. */
+static int s_in_floor = 0;
+
+/* ── Coverage manifest ──────────────────────────────────────────────────────
+ * Records every in-ROM address the floor executed (the missed entry + the
+ * JSR/BSR/JMP subtree it traversed) to floor_coverage.toml, deduplicated across
+ * every session of this build (runtime_evidence.c). These are LEADS to grow
+ * static coverage: validate each against the
+ * disasm (PRINCIPLES.md #16), then fold confirmed entries into game.toml
+ * [functions].extra / the gen_disasm seed pipeline so the recompiler discovers
+ * them and they become Tier-1 native. (Interior-label misses are deliberately
+ * NOT here — they live in interior_label_misses.toml and need a codegen fix, not
+ * a seed.) The subtree matters because the interpreter runs callees inline, so
+ * an undiscovered callee never logs its own dispatch miss — this is the only
+ * place it surfaces. */
+static void floor_record_coverage(uint32_t addr, uint32_t floor_entry)
+{
+    addr &= 0xFFFFFFu;
+    uint32_t rl = g_game_spec.expected_rom_size
+                      ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+    if (addr >= rl) return;
+    /* The floor re-runs recurring misses every frame: keep the known-address
+     * path to one hash probe. */
+    if (runtime_evidence_has(RT_EVIDENCE_FLOOR_COVERAGE, addr)) return;
+    char note[48] = "";
+    if (floor_entry != addr)
+        snprintf(note, sizeof note, "floor_entry $%06X", floor_entry & 0xFFFFFFu);
+    runtime_evidence_add(RT_EVIDENCE_FLOOR_COVERAGE, addr, g_frame_count, note);
+}
+
+/* Halt blacklist: a missed address the floor could not run (its first/early
+ * bytes decode as illegal/F-line — i.e. the JMP-table dispatched to DATA, or a
+ * misaligned PC). Re-running it every frame would just halt again and spam the
+ * log, so remember it and decline silently thereafter. Declining is safe: it
+ * is exactly the old no-op behaviour for that (non-code) target. */
+#define FLOOR_BL_MAX 2048
+static uint32_t s_floor_bl[FLOOR_BL_MAX];
+static int      s_floor_bl_count = 0;
+static int floor_blacklisted(uint32_t a) {
+    for (int i = 0; i < s_floor_bl_count; i++) if (s_floor_bl[i] == a) return 1;
+    return 0;
+}
+static void floor_blacklist_add(uint32_t a) {
+    if (s_floor_bl_count < FLOOR_BL_MAX) s_floor_bl[s_floor_bl_count++] = a;
+}
+
+/* UNSAFE_EXIT receipt: the framed capsule ran a missed target to its depth-0
+ * return, but that return did NOT land on the native loose-A7 return the caller
+ * is about to pop (an unbalanced A7 — a skip-return / stack pivot — or a
+ * mis-decode). Continuing would let native resume with a desynced stack. Per
+ * the oracle-parity charter we never silently corrupt: record the full state
+ * loudly so the first-divergence harness can classify it, then DECLINE (the old
+ * no-op for that target). A successful framed return is A7-neutral. A halted
+ * capsule is not, so genesis_log_dispatch_miss restores its CPU checkpoint
+ * before declining. */
+static int s_floor_unsafe_count = 0;
+static void floor_unsafe_record(uint32_t miss_addr, uint32_t run_at,
+                                uint32_t exit_pc, uint32_t expected_ret,
+                                const char *why)
+{
+    s_floor_unsafe_count++;
+    fprintf(stderr,
+            "[FLOOR][UNSAFE] miss $%06X (ran $%06X): %s — exit_pc=$%06X "
+            "expected_ret=$%06X A7=$%06X frame=%" PRIu64 " — declined\n",
+            miss_addr, run_at, why, exit_pc, expected_ret,
+            g_cpu.A[7] & 0xFFFFFFu, g_frame_count);
+
+    /* Persistent, build-stamped, deduplicated by miss address (the address
+     * is blacklisted for the rest of the session anyway). */
+    char note[200];
+    snprintf(note, sizeof note,
+             "run_at $%06X exit_pc $%06X expected_ret $%06X A7 $%06X "
+             "D0 $%08X D1 $%08X A0 $%08X A1 $%08X SR $%04X: %s",
+             run_at, exit_pc, expected_ret, g_cpu.A[7] & 0xFFFFFFu,
+             g_cpu.D[0], g_cpu.D[1], g_cpu.A[0], g_cpu.A[1], g_cpu.SR,
+             why ? why : "");
+    if (runtime_evidence_add(RT_EVIDENCE_FLOOR_UNSAFE, miss_addr, g_frame_count, note))
+        runtime_evidence_sync(RT_EVIDENCE_FLOOR_UNSAFE);
+}
+/* Floor enable switch (GENESIS_FLOOR=1/on/yes). DEFAULT OFF: opt-in.
+ *
+ * The interpreter is validated 0-divergence vs clown68000 and works in-game on
+ * Sonic 1 (it correctly executes interior-label "Duff's-device" misses that the
+ * static dispatch can only no-op). But it does NOT yet model the per-instruction
+ * cycle accounting + glue_check_vblank() that the generated native code emits,
+ * so a floor run that should span a VBlank skips it — harmless for short
+ * mid-game handlers, but it desyncs timing-sensitive code (Sonic 3&K froze at
+ * frame ~2014 from a frame-5 boot miss; A/B-confirmed it's the floor's
+ * EXECUTION, not pre-existing). Until that interaction is root-caused, the floor
+ * ships OFF by default so no game regresses; enable per-game where validated. */
+static int floor_enabled(void) {
+    static int e = -1;
+    if (e < 0) {
+        const char *v = getenv("GENESIS_FLOOR");
+        if (v) {
+            /* Env var overrides in EITHER direction (1/on/yes vs 0/off/no). */
+            e = (v[0] == '1' || v[0] == 'o' || v[0] == 'O' || v[0] == 'y' || v[0] == 'Y') ? 1 : 0;
+            fprintf(stderr, "[FLOOR] %s via GENESIS_FLOOR=%s\n",
+                    e ? "ENABLED" : "DISABLED", v);
+        } else {
+            /* Per-game default: games without full disasm coverage (RKA) run
+             * the miss-fallback + floor_coverage.toml feedback loop always-on;
+             * disasm-complete games keep misses loud-and-fatal-ish. */
+            e = g_game_spec.tier3_floor_default ? 1 : 0;
+            if (e) fprintf(stderr, "[FLOOR] ENABLED by game spec default\n");
+        }
+    }
+    return e;
+}
+
+void genesis_log_dispatch_miss(uint32_t addr)
+{
+    g_miss_count_any++;
+    g_miss_last_addr  = addr;
+    g_miss_last_frame = g_frame_count;
+
+    /* ── EDGE-AWARE TIER-3 FALLBACK ─────────────────────────────────────────
+     * Every computed-dispatch miss — computed JSR, computed JMP-tail, and the
+     * interior-label JMP (the Duff's-device codegen gap) — funnels here via
+     * call_by_address. Instead of silently no-op'ing it (dead object code,
+     * the gameplay-garble cause) we run the missed code on the A7-NEUTRAL
+     * framed capsule (m68k_interp_run_framed): it runs the target to its
+     * depth-0 return and PEEKS that return without popping, so the native
+     * loose-A7 caller performs the single pop. That one capsule is correct for
+     * all three miss shapes — and being A7-neutral it FIXES the interior-label
+     * double-pop that the old single-model floor had to skip (the S3K freeze),
+     * so no charter guard is needed.
+     *
+     * A RAM-resident target is resolved to its ROM destination first (the
+     * capsule decodes from the ROM image only). A capsule exit that does NOT
+     * land on the native loose-A7 return the caller is about to pop is an
+     * UNSAFE_EXIT (unbalanced A7 — skip-return / stack pivot — or mis-decode):
+     * recorded loudly and declined, never silently resumed (oracle-parity
+     * charter: interpreter fallback is fine, silent corruption is defeat).
+     *
+     * Default OFF (GENESIS_FLOOR); enabled per game where validated. */
+    if (floor_enabled() && !s_in_floor && !floor_blacklisted(addr)) {
+        uint32_t rl = g_game_spec.expected_rom_size
+                          ? g_game_spec.expected_rom_size : (uint32_t)sizeof(g_rom);
+        /* The native loose-A7 return the caller (JSR site / enclosing JSR) is
+         * about to pop — the capsule must return exactly here to be safe. */
+        uint32_t expected_ret = glue_peek32(g_cpu.A[7]) & 0xFFFFFFu;
+        uint32_t run_at = addr;
+
+        /* RAM-resident computed target: follow the JMP/JSR trampoline chain
+         * toward a ROM entry (native functions run faster). A target that
+         * stays in RAM is fine now: the capsule fetches through the live bus
+         * view, so RAM-resident code (and RAM helpers reached mid-subtree
+         * from a missed ROM function) executes correctly. */
+        if (run_at >= RAM_BASE) {
+            uint32_t resolved = recomp_resolve_ram_trampoline(run_at) & 0xFFFFFFu;
+            if ((resolved < rl || resolved >= RAM_BASE) && !(resolved & 1u))
+                run_at = resolved;
+        }
+
+        if (run_at && (run_at < rl || run_at >= RAM_BASE) && !(run_at & 1u)) {
+            uint32_t exit_pc = 0;
+            /* A failed capsule may have executed many instructions before an
+             * unsupported opcode or guard stop. Its partial register/stack
+             * state is not a valid substitute for the historical no-op miss
+             * behavior. Keep the successful path, but roll CPU state back on
+             * every declined path so A7 and caller registers cannot leak. */
+            M68KState floor_cpu_checkpoint = g_cpu;
+            s_in_floor = 1;
+            M68kiStatus st = m68k_interp_run_framed(run_at, &exit_pc);
+            s_in_floor = 0;
+
+            if (st == M68KI_OK) {
+                int plausible = exit_pc && !(exit_pc & 1u) &&
+                                (exit_pc < rl || exit_pc >= RAM_BASE);
+                if (plausible && exit_pc == expected_ret) {
+                    /* Clean balanced return to the native continuation. Manifest
+                     * the entry + its call/jump subtree as real code leads. */
+                    floor_record_coverage(addr, addr);
+                    for (int i = 0; i < g_m68ki_discover_count; i++)
+                        floor_record_coverage(g_m68ki_discover[i], addr);
+                    runtime_evidence_sync(RT_EVIDENCE_FLOOR_COVERAGE);
+                    return;  /* handled; native caller performs the single A7 pop */
+                }
+                floor_unsafe_record(addr, run_at, exit_pc, expected_ret,
+                                    "capsule exit_pc != native loose-A7 return");
+                g_cpu = floor_cpu_checkpoint;
+                floor_blacklist_add(addr);
+            } else {
+                /* Not runnable as code (illegal/F-line first bytes => DATA
+                 * target), or runaway/bad fetch. Decline + remember (the old
+                 * no-op for that non-code target, which the game tolerates). */
+                g_cpu = floor_cpu_checkpoint;
+                floor_blacklist_add(addr);
+                fprintf(stderr, "[FLOOR] declined miss $%06X (ran $%06X, status %d, "
+                        "opcode $%04X at $%06X) — target not runnable code; blacklisted\n",
+                        addr, run_at, (int)st, g_m68ki_bad_op, g_m68ki_bad_pc);
+            }
+        }
+    }
+
+    /* TRUE interior labels — addresses inside an existing function but not
+     * its entry. They are NEVER valid extra_func seeds (the recompiler
+     * would split the parent function and produce broken code).  But they
+     * ARE a real runtime failure: the recompiler punted some indirect
+     * dispatch to hybrid_jmp_interpret -> call_by_address, and that
+     * looked up an interior PC that isn't in the dispatch table.  This
+     * is the JMP-into-uniform-sequence (Duff's device) class of bug.
+     *
+     * Log to a SEPARATE file + stderr so the failure is loud without
+     * polluting dispatch_misses.toml (which carries vetted function-entry
+     * candidates). bra.w trampolines fall through to the
+     * regular path — they ARE valid extra_func seeds. */
+    if (is_interior_label(addr) && !is_bra_w_trampoline(addr)) {
+        /* Per-address dedup so we don't spam: same s_miss_unique_addrs[]
+         * pool the regular-miss path uses (separate dedup would just
+         * double the bookkeeping). */
+        for (int i = 0; i < g_miss_unique_count; i++)
+            if (g_miss_unique_addrs[i] == addr)
+                return;
+        if (g_miss_unique_count < MAX_MISS_UNIQUE)
+            g_miss_unique_addrs[g_miss_unique_count++] = addr;
+
+        fprintf(stderr,
+                "[dispatch] interior-label miss: $%06X inside func $%06X "
+                "at frame %" PRIu64 " — likely JMP-table into uniform "
+                "instruction sequence (e.g. Duff's device). Recompiler "
+                "should emit an in-function switch, not call_by_address.\n",
+                addr, g_rdb_current_func, g_frame_count);
+
+        {
+            char note[64] = "";
+            if (g_rdb_current_func)
+                snprintf(note, sizeof note, "in_func $%06X",
+                         g_rdb_current_func & 0xFFFFFFu);
+            if (runtime_evidence_add(RT_EVIDENCE_INTERIOR_LABEL, addr,
+                                     g_frame_count, note))
+                runtime_evidence_sync(RT_EVIDENCE_INTERIOR_LABEL);
+        }
+        return;
+    }
+
+    /* Skip out-of-ROM addresses. Gate on the per-game ROM size (Principle 21)
+     * — NOT a literal. The old hardcode was 0x80000 (Sonic 1's 512 KB), which
+     * silently swallowed every miss past 512 KB for Sonic 2 (1 MB) and all of
+     * the S3 half for S3K (4 MB). expected_rom_size is 0x80000 / 0x100000 /
+     * 0x400000 for S1 / S2 / S3K respectively. */
+    {
+        uint32_t rom_limit = g_game_spec.expected_rom_size
+                                 ? g_game_spec.expected_rom_size
+                                 : (uint32_t)sizeof(g_rom);
+        if (addr >= rom_limit) return;
+    }
+
+    /* Only process each unique address once */
+    for (int i = 0; i < g_miss_unique_count; i++)
+        if (g_miss_unique_addrs[i] == addr)
+            return;  /* already reported */
+
+    fprintf(stderr, "dispatch miss: $%06X (frame %" PRIu64 ")\n",
+            addr, g_frame_count);
+
+    if (g_miss_unique_count < MAX_MISS_UNIQUE)
+        g_miss_unique_addrs[g_miss_unique_count++] = addr;
+
+    /* Record a true-miss lead separately from the shared interior-label pool. */
+    log_true_miss(addr);
+}
+
+/* NOTE: call_by_address() is implemented by sonic_dispatch.c (generated).
+ * Do not define it here; it would conflict with the generated implementation. */
+
+/* =========================================================================
+ * VDP helpers (not called by generated code, provided for completeness)
+ * ========================================================================= */
+
+void     vdp_write_data(uint16_t val)   { m68k_write16(0xC00000, val); }
+void     vdp_write_ctrl(uint16_t val)   { m68k_write16(0xC00004, val); }
+uint16_t vdp_read_data(void)            { return m68k_read16(0xC00000); }
+uint16_t vdp_read_status(void)          { return m68k_read16(0xC00004); }
+void     vdp_render_frame(uint32_t *fb) { (void)fb; /* rendering via clownmdemu callbacks */ }
+
+/* =========================================================================
+ * Runtime init / VBlank request (old runner interface; not used by main.c)
+ * ========================================================================= */
+
+/* =========================================================================
+ * Frame state logger — dumps key game state at each VBlank for comparison
+ * between hybrid and Step 2 modes.
+ * ========================================================================= */
+
+static FILE *s_framelog = NULL;
+static int s_framelog_initialized;
+
+void glue_log_frame_state(uint64_t frame)
+{
+    if (!s_framelog_initialized) {
+        s_framelog_initialized=1;
+        /* The retrospective FrameRecord ring is the normal diagnostic path.
+         * Synchronous per-frame fflush can stall a real game for hundreds of
+         * milliseconds on a busy disk. Stream only when explicitly requested. */
+        const char *path=getenv("GENESIS_FRAME_LOG");
+        if (path && *path) s_framelog=fopen(path,"w");
+    }
+    if (!s_framelog) return;
+    if (frame > 9999) return;  /* cap framelog at 10000 frames */
+
+    /* Own backend: g_ram is the authoritative WRAM (byte array, big-endian). */
+    #define EMU_RAM_BYTE(addr) (g_ram[(addr) & 0xFFFF])
+    #define EMU_RAM_WORD(addr) \
+        ((uint16_t)(((uint16_t)g_ram[(addr) & 0xFFFF] << 8) | \
+                    g_ram[((addr) + 1) & 0xFFFF]))
+    #define EMU_RAM_LONG(addr) \
+        (((uint32_t)EMU_RAM_WORD(addr) << 16) | EMU_RAM_WORD((addr)+2))
+
+    uint8_t  game_mode = EMU_RAM_BYTE(g_game_layout.game_mode_addr);
+    uint8_t  vbl_flag  = EMU_RAM_BYTE(g_game_layout.vint_routine_addr);
+    /* The next three (vbl_count $F628, scroll_x $F700, plc_ptr $F680)
+     * are Sonic-1-specific debug fields whose semantics differ on other
+     * games — addresses kept literal here so the S1 framelog stays
+     * verbatim. For Sonic 2+ these values are decorative noise; rely
+     * on FrameRecord/per-game extras for game-specific telemetry. */
+    uint16_t vbl_count = EMU_RAM_WORD(0xF628);
+    uint16_t scroll_x  = EMU_RAM_WORD(0xF700);
+    uint16_t plc_ptr   = EMU_RAM_WORD(0xF680);
+    uint32_t frame_cnt = EMU_RAM_LONG(g_game_layout.vint_runcount_addr);
+    uint8_t  obj0_id   = EMU_RAM_BYTE(g_game_layout.player_object_addr + 0);
+    uint8_t  obj0_rt   = EMU_RAM_BYTE(g_game_layout.player_object_addr + 1);
+
+    fprintf(s_framelog,
+            "F%03llu mode=%02X vbl=%02X cnt=%04X scrl=%04X plc=%04X "
+            "fcnt=%08X obj0=%02X/%02X\n",
+            (unsigned long long)frame,
+            game_mode, vbl_flag, vbl_count, scroll_x, plc_ptr,
+            frame_cnt, obj0_id, obj0_rt);
+    fflush(s_framelog);
+}
+
+void runtime_init(void)             { /* nothing; glue_init() serves this role */ }
+void runtime_request_vblank(void)   { glue_signal_vblank(); }
+
+/* =========================================================================
+ * Logger helper
+ * ========================================================================= */
+
+void log_on_change(const char *label, uint32_t value)
+{
+    static uint32_t prev = ~0u;
+    static const char *prev_label = NULL;
+    if (prev_label != label || prev != value) {
+        fprintf(stderr, "LOG %s = $%08X\n", label, value);
+        prev_label = label;
+        prev = value;
+    }
+}
+
+/* =========================================================================
+ * Step 2: hybrid_jmp_interpret / hybrid_call_interpret → call_by_address
+ *
+ * In hybrid mode these run the interpreter as a fallback.  In Step 2 there
+ * is no interpreter — redirect to call_by_address() which has every
+ * generated function in its dispatch table.
+ * ========================================================================= */
+
+
+extern void call_by_address(uint32_t addr);
+
+/* Track indirect dispatch calls.
+ * These go through hybrid_jmp/call_interpret → call_by_address.
+ * We only log addresses that FAIL dispatch (true misses that need
+ * new extra_func entries).  Addresses that dispatch successfully
+ * are interior labels of existing functions — logging them would
+ * cause the recompiler to split functions incorrectly. */
+#define MAX_INTERP_SEEN MAX_MISS_UNIQUE
+static uint32_t s_interp_seen[MAX_INTERP_SEEN];
+static int      s_interp_seen_count = 0;
+int             g_interp_total_calls = 0;
+
+/* Called from genesis_log_dispatch_miss — these are REAL misses.
+ * s_interp_seen is THIS session's set (the [INTERP] exit summary counts it);
+ * dispatch_misses.toml holds the set across every session of this build. */
+static void log_true_miss(uint32_t target_pc)
+{
+    for (int i = 0; i < s_interp_seen_count; i++)
+        if (s_interp_seen[i] == target_pc) return;
+    if (s_interp_seen_count < MAX_INTERP_SEEN)
+        s_interp_seen[s_interp_seen_count++] = target_pc;
+
+    /* Context for triage: the longword on top of the stack is the return
+     * address for a JSR-originated miss (the call site is just before it);
+     * for a JMP-tail miss it is the enclosing caller's return. The
+     * recompiled-function tag exists only in reverse-debug builds. */
+    char note[64];
+    int len = snprintf(note, sizeof note, "sp_ret $%06X",
+                       glue_peek32(g_cpu.A[7]) & 0xFFFFFFu);
+    if (g_rdb_current_func && len > 0 && (size_t)len < sizeof note)
+        snprintf(note + len, sizeof note - (size_t)len, " in_func $%06X",
+                 g_rdb_current_func & 0xFFFFFFu);
+    if (runtime_evidence_add(RT_EVIDENCE_DISPATCH_MISS, target_pc, g_frame_count, note))
+        runtime_evidence_sync(RT_EVIDENCE_DISPATCH_MISS);
+}
+
+int genesis_write_dispatch_miss_evidence(void)
+{
+    runtime_evidence_flush();
+    return runtime_evidence_count(RT_EVIDENCE_DISPATCH_MISS);
+}
+
+int glue_interp_seen_count(void) { return s_interp_seen_count; }
+int glue_interp_total_calls(void) { return g_interp_total_calls; }
+uint64_t glue_miss_count_any(void) { return (uint64_t)g_miss_count_any; }
+uint32_t glue_interp_seen_addr(int i) {
+    return (i >= 0 && i < s_interp_seen_count) ? s_interp_seen[i] : 0;
+}
+
+void hybrid_jmp_interpret(uint32_t target_pc)
+{
+    g_interp_total_calls++;
+    call_by_address(target_pc);
+    /* If call_by_address didn't find it, genesis_log_dispatch_miss
+     * was called, which logs it as a true miss via log_true_miss. */
+}
+
+void hybrid_call_interpret(uint32_t target_pc)
+{
+    g_interp_total_calls++;
+    call_by_address(target_pc);
+}
+
+/* =========================================================================
+ * Rollback state (runner/rb_state.c drives these; see rb_state.h).
+ *
+ * SCHED: every glue.c variable that decides when the 68K runs, yields or
+ * takes an interrupt, listed field by field. EXEC: the suspended game fiber
+ * (its register context and live stack) plus the generated tail-frame head
+ * that points into that stack. Diagnostics (bus ring, miss tables, pacing
+ * telemetry, watchdog counters that only ever abort) are not state and are
+ * deliberately absent. The _STATICS probe (GENESIS_RB_PROBE_STATICS) is what
+ * catches a static added here and forgotten below.
+ * ========================================================================= */
+#include "rb_state.h"
+#include "cosim.h"   /* cosim_fnv_* (address-free exec digest) */
+
+typedef struct GlueRbSched {
+    uint64_t frame_count;
+    uint32_t cycle_accumulator, vblank_threshold, audio_cycle_counter;
+    uint32_t stamp_rebase;
+    uint32_t hybrid_cycle_counter;
+    int32_t  ws_margin;
+    uint8_t  controller1, controller2;
+    int32_t  vblank_fired, vblank_executed;
+    int32_t  rte_real, rte_dummy, rte_ptr_is_dummy;
+    int32_t  early_return;
+    int32_t  in_vblank_service, game_running;
+    uint32_t game_fiber_resume_pc;
+    int32_t  yield_site;
+    uint32_t main_cpu_clock_remainder;
+    uint32_t main_cpu_divisor, main_cpu_stalls;
+    int32_t  irq_in_progress, cycle_budget, game_yielded_vblank;
+    uint32_t irq_cycle_debt;
+    int32_t  irq_cycle_debt_level;
+    uint32_t budget_cyc_seen;
+    int32_t  game_yielded_break, interleave_active;
+    uint32_t chunk_cycles;
+    int32_t  own_vint_latched, pending_irq;
+    int32_t  state_requested, state_parked;
+    uint32_t spin_addr;
+    int32_t  spin_count;
+    uint32_t z80poll_last_addr;
+    int32_t  z80poll_streak;
+    int32_t  in_floor;
+    uint32_t watchdog_counter;
+    /* Generated (m68k-recomp-core genesis profile, <prefix>_part00.c): the
+     * split-function SP-pop carry. A mutable generated global, found by the
+     * _STATICS probe on Sonic 3 (2026-09-25): omitting it forked the replay
+     * in cpu/sched/ram at step 1 in 5 of 149 probe passes. */
+    int32_t  split_sp_popped;
+} GlueRbSched;
+
+size_t glue_rb_sched_save(void *dst, size_t cap)
+{
+    GlueRbSched s;
+    if (!dst) return sizeof s;
+    if (cap < sizeof s) return 0;
+    memset(&s, 0, sizeof s);
+    s.frame_count          = g_frame_count;
+    s.cycle_accumulator    = g_cycle_accumulator;
+    s.vblank_threshold     = g_vblank_threshold;
+    s.audio_cycle_counter  = g_audio_cycle_counter;
+    s.stamp_rebase         = g_68k_stamp_rebase;
+    s.hybrid_cycle_counter = (uint32_t)g_hybrid_cycle_counter;
+    s.ws_margin            = g_ws_margin;
+    s.controller1          = g_controller1_buttons;
+    s.controller2          = g_controller2_buttons;
+    s.vblank_fired         = s_vblank_fired_this_frame;
+    s.vblank_executed      = s_vblank_executed_this_frame;
+    s.rte_real             = s_rte_real;
+    s.rte_dummy            = s_rte_dummy;
+    s.rte_ptr_is_dummy     = g_rte_pending_ptr == &s_rte_dummy;
+    s.early_return         = g_early_return;
+    s.in_vblank_service    = s_in_vblank_service;
+    s.game_running         = s_game_running;
+    s.game_fiber_resume_pc = s_game_fiber_resume_pc;
+    s.yield_site           = (int32_t)s_yield_site;
+    s.main_cpu_clock_remainder = s_main_cpu_clock.remainder;
+    s.main_cpu_divisor     = s_main_cpu_divisor;
+    s.main_cpu_stalls      = s_main_cpu_stalls;
+    s.irq_in_progress      = s_irq_in_progress;
+    s.cycle_budget         = s_cycle_budget;
+    s.game_yielded_vblank  = s_game_yielded_vblank;
+    s.irq_cycle_debt       = s_irq_cycle_debt;
+    s.irq_cycle_debt_level = s_irq_cycle_debt_level;
+    s.budget_cyc_seen      = s_budget_cyc_seen;
+#if SONIC_REVERSE_DEBUG
+    s.game_yielded_break   = s_game_yielded_break;
+#endif
+    s.interleave_active    = s_interleave_active;
+    s.chunk_cycles         = (uint32_t)s_chunk_cycles;
+    s.own_vint_latched     = s_own_vint_latched;
+    s.pending_irq          = s_pending_irq;
+    s.state_requested      = s_state_requested;
+    s.state_parked         = s_state_parked;
+    s.spin_addr            = s_spin_addr;
+    s.spin_count           = s_spin_count;
+    s.z80poll_last_addr    = s_z80poll_last_addr;
+    s.z80poll_streak       = s_z80poll_streak;
+    s.in_floor             = s_in_floor;
+    s.watchdog_counter     = s_watchdog_counter;
+    s.split_sp_popped      = g_split_sp_popped;
+    memcpy(dst, &s, sizeof s);
+    return sizeof s;
+}
+
+int glue_rb_sched_load(const void *src, size_t len)
+{
+    GlueRbSched s;
+    if (!src || len != sizeof s) return 0;
+    memcpy(&s, src, sizeof s);
+    g_frame_count               = s.frame_count;
+    g_cycle_accumulator         = s.cycle_accumulator;
+    g_vblank_threshold          = s.vblank_threshold;
+    g_audio_cycle_counter       = s.audio_cycle_counter;
+    g_68k_stamp_rebase          = s.stamp_rebase;
+    g_hybrid_cycle_counter      = s.hybrid_cycle_counter;
+    g_ws_margin                 = s.ws_margin;
+    g_controller1_buttons       = s.controller1;
+    g_controller2_buttons       = s.controller2;
+    s_vblank_fired_this_frame   = s.vblank_fired;
+    s_vblank_executed_this_frame= s.vblank_executed;
+    s_rte_real                  = s.rte_real;
+    s_rte_dummy                 = s.rte_dummy;
+    g_rte_pending_ptr           = s.rte_ptr_is_dummy ? &s_rte_dummy : &s_rte_real;
+    g_early_return              = s.early_return;
+    s_in_vblank_service         = s.in_vblank_service;
+    s_game_running              = s.game_running;
+    s_game_fiber_resume_pc      = s.game_fiber_resume_pc;
+    s_yield_site                = (GlueYieldSite)s.yield_site;
+    s_main_cpu_clock.remainder  = s.main_cpu_clock_remainder;
+    s_main_cpu_divisor          = s.main_cpu_divisor;
+    s_main_cpu_stalls           = s.main_cpu_stalls;
+    s_irq_in_progress           = s.irq_in_progress;
+    s_cycle_budget              = s.cycle_budget;
+    s_game_yielded_vblank       = s.game_yielded_vblank;
+    s_irq_cycle_debt            = s.irq_cycle_debt;
+    s_irq_cycle_debt_level      = s.irq_cycle_debt_level;
+    s_budget_cyc_seen           = s.budget_cyc_seen;
+#if SONIC_REVERSE_DEBUG
+    s_game_yielded_break        = s.game_yielded_break;
+#endif
+    s_interleave_active         = s.interleave_active;
+    s_chunk_cycles              = s.chunk_cycles;
+    s_own_vint_latched          = s.own_vint_latched;
+    s_pending_irq               = s.pending_irq;
+    s_state_requested           = s.state_requested;
+    s_state_parked              = s.state_parked;
+    s_spin_addr                 = s.spin_addr;
+    s_spin_count                = s.spin_count;
+    s_z80poll_last_addr         = s.z80poll_last_addr;
+    s_z80poll_streak            = s.z80poll_streak;
+    s_in_floor                  = s.in_floor;
+    s_watchdog_counter          = s.watchdog_counter;
+    g_split_sp_popped           = s.split_sp_popped;
+    return 1;
+}
+
+/* EXEC: [u64 tail-frame head][u32 fiber blob len][fiber blob]. The blob and
+ * the head carry host addresses of THIS process's fiber stack, so an EXEC
+ * section is only meaningful in the process that saved it (rollback is). */
+size_t glue_rb_exec_save(void *dst, size_t cap)
+{
+    size_t fb = s_game_fiber ? fiber_snapshot_bound(s_game_fiber) : 0;
+    size_t need = sizeof(uint64_t) + sizeof(uint32_t) + fb;
+    if (!dst) return need;
+    if (cap < need) return 0;
+    uint8_t *o = (uint8_t *)dst;
+    uint64_t head = (uint64_t)(uintptr_t)recomp_tail_frame_get();
+    uint32_t n = 0;
+    if (fb) {
+        n = (uint32_t)fiber_snapshot_save(s_game_fiber, o + sizeof head + sizeof n, fb);
+        if (n == 0) return 0;
+    }
+    memcpy(o, &head, sizeof head);
+    memcpy(o + sizeof head, &n, sizeof n);
+    return sizeof head + sizeof n + n;
+}
+
+int glue_rb_exec_load(const void *src, size_t len)
+{
+    const uint8_t *i = (const uint8_t *)src;
+    uint64_t head;
+    uint32_t n;
+    if (!src || len < sizeof head + sizeof n) return 0;
+    memcpy(&head, i, sizeof head);
+    memcpy(&n, i + sizeof head, sizeof n);
+    if (len != sizeof head + sizeof n + n) return 0;
+    if (n) {
+        if (!s_game_fiber || fiber_snapshot_load(s_game_fiber, i + sizeof head + sizeof n, n) != 0)
+            return 0;
+    }
+    recomp_tail_frame_set((void *)(uintptr_t)head);
+    return 1;
+}
+
+static void rb_exec_visit(int pending, uint32_t addr, void *user)
+{
+    uint64_t *h = (uint64_t *)user;
+    *h = cosim_fnv_u32(*h, (uint32_t)pending);
+    *h = cosim_fnv_u32(*h, addr & 0xFFFFFFu);
+}
+
+/* Address-free view of EXEC for digests: the yield site the fiber resumes
+ * from, whether it runs, and the guest-visible tail-frame chain. The raw
+ * stack bytes (host addresses) are compared only in-process, by the probe. */
+uint64_t glue_rb_exec_digest(uint64_t h)
+{
+    h = cosim_fnv_u32(h, (uint32_t)s_yield_site);
+    h = cosim_fnv_u32(h, (uint32_t)s_game_running);
+    h = cosim_fnv_u32(h, s_game_fiber_resume_pc);
+    recomp_tail_frame_walk(rb_exec_visit, &h);
+    return h;
+}
+
+int glue_rb_fiber_stack_range(uintptr_t *lo, uintptr_t *top)
+{
+    return s_game_fiber ? fiber_stack_range(s_game_fiber, lo, top) : -1;
+}
