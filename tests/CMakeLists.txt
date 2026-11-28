@@ -21,6 +21,12 @@ endif()
 # a top-level project.  Keep its ROM-independent harnesses runnable directly
 # with `ctest --test-dir <game-build>/tests -C <config>`.
 enable_testing()
+add_executable(switch_storage_contract switch_storage_contract.c
+    "${CMAKE_CURRENT_LIST_DIR}/../runner/platform/switch/storage.c")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/switch-storage-fixture")
+add_test(NAME switch_storage_contract COMMAND switch_storage_contract)
+set_tests_properties(switch_storage_contract PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/switch-storage-fixture")
 foreach(_hd_planes 0 1)
     add_executable(vdp_hd_jobs_${_hd_planes}_test runtime/vdp_hd_jobs_test.c
         ../runner/video/genesis_vdp.c ../runner/video/genesis_raster_jobs.c)
@@ -144,6 +150,28 @@ if(TARGET SDL2::SDL2)
     add_executable(diagnostic_replay_test runtime/diagnostic_replay_test.c
         "${CMAKE_CURRENT_LIST_DIR}/../runner/diagnostic_replay.c"
         "${CMAKE_CURRENT_LIST_DIR}/../runner/replay_writer.c")
+    add_executable(host_state_restore_test runtime/host_state_restore_test.c)
+    target_include_directories(host_state_restore_test PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../runner")
+    target_compile_definitions(host_state_restore_test PRIVATE RECOMP_LAUNCHER=0)
+    target_link_libraries(host_state_restore_test PRIVATE SDL2::SDL2)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        target_compile_definitions(host_state_restore_test PRIVATE GENESIS_TEST_DENY_TMPFILES=1)
+        target_link_options(host_state_restore_test PRIVATE "-Wl,--wrap=tmpfile")
+    endif()
+    add_test(NAME host_state_restore COMMAND host_state_restore_test "${CMAKE_CURRENT_BINARY_DIR}/host-state-fixture.bin")
+    if(EXISTS "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/recomp_runtime_ui.c")
+        add_executable(runtime_ui_gamepad_test runtime/runtime_ui_gamepad_test.c
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/gamepad.c"
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/input_map.c"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src/common/recomp_runtime_ui.c")
+        target_compile_definitions(runtime_ui_gamepad_test PRIVATE __SWITCH__=1)
+        target_include_directories(runtime_ui_gamepad_test PRIVATE
+            "${CMAKE_CURRENT_LIST_DIR}/../runner" "${CMAKE_CURRENT_LIST_DIR}/../runner/include"
+            "${CMAKE_CURRENT_LIST_DIR}/../runner/external/clowncommon"
+            "${CMAKE_SOURCE_DIR}/recomp-ui/src" "${CMAKE_SOURCE_DIR}/recomp-ui/src/common")
+        target_link_libraries(runtime_ui_gamepad_test PRIVATE SDL2::SDL2)
+        add_test(NAME runtime_ui_gamepad COMMAND runtime_ui_gamepad_test)
+    endif()
     target_include_directories(diagnostic_replay_test PRIVATE
         "${CMAKE_CURRENT_LIST_DIR}/../runner"
         "${CMAKE_CURRENT_LIST_DIR}/../runner/external/superzazu")

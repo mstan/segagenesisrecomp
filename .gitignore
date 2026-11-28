@@ -1,4 +1,6 @@
 build/
+/release-switch/
+/tools/switch-*.local.json
 /sonicthehedgehog2/
 # Retired game location: preserve ignored owner ROM/build/disasm artifacts.
 # Tracked implementation now belongs in SonicTheHedgehog2Recomp/game/.

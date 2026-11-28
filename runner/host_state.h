@@ -184,33 +184,65 @@ static int host_state_load(const char *path)
     HostStateHeader h={0},expected={0};
     FILE *f=fopen(path,"rb"),*backup=NULL,*staged=NULL;
     uint8_t *body=NULL; int ok=0;
+    const char *rejected="file open";
     if (!f) goto done;
-    if (fread(&h,sizeof h,1,f)!=1 || memcmp(h.magic,"GRHOST2",8) ||
-        !g_game_spec.state_build_id || h.build[64] || strcmp(h.build,g_game_spec.state_build_id) ||
-        h.rom!=rom_crc32(g_rom,g_game_spec.expected_rom_size) ||
-        !h.bytes || h.bytes>HOST_STATE_LIMIT || h.section[0]!=g_game_spec.state_size()) goto done;
+    rejected="header";
+    if (fread(&h,sizeof h,1,f)!=1 || memcmp(h.magic,"GRHOST2",8)) goto done;
+    rejected="build identity";
+    if (!g_game_spec.state_build_id || h.build[64] || strcmp(h.build,g_game_spec.state_build_id)) goto done;
+    rejected="cartridge identity";
+    if (h.rom!=rom_crc32(g_rom,g_game_spec.expected_rom_size)) goto done;
+    rejected="payload size";
+    if (!h.bytes || h.bytes>HOST_STATE_LIMIT || h.section[0]!=g_game_spec.state_size()) goto done;
     uint64_t total=0; for (unsigned i=0;i<HOST_STATE_SECTIONS;++i) total+=h.section[i];
+    rejected="section lengths";
     if (total!=h.bytes) goto done;
+    rejected="payload allocation";
     body=malloc(h.bytes); if (!body) goto done;
-    if (fread(body,1,h.bytes,f)!=h.bytes || fgetc(f)!=EOF || ferror(f) ||
-        rom_crc32(body,h.bytes)!=h.crc || !g_game_spec.state_load(body,h.section[0],0)) goto done;
+    rejected="payload read";
+    if (fread(body,1,h.bytes,f)!=h.bytes || fgetc(f)!=EOF || ferror(f)) goto done;
+    rejected="payload checksum";
+    if (rom_crc32(body,h.bytes)!=h.crc) goto done;
+    rejected="game configuration";
+    if (!g_game_spec.state_load(body,h.section[0],0)) goto done;
     /* Check every fixed section and the opaque FM length BEFORE mutating RAM,
      * CPU, audio or host simulation. Also retain a rollback for I/O failures. */
-    backup=tmpfile(); staged=tmpfile(); if (!backup || !staged) goto done;
+    rejected="restore staging";
+#if defined(__SWITCH__) || defined(__linux__) || defined(__APPLE__)
+    /* Load already owns a verified payload. Read its machine sections directly
+     * and capture rollback into RAM: console filesystems need no /tmp, and no
+     * state bytes make a second round trip through storage. The spare byte
+     * keeps fmemopen's trailing NUL outside the binary backup. */
+    size_t machine_bytes=h.bytes-h.section[0];
+    if (!machine_bytes) goto done;
+    backup=fmemopen(NULL,machine_bytes+1,"w+b");
+    staged=fmemopen(body+h.section[0],machine_bytes,"rb");
+#else
+    backup=tmpfile(); staged=tmpfile();
+#endif
+    if (!backup || !staged) goto done;
+    rejected="rollback capture";
     if (!host_machine_write(backup,&expected)) goto done;
     size_t fm_at=0;
     for (unsigned i=1;i<HOST_STATE_SECTIONS;++i) {
+        rejected="machine section size";
         if (h.section[i]!=expected.section[i]) goto done;
         if (i<4) fm_at+=h.section[i];
     }
     uint32_t fm_size=0,old_fm_size=0;
     memcpy(&fm_size,body+h.section[0]+fm_at,sizeof fm_size);
+    rejected="audio state layout";
     if (fseek(backup,(long)fm_at,SEEK_SET) || fread(&old_fm_size,sizeof old_fm_size,1,backup)!=1 || fm_size!=old_fm_size) goto done;
+#if !defined(__SWITCH__) && !defined(__linux__) && !defined(__APPLE__)
+    rejected="machine staging write";
     if (fwrite(body+h.section[0],1,h.bytes-h.section[0],staged)!=h.bytes-h.section[0] || fflush(staged)) goto done;
+#endif
     rewind(staged);
+    rejected="machine restore";
     if (!host_machine_read(staged)) { rewind(backup); host_machine_read(backup); goto done; }
     /* apply cannot fail after successful preflight; game adapters own no disk
      * writes and cannot select a serialized filesystem path. */
+    rejected="game restore";
     ok=g_game_spec.state_load(body,h.section[0],1);
     if (!ok) { rewind(backup); host_machine_read(backup); goto done; }
     audio_discard_playback(); /* host payload restored deferred chip events */
@@ -222,7 +254,8 @@ static int host_state_load(const char *path)
     if (pc) glue_restart_game_fiber(pc);
 done:
     if (f) fclose(f); if (backup) fclose(backup); if (staged) fclose(staged); free(body);
-    fprintf(stderr,"[LOAD] %s %s\n",ok?"loaded":"rejected: missing, damaged, incompatible build or configuration",path);
+    if(ok)fprintf(stderr,"[LOAD] loaded %s\n",path);
+    else fprintf(stderr,"[LOAD] rejected at %s: %s\n",rejected,path);
     host_state_notice(ok?"State loaded":"Load rejected: file missing, damaged, or setup/build mismatch");
     return ok;
 }

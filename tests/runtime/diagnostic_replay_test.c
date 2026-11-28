@@ -207,6 +207,9 @@ static void tick(const GenesisSimInput *in) {
 int main(int argc, char **argv) {
   if (argc < 3)
     return 1;
+  /* Match small native worker stacks (including Switch). Recording and
+   * playback must keep their long-lived I/O buffers off the worker stack. */
+  SDL_SetHint(SDL_HINT_THREAD_STACK_SIZE, "131072");
   int play = !strcmp(argv[1], "play");
   startup_context=play?0:12345;
   g_app_config.replay_diagnostics = 1;

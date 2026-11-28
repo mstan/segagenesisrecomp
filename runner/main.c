@@ -14,6 +14,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -114,6 +117,10 @@ static void draw_load_hold(SDL_Renderer *renderer)
 
 static char s_exe_dir[512] = "";
 static char s_data_dir[512] = "";
+#ifdef __SWITCH__
+static char s_nro_path[512];
+const char *genesis_switch_nro_path(void) { return s_nro_path; }
+#endif
 
 static double benchmark_process_cpu_seconds(void)
 {
@@ -151,6 +158,10 @@ static void init_exe_dir(const char *argv0)
     /* Try platform API first */
 #ifdef _WIN32
     GetModuleFileNameA(NULL, s_exe_dir, sizeof(s_exe_dir) - 1);
+#elif defined(__SWITCH__)
+    /* hbmenu supplies the NRO path; keep assets, saves and config on SD. */
+    snprintf(s_exe_dir, sizeof(s_exe_dir), "%s", argv0 ? argv0 : "./game.nro");
+    snprintf(s_nro_path, sizeof(s_nro_path), "%s", s_exe_dir);
 #else
     /* Inside an AppImage /proc/self/exe is the read-only squashfs mount and
      * argv0 may be relative; $APPIMAGE (exported by the AppImage runtime) is
@@ -191,6 +202,11 @@ static void init_exe_dir(const char *argv0)
     if (last_bsep > last_sep) last_sep = last_bsep;
     if (last_sep) last_sep[1] = '\0';
     else strcpy(s_exe_dir, "./");
+#ifdef __SWITCH__
+    if (chdir(s_exe_dir) != 0) fprintf(stderr, "Cannot enter NRO directory: %s\n", s_exe_dir);
+    /* Keep startup failures readable after hbmenu takes back the screen. */
+    if (freopen("runtime.log", "w", stderr)) setvbuf(stderr, NULL, _IOLBF, 0);
+#endif
 }
 
 /* Build a full path: exe_dir + filename */
@@ -219,7 +235,7 @@ static int rom_has_sega_header(const char *path)
 }
 #endif
 
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#if !defined(_WIN32) && !defined(__ANDROID__) && !defined(__SWITCH__)
 /* Run one shell-wrapped native file chooser; read the selected path from its
  * stdout. Each command is gated on `command -v <tool>` so an absent tool
  * prints nothing and we fall through. Returns 1 and fills `out` only on a
@@ -260,6 +276,7 @@ static int run_picker_cmd(const char *cmd, char *out, size_t max_len)
  * in by defining RECOMP_LAUNCHER. */
 #include "recomp_launcher.h"
 #include "recomp_runtime_ui.h"
+#include "runtime_ui_gamepad.h"
 #endif
 #if GENESIS_HAS_RECOMP_NET
 #include "genesis_netplay.h"
@@ -355,6 +372,9 @@ typedef struct RuntimeUiContext {
     int view_mode;
 } RuntimeUiContext;
 static RuntimeUiContext s_runtime_ui;
+#ifdef __SWITCH__
+static RuntimeUiPad s_runtime_ui_pad;
+#endif
 static int s_quickstate_slot=1;
 int runner_save_state_file(const char *path);
 int runner_load_state_file(const char *path);
@@ -2399,8 +2419,13 @@ static void local_states_modal(SDL_Renderer *renderer, SDL_Texture *game,
         uint32_t press = pad & ~prev_pad;
         prev_pad = pad;
         int mode = genesis_local_states_is_open();
-        if (press & GP_OVERLAY_B) genesis_local_states_cancel();
-        else if (press & GP_OVERLAY_A) {
+#ifdef __SWITCH__
+        const uint32_t back=GP_OVERLAY_A,accept=GP_OVERLAY_B;
+#else
+        const uint32_t back=GP_OVERLAY_B,accept=GP_OVERLAY_A;
+#endif
+        if (press & back) genesis_local_states_cancel();
+        else if (press & accept) {
             if (genesis_local_states_accept() && mode == 1) {
                 audio_discard_playback();
             }
@@ -2858,6 +2883,10 @@ int main(int argc, char *argv[])
             if (GetOpenFileNameA(&ofn))
                 rom_path = picked_path;
         }
+#elif defined(__SWITCH__)
+        /* The launcher provides its controller-operated SD browser. */
+        static char switch_rom[1024];
+        if (rom_cfg_read(rom_cfg_path, switch_rom, sizeof switch_rom)) rom_path = switch_rom;
 #elif defined(__ANDROID__)
         /* No file-picker processes on Android. Boot the ROM cached in
          * rom-<short_name>.cfg when it still exists, else the first Genesis
@@ -3612,8 +3641,17 @@ session_begin:;
             }
             load_hold_event(&ev, window);
 #if RECOMP_LAUNCHER
-            if (recomp_runtime_ui_is_open(s_runtime_ui.ui))
+            if (recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
                 (void)gamepad_consume_quickload();
+                (void)gamepad_consume_quicksave();
+            }
+#ifdef __SWITCH__
+            if (ev.type==SDL_CONTROLLERBUTTONDOWN && ev.cbutton.button==SDL_CONTROLLER_BUTTON_BACK) {
+                cancel_load_hold();
+                recomp_runtime_ui_handle_input(s_runtime_ui.ui,RECOMP_RUNTIME_UI_INPUT_TOGGLE,1,0);
+                continue;
+            }
+#endif
             if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE && !recomp_runtime_ui_is_open(s_runtime_ui.ui)) {
                 cancel_load_hold();
                 recomp_runtime_ui_open(s_runtime_ui.ui); continue;
@@ -3705,6 +3743,10 @@ session_begin:;
         }
 
         if (!running) break; /* Close must not execute another game/render tick. */
+#if RECOMP_LAUNCHER && defined(__SWITCH__)
+        runtime_ui_gamepad_poll(s_runtime_ui.ui,&s_runtime_ui_pad,
+                               gamepad_overlay_mask(),SDL_GetTicks64(),1);
+#endif
         {
             uint32_t pad = gamepad_overlay_mask();
             uint32_t menu = GP_OVERLAY_BACK | GP_OVERLAY_RB;

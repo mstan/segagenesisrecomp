@@ -23,7 +23,9 @@
 #else
 #  include <sys/stat.h>
 #  include <sys/types.h>
-#  include <sys/utsname.h>
+#  ifndef __SWITCH__
+#    include <sys/utsname.h>
+#  endif
 #  define od_mkdir(p) mkdir((p), 0755)
 #endif
 
@@ -72,6 +74,8 @@ static void os_description(char *out, size_t cap)
                  (unsigned long)v.dwMinorVersion, (unsigned long)v.dwBuildNumber);
     else
         snprintf(out, cap, "Windows (version unknown)");
+#elif defined(__SWITCH__)
+    snprintf(out, cap, "Nintendo Switch (ARM64 homebrew)");
 #else
     struct utsname u;
     if (uname(&u) == 0) snprintf(out, cap, "%s %s %s", u.sysname, u.release, u.machine);
