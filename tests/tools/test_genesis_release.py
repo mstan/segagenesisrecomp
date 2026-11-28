@@ -15,7 +15,9 @@ def pe(path, imports=(), machine=0x8664):
     struct.pack_into("<HH", data, 0x84, machine, 1)
     struct.pack_into("<H", data, 0x94, 0xf0)
     struct.pack_into("<H", data, 0x98, 0x20b)
-    struct.pack_into("<I", data, 0x98 + 112 + 8, 0x1000 if imports else 0)
+    struct.pack_into("<II", data, 0x98 + 56, 0x2000, 0x200)
+    struct.pack_into("<I", data, 0x98 + 108, 16)
+    struct.pack_into("<II", data, 0x98 + 112 + 8, 0x1000 if imports else 0, 20 * (len(imports) + 1) if imports else 0)
     struct.pack_into("<IIII", data, 0x188 + 8, 1024, 0x1000, 1024, 0x200)
     offset = 0x300
     for index, name in enumerate(imports):
@@ -28,6 +30,55 @@ def pe(path, imports=(), machine=0x8664):
 
 @unittest.skipUnless(os.name == "nt", "Windows PowerShell release contract")
 class GenesisReleaseTests(unittest.TestCase):
+    def test_malformed_pe_metadata_is_rejected(self):
+        provider = Path(__file__).resolve().parents[2] / "tools/release/RuntimeDllClosure.ps1"
+        with tempfile.TemporaryDirectory(prefix="genesis-malformed-pe-") as work:
+            root = Path(work)
+            valid = root / "valid.dll"
+            pe(valid, ["dep.dll"])
+            original = valid.read_bytes()
+            cases = {}
+            def changed(name, offset, fmt, value):
+                data = bytearray(original)
+                struct.pack_into(fmt, data, offset, value)
+                cases[name] = data
+            changed("signature", 0x82, "<B", 1)
+            changed("x64-pe32", 0x98, "<H", 0x10b)
+            changed("optional-magic", 0x98, "<H", 0x999)
+            changed("short-optional", 0x94, "<H", 64)
+            changed("optional-past-eof", 0x94, "<H", 0xffff)
+            changed("section-table", 0x86, "<H", 0xffff)
+            changed("raw-section", 0x188 + 20, "<I", 0xffff)
+            changed("directory-count", 0x98 + 108, "<I", 17)
+            changed("import-rva", 0x98 + 112 + 8, "<I", 0x3000)
+            changed("name-rva", 0x20c, "<I", 0x3000)
+            changed("unterminated-descriptors", 0x98 + 112 + 12, "<I", 20)
+            data = bytearray(original)
+            struct.pack_into("<I", data, 0x200, 1)
+            struct.pack_into("<I", data, 0x20c, 0)
+            cases["missing-name"] = data
+            data = bytearray(original); data[0x300:0x600] = b"A" * 0x300
+            cases["unterminated-name"] = data
+            data = bytearray(original)
+            struct.pack_into("<I", data, 0x188 + 8, 0x1000)
+            struct.pack_into("<I", data, 0x20c, 0x1700)
+            cases["virtual-only-name"] = data
+            cases["truncated-section-table"] = original[:0x188 + 39]
+            for name, data in cases.items():
+                (root / (name + ".bad")).write_bytes(data)
+            script = root / "check.ps1"
+            script.write_text(r'''param($Provider, $Root)
+$ErrorActionPreference = 'Stop'
+. $Provider
+if (-not (Get-PeInfo -Path (Join-Path $Root 'valid.dll'))) { throw 'Rejected valid PE32+ fixture' }
+foreach ($file in Get-ChildItem -LiteralPath $Root -Filter '*.bad' -File) {
+  if ($null -ne (Get-PeInfo -Path $file.FullName)) { throw "Accepted malformed PE: $($file.Name)" }
+}
+''', encoding="utf-8")
+            result = subprocess.run(["powershell.exe", "-NoProfile", "-File", str(script), str(provider), str(root)],
+                                    text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            self.assertEqual(result.returncode, 0, result.stdout)
+
     def test_transitive_crt_closure_archive_and_rejections(self):
         provider = Path(__file__).resolve().parents[2] / "tools/release/GenesisRelease.ps1"
         with tempfile.TemporaryDirectory(prefix="genesis-release-") as work:
