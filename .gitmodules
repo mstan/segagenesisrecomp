@@ -13,3 +13,6 @@
 [submodule "external/rbengine"]
 	path = external/rbengine
 	url = https://github.com/RetroPortingToolKit/rbengine.git
+[submodule "external/shared-cores/recomp-presentation-core"]
+	path = external/shared-cores/recomp-presentation-core
+	url = https://github.com/mstan/recomp-presentation-core.git
