@@ -12,6 +12,7 @@ function(genesis_add_audio_components target)
         "${_GENESIS_AUDIO_COMPONENT_ROOT}/runner/external/ymfm/src/ymfm_adpcm.cpp")
     target_include_directories(${target} PUBLIC
         "${_GENESIS_AUDIO_COMPONENT_ROOT}/runner/audio"
-        PRIVATE "${_GENESIS_AUDIO_COMPONENT_ROOT}/runner/external/ymfm/src")
+        PRIVATE "${_GENESIS_AUDIO_COMPONENT_ROOT}/runner"
+                "${_GENESIS_AUDIO_COMPONENT_ROOT}/runner/external/ymfm/src")
     target_compile_features(${target} PUBLIC c_std_11 PRIVATE cxx_std_17)
 endfunction()
