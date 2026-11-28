@@ -48,97 +48,92 @@ in the caller; everything reachable from it is then pulled in automatically.
 # ---------------------------------------------------------------------------
 
 function Get-PeInfo {
-  <#
-    .SYNOPSIS
-    Returns @{ Machine = 'x64'|'x86'|'arm64'|'0x...'; Imports = @('KERNEL32.dll', ...) }
-    for a PE file, or $null if the file is not a PE image.
-  #>
+  # Malformed metadata must never look like a valid image with no imports.
   param([Parameter(Mandatory = $true)][string]$Path)
-
   $bytes = [IO.File]::ReadAllBytes($Path)
-  if ($bytes.Length -lt 0x40) { return $null }
-  if ($bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { return $null }   # 'MZ'
-
-  $peOff = [BitConverter]::ToInt32($bytes, 0x3C)
-  if ($peOff -le 0 -or ($peOff + 24) -ge $bytes.Length) { return $null }
-  if ($bytes[$peOff] -ne 0x50 -or $bytes[$peOff + 1] -ne 0x45) { return $null }  # 'PE'
-
-  $machineId = [BitConverter]::ToUInt16($bytes, $peOff + 4)
+  if ($bytes.Length -lt 0x40 -or $bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { return $null }
+  $peOff = [long][BitConverter]::ToInt32($bytes, 0x3C)
+  if ($peOff -lt 0x40 -or $peOff + 24 -gt $bytes.Length) { return $null }
+  if ($bytes[$peOff] -ne 0x50 -or $bytes[$peOff+1] -ne 0x45 -or
+      $bytes[$peOff+2] -ne 0 -or $bytes[$peOff+3] -ne 0) { return $null }
+  $machineId = [BitConverter]::ToUInt16($bytes, $peOff+4)
   $machine = switch ($machineId) {
-    0x014C { 'x86' }
-    0x8664 { 'x64' }
-    0xAA64 { 'arm64' }
-    default { ('0x{0:X4}' -f $machineId) }
+    0x014C { 'x86' }; 0x8664 { 'x64' }; 0xAA64 { 'arm64' }
+    default { '0x{0:X4}' -f $machineId }
   }
-
-  $numSections = [BitConverter]::ToUInt16($bytes, $peOff + 6)
-  $optSize = [BitConverter]::ToUInt16($bytes, $peOff + 20)
-  $optOff = $peOff + 24
-  $optMagic = [BitConverter]::ToUInt16($bytes, $optOff)
-  # PE32+ (0x20B) has 16 extra bytes of 64-bit fields before the data
-  # directories; PE32 (0x10B) does not.
-  $dirOff = $optOff + $(if ($optMagic -eq 0x20B) { 112 } else { 96 })
-
-  $info = @{ Machine = $machine; Imports = @() }
-  if (($dirOff + 16) -gt $bytes.Length) { return $info }
-  $importRva = [BitConverter]::ToUInt32($bytes, $dirOff + 8)   # directory[1] = import
-  if ($importRva -eq 0) { return $info }
-
-  # Section table follows the optional header.
+  $numSections = [BitConverter]::ToUInt16($bytes, $peOff+6)
+  $optSize = [BitConverter]::ToUInt16($bytes, $peOff+20)
+  $optOff = $peOff+24
+  if ($numSections -eq 0 -or $optSize -lt 2 -or $optOff+$optSize -gt $bytes.Length) { return $null }
+  $magic = [BitConverter]::ToUInt16($bytes, $optOff)
+  if ($magic -ne 0x10B -and $magic -ne 0x20B) { return $null }
+  if (($machineId -eq 0x014C -and $magic -ne 0x10B) -or
+      ($machineId -in @(0x8664,0xAA64) -and $magic -ne 0x20B)) { return $null }
+  $fixedSize = if ($magic -eq 0x20B) { 112 } else { 96 }
+  if ($optSize -lt $fixedSize) { return $null }
+  $directoryCount = [BitConverter]::ToUInt32($bytes, $optOff+$fixedSize-4)
+  if ([long]$directoryCount*8 -gt $optSize-$fixedSize) { return $null }
+  $imageSize = [BitConverter]::ToUInt32($bytes, $optOff+56)
+  $headerSize = [BitConverter]::ToUInt32($bytes, $optOff+60)
+  $secOff = $optOff+$optSize
+  if ($imageSize -eq 0 -or $secOff+[long]$numSections*40 -gt $bytes.Length -or
+      $headerSize -lt $secOff+[long]$numSections*40 -or $headerSize -gt $bytes.Length) { return $null }
   $sections = @()
-  $secOff = $optOff + $optSize
-  for ($i = 0; $i -lt $numSections; $i++) {
-    $s = $secOff + (40 * $i)
-    if (($s + 40) -gt $bytes.Length) { break }
-    $sections += [pscustomobject]@{
-      VirtualSize    = [BitConverter]::ToUInt32($bytes, $s + 8)
-      VirtualAddress = [BitConverter]::ToUInt32($bytes, $s + 12)
-      RawSize        = [BitConverter]::ToUInt32($bytes, $s + 16)
-      RawPointer     = [BitConverter]::ToUInt32($bytes, $s + 20)
+  for ($i=0; $i -lt $numSections; $i++) {
+    $off = $secOff+40*$i
+    $section = @{
+      VirtualSize=[BitConverter]::ToUInt32($bytes,$off+8)
+      VA=[BitConverter]::ToUInt32($bytes,$off+12)
+      RawSize=[BitConverter]::ToUInt32($bytes,$off+16)
+      Raw=[BitConverter]::ToUInt32($bytes,$off+20)
     }
+    if ([long]$section.Raw+$section.RawSize -gt $bytes.Length -or
+        [long]$section.VA+[Math]::Max($section.VirtualSize,$section.RawSize) -gt $imageSize) { return $null }
+    $sections += $section
   }
-
-  # RVA -> file offset. Span the larger of virtual/raw size: a section whose
-  # VirtualSize is smaller than SizeOfRawData (common for .idata folded into
-  # .rdata) would otherwise reject valid RVAs.
-  function Convert-RvaToOffset([uint32]$rva) {
-    foreach ($s in $sections) {
-      $span = [Math]::Max($s.VirtualSize, $s.RawSize)
-      if ($rva -ge $s.VirtualAddress -and $rva -lt ($s.VirtualAddress + $span)) {
-        $off = $s.RawPointer + ($rva - $s.VirtualAddress)
-        if ($off -lt $bytes.Length) { return [int]$off }
-        return -1
+  function Get-RvaLocation([uint32]$Rva) {
+    if ($Rva -lt $headerSize) { return @{Offset=[int]$Rva;Available=[long]$headerSize-$Rva} }
+    foreach ($section in $sections) {
+      # Import metadata needs bytes present in the file, not virtual/BSS padding.
+      $delta = [long]$Rva-$section.VA
+      if ($delta -ge 0 -and $delta -lt $section.RawSize) {
+        return @{Offset=[int]($section.Raw+$delta);Available=[long]$section.RawSize-$delta}
       }
     }
-    return -1
+    return $null
   }
-
-  function Read-CString([int]$offset) {
-    if ($offset -lt 0 -or $offset -ge $bytes.Length) { return $null }
-    $end = $offset
-    while ($end -lt $bytes.Length -and $bytes[$end] -ne 0) { $end++ }
-    return [Text.Encoding]::ASCII.GetString($bytes, $offset, $end - $offset)
-  }
-
-  $descOff = Convert-RvaToOffset $importRva
-  if ($descOff -lt 0) { return $info }
-
-  # IMAGE_IMPORT_DESCRIPTOR is 20 bytes; Name (the DLL string RVA) is at +12.
-  # The array is terminated by an all-zero descriptor.
+  $info = @{Machine=$machine;Imports=@()}
+  if ($directoryCount -lt 2) { return $info }
+  $dirOff = $optOff+$fixedSize+8
+  $importRva = [BitConverter]::ToUInt32($bytes,$dirOff)
+  $importSize = [BitConverter]::ToUInt32($bytes,$dirOff+4)
+  if ($importRva -eq 0 -and $importSize -eq 0) { return $info }
+  if ($importRva -eq 0 -or $importSize -lt 20 -or [long]$importRva+$importSize -gt $imageSize) { return $null }
   $names = New-Object Collections.Generic.List[string]
-  for ($i = 0; ; $i++) {
-    $d = $descOff + (20 * $i)
-    if (($d + 20) -gt $bytes.Length) { break }
-    $nameRva = [BitConverter]::ToUInt32($bytes, $d + 12)
-    if ($nameRva -eq 0) { break }
-    $name = Read-CString (Convert-RvaToOffset $nameRva)
-    if ([string]::IsNullOrWhiteSpace($name)) { break }
+  $limit = [Math]::Min(4096,[Math]::Floor($importSize/20))
+  for ($i=0; $i -lt $limit; $i++) {
+    $location = Get-RvaLocation ([uint32]($importRva+20*$i))
+    if (-not $location -or $location.Available -lt 20) { return $null }
+    $off = $location.Offset
+    $fields = @(for ($j=0; $j -lt 5; $j++) { [BitConverter]::ToUInt32($bytes,$off+4*$j) })
+    if (($fields[0] -bor $fields[1] -bor $fields[2] -bor $fields[3] -bor $fields[4]) -eq 0) {
+      $info.Imports=$names.ToArray();return $info
+    }
+    if ($fields[3] -eq 0) { return $null }
+    $nameLocation = Get-RvaLocation $fields[3]
+    if (-not $nameLocation) { return $null }
+    $length=0; $available=[Math]::Min(4096,$nameLocation.Available)
+    while ($length -lt $available -and $bytes[$nameLocation.Offset+$length] -ne 0) {
+      $value=$bytes[$nameLocation.Offset+$length]
+      if ($value -lt 0x20 -or $value -gt 0x7E) { return $null }
+      $length++
+    }
+    if ($length -eq 0 -or $length -eq $available) { return $null }
+    $name=[Text.Encoding]::ASCII.GetString($bytes,$nameLocation.Offset,$length)
+    if ([string]::IsNullOrWhiteSpace($name) -or $name.IndexOfAny([char[]]'\/:') -ge 0) { return $null }
     $names.Add($name)
-    if ($i -gt 4096) { break }   # malformed table guard
   }
-
-  $info.Imports = $names.ToArray()
-  return $info
+  return $null  # An import array requires its complete zero terminator.
 }
 
 # ---------------------------------------------------------------------------
