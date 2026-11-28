@@ -65,7 +65,7 @@ if [ -n "$PREBUILD_CMD" ]; then echo "[prebuild] $PREBUILD_CMD"; RAN_PREBUILD=1;
 
 echo "[1/4] configure"
 cmake -S "$REPO" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_OSX_ARCHITECTURES="$OSX_ARCHS" "${FLAGS[@]}"
+    -DCMAKE_OSX_ARCHITECTURES="$OSX_ARCHS" -DGENESIS_RECOMP_ROOT="$ENGINE" "${FLAGS[@]}"
 echo "[2/4] build ($CMAKE_TARGET)"
 cmake --build "$BUILD" --target "$CMAKE_TARGET" -j"${GENESIS_BUILD_JOBS:-4}"
 
